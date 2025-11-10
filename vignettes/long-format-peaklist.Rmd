@@ -352,7 +352,7 @@ peak_table %>%
 
 ## Visualize Feature Intensities
 
-```{r plot_intensities, fig.width=7, fig.height=4}
+```{r plot_intensities, fig.width=7, fig.height=4, fig.alt="Boxplot showing the distribution of log10-transformed feature intensities across sample groups. The plot displays the median, quartiles, and outliers for each group."}
 # Plot intensity distribution by sample group
 peak_table %>%
   filter(!is.na(into)) %>%
@@ -420,29 +420,6 @@ feature_123 <- peak_table %>%
   select(feature_id, filename, sample_group, mz, rt, into)
 
 head(feature_123)
-```
-
-# Working with chromPeaks_classic()
-
-The `chromPeaks_classic()` helper function extracts all chromatographic peaks
-as a tibble, which can be useful for exploratory analysis:
-
-```{r chrompeaks_classic}
-# Extract all peaks
-all_peaks <- chromPeaks_classic(xdata)
-
-# Check structure
-dim(all_peaks)
-head(all_peaks)
-
-# Analyze peak properties
-all_peaks %>%
-  group_by(sample) %>%
-  summarise(
-    n_peaks = n(),
-    median_sn = median(sn),
-    median_into = median(into)
-  )
 ```
 
 # Session Info

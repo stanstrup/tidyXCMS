@@ -18,8 +18,8 @@ navbar:
     articles:
       text: Vignettes
       menu:
-      - text: "Getting Started"
-        href: articles/getting-started.html
+      - text: "Creating Long-Format Peak Tables"
+        href: articles/long-format-peaklist.html
     news:
       text: Changelog
       href: news/index.html

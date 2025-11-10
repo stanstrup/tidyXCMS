@@ -27,13 +27,12 @@ Suggests:
     knitr,
     rmarkdown,
     BiocParallel,
-    MsExperiment,
     msdata,
     ggplot2,
     covr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 biocViews: Metabolomics, MassSpectrometry, DataImport
-URL: https://github.com/stanstrup/tidyXCMS
+URL: https://stanstrup.github.io/tidyXCMS, https://github.com/stanstrup/tidyXCMS
 BugReports: https://github.com/stanstrup/tidyXCMS/issues
 
