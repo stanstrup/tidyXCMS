@@ -8,15 +8,9 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-# Check if required packages are available for vignette evaluation
-can_eval <- requireNamespace("faahKO", quietly = TRUE) &&
-            requireNamespace("CAMERA", quietly = TRUE) &&
-            requireNamespace("BiocParallel", quietly = TRUE)
-
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = can_eval
+  comment = "#>"
 )
 ```
 
@@ -35,18 +29,6 @@ that integrates:
 The resulting long-format table has one row per feature per sample, making it
 ideal for downstream analysis with tidyverse tools like `dplyr` and `ggplot2`.
 
-```{r check_packages, echo=FALSE, results='asis', eval=TRUE}
-if (!can_eval) {
-  cat("**Note:** This vignette requires the `faahKO`, `CAMERA`, and `BiocParallel` packages to run the examples. Install these packages to execute the code:\n\n")
-  cat("```r\n")
-  cat("if (!requireNamespace(\"BiocManager\", quietly = TRUE))\n")
-  cat("    install.packages(\"BiocManager\")\n")
-  cat("BiocManager::install(c(\"faahKO\", \"CAMERA\", \"BiocParallel\"))\n")
-  cat("```\n\n")
-  cat("The code is shown below but not evaluated in this build.\n\n")
-}
-```
-
 # Setup
 
 ```{r setup, message=FALSE}
@@ -62,12 +44,12 @@ library(ggplot2)
 
 ## Load Example Data
 
-We'll use the `faahKO` dataset that comes with the `faahKO` package. This
-contains LC-MS data from wild-type and knockout samples.
+We'll use the `faahko_sub` dataset from XCMS, which contains LC-MS data from
+wild-type and knockout samples.
 
 ```{r load_data, message=FALSE}
-library(faahKO)
-data("faahko_sub", package = "faahKO")
+# Load example data from XCMS
+faahko_sub <- loadXcmsData("faahko_sub")
 
 # Check the files
 fileNames(faahko_sub)

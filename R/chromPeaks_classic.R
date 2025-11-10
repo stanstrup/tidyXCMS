@@ -22,7 +22,7 @@
 #' library(BiocParallel)
 #'
 #' # Load example data
-#' data("faahko_sub", package = "faahKO")
+#' faahko_sub <- loadXcmsData("faahko_sub")
 #'
 #' # Peak detection
 #' cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
