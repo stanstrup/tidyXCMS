@@ -19,14 +19,14 @@ Imports:
     dplyr,
     tidyr,
     tibble,
-    Biobase
+    Biobase,
+    MsExperiment
 Suggests:
     CAMERA,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
     BiocParallel,
-    MsExperiment,
     msdata,
     ggplot2,
     covr
