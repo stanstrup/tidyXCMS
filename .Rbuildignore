@@ -1,0 +1,11 @@
+^\.releaserc\.json$
+^\.github$
+^dev-docs$
+^\.Rproj\.user$
+^.*\.Rproj$
+^LICENSE\.md$
+^CODE_OF_CONDUCT\.md$
+^CLAUDE\.md$
+^instructions\.md$
+^completed_tasks\.md$
+^future_tasks\.md$

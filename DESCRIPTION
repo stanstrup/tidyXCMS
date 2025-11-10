@@ -2,8 +2,8 @@ Package: tidyXCMS
 Title: Tidy Interface for XCMS Metabolomics Data Processing
 Version: 0.0.0
 Authors@R:
-    person("Your", "Name", , "your.email@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+    person("Jan", "Stanstrup", , "stanstrup@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-0541-7369"))
 Description: Provides a tidy interface for working with XCMS metabolomics data.
     This package offers functions to extract and manipulate XCMS peak detection
     and feature grouping results in long-format tibbles, facilitating downstream
@@ -16,7 +16,6 @@ Depends:
     R (>= 4.1.0)
 Imports:
     xcms (>= 3.18.0),
-    CAMERA,
     dplyr,
     tidyr,
     purrr,
@@ -24,6 +23,7 @@ Imports:
     methods,
     Biobase
 Suggests:
+    CAMERA,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
