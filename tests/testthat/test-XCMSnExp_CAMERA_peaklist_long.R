@@ -1,8 +1,6 @@
 # Test suite for XCMSnExp_CAMERA_peaklist_long and .chromPeaks_classic functions
 
 test_that(".chromPeaks_classic returns a tibble with expected structure", {
-  skip_if_not_installed("xcms")
-  skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(BiocParallel)
@@ -28,10 +26,7 @@ test_that(".chromPeaks_classic returns a tibble with expected structure", {
 
 
 test_that(".chromPeaks_classic works with XcmsExperiment objects", {
-  skip_if_not_installed("xcms")
-  skip_if_not_installed("MsExperiment")
-  skip_if_not_installed("msdata")
-  skip_if_not_installed("BiocParallel")
+
 
   library(xcms)
   library(MsExperiment)
@@ -63,9 +58,6 @@ test_that(".chromPeaks_classic works with XcmsExperiment objects", {
 
 
 test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
-  skip_if_not_installed("xcms")
-  skip_if_not_installed("CAMERA")
-  skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(CAMERA)
@@ -129,9 +121,6 @@ test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
 
 
 test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
-  skip_if_not_installed("xcms")
-  skip_if_not_installed("CAMERA")
-  skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(CAMERA)
@@ -179,9 +168,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
 
 
 test_that("XCMSnExp_CAMERA_peaklist_long handles missing values correctly", {
-  skip_if_not_installed("xcms")
-  skip_if_not_installed("CAMERA")
-  skip_if_not_installed("BiocParallel")
+
 
   library(xcms)
   library(CAMERA)
@@ -226,10 +213,6 @@ test_that("XCMSnExp_CAMERA_peaklist_long handles missing values correctly", {
 
 
 test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
-  skip_if_not_installed("xcms")
-  skip_if_not_installed("CAMERA")
-  skip_if_not_installed("BiocParallel")
-  skip_if_not_installed("Biobase")
 
   library(xcms)
   library(CAMERA)
@@ -273,9 +256,6 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
 
 
 test_that("XCMSnExp_CAMERA_peaklist_long CAMERA annotations are present", {
-  skip_if_not_installed("xcms")
-  skip_if_not_installed("CAMERA")
-  skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(CAMERA)
@@ -328,8 +308,6 @@ test_that("XCMSnExp_CAMERA_peaklist_long CAMERA annotations are present", {
 
 
 test_that("XCMSnExp_CAMERA_peaklist_long works without CAMERA annotations", {
-  skip_if_not_installed("xcms")
-  skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(BiocParallel)
@@ -367,10 +345,6 @@ test_that("XCMSnExp_CAMERA_peaklist_long works without CAMERA annotations", {
 
 
 test_that("XCMSnExp_CAMERA_peaklist_long works with XcmsExperiment", {
-  skip_if_not_installed("xcms")
-  skip_if_not_installed("MsExperiment")
-  skip_if_not_installed("msdata")
-  skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(MsExperiment)

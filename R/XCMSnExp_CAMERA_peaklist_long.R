@@ -138,7 +138,7 @@
 #' @importFrom xcms chromPeaks chromPeakData featureDefinitions featureValues fileNames
 #' @importFrom MsExperiment sampleData
 #' @importFrom dplyr %>% mutate rename left_join right_join filter group_by
-#'   ungroup slice select rename_with any_of bind_cols as_tibble across
+#'   ungroup slice select rename_with any_of bind_cols as_tibble across n
 #' @importFrom tidyr unnest gather complete nesting
 #' @importFrom tibble as_tibble
 #' @importFrom Biobase pData

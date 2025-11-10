@@ -9,3 +9,6 @@
 ^instructions\.md$
 ^completed_tasks\.md$
 ^future_tasks\.md$
+docs/*
+_pkgdown.yml
+package.json
