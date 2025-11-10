@@ -8,7 +8,7 @@
 #'   object containing peak detection and feature grouping results.
 #' @param xsAnnotate Optional. An `xsAnnotate` object from the CAMERA package
 #'   containing peak annotations (isotopes, adducts, pseudospectrum groups).
-#'   If NULL (default), annotation columns will not be included in the output.
+#'   If NULL (default), annotation columns will be present but filled with NA.
 #'
 #' @return A [tibble::tibble] in long format with one row per feature per sample.
 #'   The tibble contains:
@@ -57,7 +57,7 @@
 #'   \item The function uses "maxint" method for feature values, meaning it
 #'     takes the maximum intensity peak for each feature in each sample.
 #'   \item CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes,
-#'     adduct, and pcgroup columns will not be included in the output.
+#'     adduct, and pcgroup columns will be present but filled with NA values.
 #' }
 #'
 #' @export
@@ -151,6 +151,12 @@ XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate = NULL) {
     temp_features <- temp_features %>%
       bind_cols(as_tibble(CAMERA::getPeaklist(xsAnnotate))[, c("isotopes", "adduct", "pcgroup")]) %>%
       mutate(pcgroup = as.integer(pcgroup))
+  } else {
+    # Add empty CAMERA columns when xsAnnotate is not provided
+    temp_features <- temp_features %>%
+      mutate(isotopes = NA_character_,
+             adduct = NA_character_,
+             pcgroup = NA_integer_)
   }
 
   temp_features <- temp_features %>%
@@ -165,7 +171,7 @@ XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate = NULL) {
 
   # Join features with peaks
   out <- temp_features %>%
-    select(mzmed, mzmin, mzmax, rtmed, rtmin, rtmax, peakidx, feature_id, isotopes, adduct, pcgroup) %>%
+    select(mzmed, mzmin, mzmax, rtmed, rtmin, rtmax, peakidx, feature_id, any_of(c("isotopes", "adduct", "pcgroup"))) %>%
     rename_with(~paste0("f_", .), .cols = any_of(c("mzmed", "mzmin", "mzmax", "rtmed", "rtmin", "rtmax"))) %>%
     left_join(temp_peaks, by = "peakidx") %>%
     mutate(filename = basename(filepath)) %>%
