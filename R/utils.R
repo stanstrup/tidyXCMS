@@ -1,0 +1,29 @@
+#' @importFrom utils globalVariables
+#' @keywords internal
+utils::globalVariables(c(
+  ".",
+  "adduct",
+  "f_mzmax",
+  "f_mzmed",
+  "f_mzmin",
+  "f_rtmax",
+  "f_rtmed",
+  "f_rtmin",
+  "feature_id",
+  "filename",
+  "filepath",
+  "fromFile",
+  "into",
+  "into_f",
+  "isotopes",
+  "ms_level",
+  "mzmax",
+  "mzmed",
+  "mzmin",
+  "n",
+  "pcgroup",
+  "peakidx",
+  "rtmax",
+  "rtmed",
+  "rtmin"
+))

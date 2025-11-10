@@ -92,14 +92,17 @@ test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
                           minFraction = 0.5)
   xdata <- groupChromPeaks(xdata, param = pdp)
 
+  # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
+  xset <- as(xdata, "xcmsSet")
+
   # CAMERA annotation
-  xs <- xsAnnotate(xdata)
+  xs <- xsAnnotate(xset)
   xs <- groupFWHM(xs)
   xs <- findIsotopes(xs)
   xs <- groupCorr(xs)
   xs <- findAdducts(xs)
 
-  # Create long-format peak table
+  # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
   peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
 
   # Check it's a tibble
@@ -158,12 +161,15 @@ test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
                           minFraction = 0.5)
   xdata <- groupChromPeaks(xdata, param = pdp)
 
+  # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
+  xset <- as(xdata, "xcmsSet")
+
   # CAMERA annotation
-  xs <- xsAnnotate(xdata)
+  xs <- xsAnnotate(xset)
   xs <- groupFWHM(xs)
   xs <- findIsotopes(xs)
 
-  # Create long-format peak table
+  # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
   peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
 
   # Get number of features and samples
@@ -207,11 +213,14 @@ test_that("XCMSnExp_CAMERA_peaklist_long handles missing values correctly", {
                           minFraction = 0.3)
   xdata <- groupChromPeaks(xdata, param = pdp)
 
+  # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
+  xset <- as(xdata, "xcmsSet")
+
   # CAMERA annotation
-  xs <- xsAnnotate(xdata)
+  xs <- xsAnnotate(xset)
   xs <- groupFWHM(xs)
 
-  # Create long-format peak table
+  # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
   peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
 
   # Check that we have some NA values in intensity columns
@@ -262,11 +271,14 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
                           minFraction = 0.5)
   xdata <- groupChromPeaks(xdata, param = pdp)
 
+  # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
+  xset <- as(xdata, "xcmsSet")
+
   # CAMERA annotation
-  xs <- xsAnnotate(xdata)
+  xs <- xsAnnotate(xset)
   xs <- groupFWHM(xs)
 
-  # Create long-format peak table
+  # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
   peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
 
   # Check that pData columns are present
@@ -299,14 +311,17 @@ test_that("XCMSnExp_CAMERA_peaklist_long CAMERA annotations are present", {
                           minFraction = 0.5)
   xdata <- groupChromPeaks(xdata, param = pdp)
 
+  # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
+  xset <- as(xdata, "xcmsSet")
+
   # CAMERA annotation with all steps
-  xs <- xsAnnotate(xdata)
+  xs <- xsAnnotate(xset)
   xs <- groupFWHM(xs)
   xs <- findIsotopes(xs)
   xs <- groupCorr(xs)
   xs <- findAdducts(xs)
 
-  # Create long-format peak table
+  # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
   peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
 
   # Check that CAMERA annotations are present
