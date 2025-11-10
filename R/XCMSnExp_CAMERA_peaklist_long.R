@@ -138,13 +138,13 @@
 #' @importFrom xcms chromPeaks chromPeakData featureDefinitions featureValues fileNames
 #' @importFrom MsExperiment sampleData
 #' @importFrom dplyr %>% mutate rename left_join right_join filter group_by
-#'   ungroup slice select rename_with any_of bind_cols as_tibble
+#'   ungroup slice select rename_with any_of bind_cols as_tibble across
 #' @importFrom tidyr unnest gather complete nesting
 #' @importFrom tibble as_tibble
 #' @importFrom Biobase pData
 XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate = NULL) {
   # Extract peaks with file information
-  temp_peaks <- chromPeaks_classic(XCMSnExp) %>%
+  temp_peaks <- .chromPeaks_classic(XCMSnExp) %>%
     mutate(peakidx = 1:nrow(.)) %>%
     rename(fromFile = sample) %>%
     mutate(filepath = fileNames(XCMSnExp)[fromFile])
@@ -155,9 +155,14 @@ XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate = NULL) {
 
   # Add CAMERA annotations if provided
   if (!is.null(xsAnnotate)) {
-    temp_features <- temp_features %>%
-      bind_cols(as_tibble(CAMERA::getPeaklist(xsAnnotate))[, c("isotopes", "adduct", "pcgroup")]) %>%
-      mutate(pcgroup = as.integer(pcgroup))
+    camera_annot <- as_tibble(CAMERA::getPeaklist(xsAnnotate))
+    # Extract CAMERA annotation columns
+    camera_cols <- intersect(c("isotopes", "adduct", "pcgroup"), colnames(camera_annot))
+    if (length(camera_cols) > 0) {
+      temp_features <- temp_features %>%
+        bind_cols(camera_annot[, camera_cols]) %>%
+        mutate(across(any_of("pcgroup"), as.integer))
+    }
   }
 
   temp_features <- temp_features %>%

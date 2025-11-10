@@ -1,4 +1,4 @@
-#' Extract Chromatographic Peaks as Tibble
+#' Extract Chromatographic Peaks as Tibble (Internal)
 #'
 #' Extracts chromatographic peaks from an XCMSnExp or XcmsExperiment object
 #' and returns them as a tibble, combining peak matrix data with peak data.
@@ -14,29 +14,13 @@
 #' tidy format. It combines the peak matrix (mz, rt, intensity values, etc.)
 #' with additional peak annotations stored in chromPeakData.
 #'
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' library(xcms)
-#' library(BiocParallel)
-#'
-#' # Load example data
-#' faahko_sub <- loadXcmsData("faahko_sub")
-#'
-#' # Peak detection
-#' cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
-#' xdata <- findChromPeaks(faahko_sub, param = cwp, BPPARAM = SerialParam())
-#'
-#' # Extract peaks as tibble
-#' peaks_tbl <- chromPeaks_classic(xdata)
-#' head(peaks_tbl)
-#' }
+#' @keywords internal
+#' @noRd
 #'
 #' @importFrom xcms chromPeaks chromPeakData
 #' @importFrom dplyr %>% bind_cols
 #' @importFrom tibble as_tibble
-chromPeaks_classic <- function(x) {
+.chromPeaks_classic <- function(x) {
   chromPeaks(x) %>%
     as.data.frame() %>%
     bind_cols(as.data.frame(chromPeakData(x))) %>%

@@ -1,6 +1,6 @@
-# Test suite for XCMSnExp_CAMERA_peaklist_long and chromPeaks_classic functions
+# Test suite for XCMSnExp_CAMERA_peaklist_long and .chromPeaks_classic functions
 
-test_that("chromPeaks_classic returns a tibble with expected structure", {
+test_that(".chromPeaks_classic returns a tibble with expected structure", {
   skip_if_not_installed("xcms")
   skip_if_not_installed("BiocParallel")
 
@@ -14,8 +14,8 @@ test_that("chromPeaks_classic returns a tibble with expected structure", {
   cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
   xdata <- findChromPeaks(faahko_sub, param = cwp, BPPARAM = SerialParam())
 
-  # Test chromPeaks_classic
-  peaks_tbl <- chromPeaks_classic(xdata)
+  # Test .chromPeaks_classic
+  peaks_tbl <- tidyXCMS:::.chromPeaks_classic(xdata)
 
   # Check it's a tibble
   expect_s3_class(peaks_tbl, "tbl_df")
@@ -34,7 +34,7 @@ test_that("chromPeaks_classic returns a tibble with expected structure", {
 })
 
 
-test_that("chromPeaks_classic works with XcmsExperiment objects", {
+test_that(".chromPeaks_classic works with XcmsExperiment objects", {
   skip_if_not_installed("xcms")
   skip_if_not_installed("MsExperiment")
   skip_if_not_installed("msdata")
@@ -54,8 +54,8 @@ test_that("chromPeaks_classic works with XcmsExperiment objects", {
   cwp <- CentWaveParam(peakwidth = c(5, 20), noise = 100)
   xdata <- findChromPeaks(xdata, param = cwp, BPPARAM = SerialParam())
 
-  # Test chromPeaks_classic
-  peaks_tbl <- chromPeaks_classic(xdata)
+  # Test .chromPeaks_classic
+  peaks_tbl <- tidyXCMS:::.chromPeaks_classic(xdata)
 
   # Check it's a tibble
   expect_s3_class(peaks_tbl, "tbl_df")
@@ -72,13 +72,11 @@ test_that("chromPeaks_classic works with XcmsExperiment objects", {
 test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
   skip_if_not_installed("xcms")
   skip_if_not_installed("CAMERA")
-  
   skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(CAMERA)
   library(BiocParallel)
-  
 
   # Load example data
   faahko_sub <- loadXcmsData("faahko_sub")
@@ -100,7 +98,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
   xs <- groupFWHM(xs)
   xs <- findIsotopes(xs)
   xs <- groupCorr(xs)
-  xs <- findAdducts(xs)
+  xs <- findAdducts(xs, polarity = "positive")
 
   # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
   peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
@@ -140,13 +138,11 @@ test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
 test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
   skip_if_not_installed("xcms")
   skip_if_not_installed("CAMERA")
-  
   skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(CAMERA)
   library(BiocParallel)
-  
   library(dplyr)
 
   # Load example data
@@ -192,13 +188,11 @@ test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
 test_that("XCMSnExp_CAMERA_peaklist_long handles missing values correctly", {
   skip_if_not_installed("xcms")
   skip_if_not_installed("CAMERA")
-  
   skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(CAMERA)
   library(BiocParallel)
-  
   library(dplyr)
 
   # Load example data
@@ -241,14 +235,12 @@ test_that("XCMSnExp_CAMERA_peaklist_long handles missing values correctly", {
 test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
   skip_if_not_installed("xcms")
   skip_if_not_installed("CAMERA")
-  
   skip_if_not_installed("BiocParallel")
   skip_if_not_installed("Biobase")
 
   library(xcms)
   library(CAMERA)
   library(BiocParallel)
-  
   library(Biobase)
 
   # Load example data
@@ -290,13 +282,11 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
 test_that("XCMSnExp_CAMERA_peaklist_long CAMERA annotations are present", {
   skip_if_not_installed("xcms")
   skip_if_not_installed("CAMERA")
-  
   skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(CAMERA)
   library(BiocParallel)
-  
   library(dplyr)
 
   # Load example data
@@ -319,7 +309,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long CAMERA annotations are present", {
   xs <- groupFWHM(xs)
   xs <- findIsotopes(xs)
   xs <- groupCorr(xs)
-  xs <- findAdducts(xs)
+  xs <- findAdducts(xs, polarity = "positive")
 
   # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
   peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
