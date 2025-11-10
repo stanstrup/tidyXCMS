@@ -1,0 +1,325 @@
+---
+title: "Creating Long-Format Peak Tables with CAMERA Annotations"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Creating Long-Format Peak Tables with CAMERA Annotations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introduction
+
+The `tidyXCMS` package provides functions to work with XCMS metabolomics data in
+a tidy, long-format structure. This vignette demonstrates how to use the
+`XCMSnExp_CAMERA_peaklist_long()` function to create a comprehensive peak table
+that integrates:
+
+- Peak detection results from XCMS
+- Feature grouping (correspondence) information
+- CAMERA annotations (isotopes, adducts, pseudospectrum groups)
+- Sample metadata
+
+The resulting long-format table has one row per feature per sample, making it
+ideal for downstream analysis with tidyverse tools like `dplyr` and `ggplot2`.
+
+# Setup
+
+```{r setup, message=FALSE}
+library(tidyXCMS)
+library(xcms)
+library(CAMERA)
+library(BiocParallel)
+library(dplyr)
+library(ggplot2)
+```
+
+# Example Workflow
+
+## Load Example Data
+
+We'll use the `faahKO` dataset that comes with the `faahKO` package. This
+contains LC-MS data from wild-type and knockout samples.
+
+```{r load_data, message=FALSE}
+library(faahKO)
+data("faahko_sub", package = "faahKO")
+
+# Check the files
+fileNames(faahko_sub)
+```
+
+## Add Sample Metadata
+
+Let's add some sample information that will be included in our final table.
+
+```{r add_metadata}
+library(Biobase)
+
+pd <- data.frame(
+  sample_name = basename(fileNames(faahko_sub)),
+  sample_group = c("WT", "KO", "WT")[1:length(fileNames(faahko_sub))],
+  injection_order = 1:length(fileNames(faahko_sub)),
+  row.names = basename(fileNames(faahko_sub))
+)
+
+pData(faahko_sub) <- pd
+```
+
+## Peak Detection
+
+Perform chromatographic peak detection using the CentWave algorithm.
+
+```{r peak_detection, message=FALSE}
+# Define peak detection parameters
+cwp <- CentWaveParam(
+  peakwidth = c(20, 80),
+  noise = 5000,
+  ppm = 25
+)
+
+# Find peaks (using SerialParam for reproducibility)
+xdata <- findChromPeaks(faahko_sub, param = cwp, BPPARAM = SerialParam())
+
+# Check results
+cat("Detected", nrow(chromPeaks(xdata)), "peaks across",
+    length(fileNames(xdata)), "samples\n")
+```
+
+## Feature Grouping (Correspondence)
+
+Group peaks across samples into features (aligned peaks).
+
+```{r grouping, message=FALSE}
+# Define grouping parameters
+pdp <- PeakDensityParam(
+  sampleGroups = pData(xdata)$sample_group,
+  minFraction = 0.5,
+  bw = 30
+)
+
+# Group peaks
+xdata <- groupChromPeaks(xdata, param = pdp)
+
+# Check results
+cat("Grouped peaks into", nrow(featureDefinitions(xdata)), "features\n")
+```
+
+## CAMERA Annotation
+
+Use CAMERA to annotate isotopes, adducts, and group features into pseudospectra.
+
+```{r camera_annotation, message=FALSE}
+# Create xsAnnotate object
+xs <- xsAnnotate(xdata)
+
+# Group peaks by retention time
+xs <- groupFWHM(xs, perfwhm = 0.6)
+
+# Find isotopes
+xs <- findIsotopes(xs, maxcharge = 2)
+
+# Group by correlation
+xs <- groupCorr(xs, cor_eic_th = 0.75)
+
+# Find adducts
+xs <- findAdducts(xs, polarity = "positive")
+```
+
+## Create Long-Format Peak Table
+
+Now we can create our comprehensive long-format peak table!
+
+```{r create_table}
+peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
+
+# Check the structure
+dim(peak_table)
+colnames(peak_table)
+```
+
+# Understanding the Output
+
+The resulting tibble contains:
+
+## Feature-Level Information
+
+These columns describe each feature (grouped peak):
+
+- `feature_id`: Unique identifier for each feature
+- `f_mzmed`, `f_mzmin`, `f_mzmax`: m/z statistics across samples
+- `f_rtmed`, `f_rtmin`, `f_rtmax`: Retention time statistics across samples
+
+```{r feature_info}
+peak_table %>%
+  select(feature_id, f_mzmed, f_rtmed) %>%
+  head()
+```
+
+## CAMERA Annotations
+
+- `isotopes`: Isotope annotation (e.g., "[M]+", "[M+1]+")
+- `adduct`: Adduct annotation (e.g., "[M+H]+", "[M+Na]+")
+- `pcgroup`: Pseudospectrum correlation group ID
+
+```{r camera_info}
+# View features with adduct annotations
+peak_table %>%
+  filter(!is.na(adduct)) %>%
+  select(feature_id, f_mzmed, f_rtmed, isotopes, adduct, pcgroup) %>%
+  distinct(feature_id, .keep_all = TRUE) %>%
+  head()
+```
+
+## Peak-Level Information
+
+For each feature in each sample:
+
+- `mz`, `rt`: Detected peak position
+- `into`: Integrated peak intensity
+- `intb`: Baseline-corrected intensity
+- `maxo`: Maximum intensity
+- `sn`: Signal-to-noise ratio
+
+```{r peak_info}
+# View detected peaks (non-NA intensities)
+peak_table %>%
+  filter(!is.na(into)) %>%
+  select(feature_id, filename, mz, rt, into, sn) %>%
+  head()
+```
+
+## Sample Information
+
+- `filename`, `filepath`: Sample file information
+- `fromFile`: Sample index
+- Plus any columns from `pData()` (sample metadata)
+
+```{r sample_info}
+peak_table %>%
+  select(feature_id, filename, sample_group, injection_order) %>%
+  head()
+```
+
+## Missing Values
+
+Features not detected in a sample have `NA` for peak-level columns:
+
+```{r missing_values}
+# Count detected features per sample
+peak_table %>%
+  group_by(filename) %>%
+  summarise(
+    n_features_detected = sum(!is.na(into)),
+    n_features_total = n()
+  )
+```
+
+# Downstream Analysis Examples
+
+## Visualize Feature Intensities
+
+```{r plot_intensities, fig.width=7, fig.height=4}
+# Plot intensity distribution by sample group
+peak_table %>%
+  filter(!is.na(into)) %>%
+  ggplot(aes(x = sample_group, y = log10(into), fill = sample_group)) +
+  geom_boxplot() +
+  labs(
+    title = "Feature Intensity Distribution",
+    x = "Sample Group",
+    y = "log10(Intensity)"
+  ) +
+  theme_minimal()
+```
+
+## Identify Features with Adduct Annotations
+
+```{r adduct_summary}
+# Count features by adduct type
+peak_table %>%
+  filter(!is.na(adduct)) %>%
+  distinct(feature_id, adduct) %>%
+  count(adduct, sort = TRUE)
+```
+
+## Find Features Present in All Samples
+
+```{r complete_features}
+# Features detected in all samples
+complete_features <- peak_table %>%
+  group_by(feature_id) %>%
+  summarise(
+    n_detected = sum(!is.na(into)),
+    n_samples = n(),
+    .groups = "drop"
+  ) %>%
+  filter(n_detected == n_samples)
+
+cat("Found", nrow(complete_features), "features detected in all samples\n")
+```
+
+## Coefficient of Variation Analysis
+
+```{r cv_analysis}
+# Calculate CV for each feature
+feature_cv <- peak_table %>%
+  filter(!is.na(into)) %>%
+  group_by(feature_id, f_mzmed, f_rtmed) %>%
+  summarise(
+    mean_intensity = mean(into),
+    sd_intensity = sd(into),
+    cv = sd_intensity / mean_intensity * 100,
+    .groups = "drop"
+  ) %>%
+  arrange(cv)
+
+# Show most stable features
+head(feature_cv)
+```
+
+## Extract Specific Features for Further Analysis
+
+```{r extract_features}
+# Get a specific feature across all samples
+feature_123 <- peak_table %>%
+  filter(feature_id == 123) %>%
+  select(feature_id, filename, sample_group, mz, rt, into)
+
+head(feature_123)
+```
+
+# Working with chromPeaks_classic()
+
+The `chromPeaks_classic()` helper function extracts all chromatographic peaks
+as a tibble, which can be useful for exploratory analysis:
+
+```{r chrompeaks_classic}
+# Extract all peaks
+all_peaks <- chromPeaks_classic(xdata)
+
+# Check structure
+dim(all_peaks)
+head(all_peaks)
+
+# Analyze peak properties
+all_peaks %>%
+  group_by(sample) %>%
+  summarise(
+    n_peaks = n(),
+    median_sn = median(sn),
+    median_into = median(into)
+  )
+```
+
+# Session Info
+
+```{r session_info}
+sessionInfo()
+```
