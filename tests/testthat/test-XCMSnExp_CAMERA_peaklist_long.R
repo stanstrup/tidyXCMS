@@ -7,15 +7,8 @@ test_that(".chromPeaks_classic returns a tibble with expected structure", {
   library(xcms)
   library(BiocParallel)
 
-  # Load example data
-  faahko_sub <- loadXcmsData("faahko_sub")
-
-  # Peak detection
-  cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
-  xdata <- findChromPeaks(faahko_sub, param = cwp, BPPARAM = SerialParam())
-
   # Test .chromPeaks_classic
-  peaks_tbl <- tidyXCMS:::.chromPeaks_classic(xdata)
+  peaks_tbl <- tidyXCMS:::.chromPeaks_classic(faahko_sub)
 
   # Check it's a tibble
   expect_s3_class(peaks_tbl, "tbl_df")
@@ -30,7 +23,7 @@ test_that(".chromPeaks_classic returns a tibble with expected structure", {
   expect_true("sample" %in% colnames(peaks_tbl))
 
   # Check number of rows matches chromPeaks
-  expect_equal(nrow(peaks_tbl), nrow(chromPeaks(xdata)))
+  expect_equal(nrow(peaks_tbl), nrow(chromPeaks(faahko_sub)))
 })
 
 
