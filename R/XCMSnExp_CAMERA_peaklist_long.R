@@ -104,10 +104,9 @@
 #'
 #' @importFrom xcms chromPeaks chromPeakData featureDefinitions featureValues fileNames
 #' @importFrom dplyr %>% mutate rename left_join right_join filter group_by
-#'   ungroup slice select rename_at vars bind_cols as_tibble
+#'   ungroup slice select rename_with any_of bind_cols as_tibble
 #' @importFrom tidyr unnest gather complete nesting
 #' @importFrom tibble as_tibble
-#' @importFrom purrr one_of
 #' @importFrom Biobase pData
 XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate) {
   # Extract peaks with file information
@@ -133,8 +132,7 @@ XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate) {
   # Join features with peaks
   out <- temp_features %>%
     select(mzmed, mzmin, mzmax, rtmed, rtmin, rtmax, peakidx, feature_id, isotopes, adduct, pcgroup) %>%
-    rename_at(vars(one_of("mzmed", "mzmin", "mzmax", "rtmed", "rtmin", "rtmax")),
-              list(~paste0("f_", .))) %>%
+    rename_with(~paste0("f_", .), .cols = any_of(c("mzmed", "mzmin", "mzmax", "rtmed", "rtmin", "rtmax"))) %>%
     left_join(temp_peaks, by = "peakidx") %>%
     mutate(filename = basename(filepath)) %>%
     left_join(temp_peaks_tab, by = c("feature_id", "filename"))
