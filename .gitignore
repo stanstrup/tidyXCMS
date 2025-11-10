@@ -19,7 +19,7 @@
 
 # RStudio files
 .Rproj.user/
-*.Rproj
+# Note: .Rproj file is committed to maintain consistent project settings
 
 # produced vignettes
 vignettes/*.html
