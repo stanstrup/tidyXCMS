@@ -29,7 +29,8 @@ Suggests:
     BiocParallel,
     msdata,
     ggplot2,
-    covr
+    covr,
+    faahKO
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 biocViews: Metabolomics, MassSpectrometry, DataImport

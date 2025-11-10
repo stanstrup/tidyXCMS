@@ -63,8 +63,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
   library(CAMERA)
   library(BiocParallel)
 
-  # Load example data
-  faahko_sub <- loadXcmsData("faahko_sub")
+  # faahko_sub is loaded by helper-data.R
 
   # Peak detection
   cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
@@ -127,8 +126,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
   library(BiocParallel)
   library(dplyr)
 
-  # Load example data
-  faahko_sub <- loadXcmsData("faahko_sub")
+  # faahko_sub is loaded by helper-data.R
 
   # Peak detection
   cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
@@ -175,8 +173,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long handles missing values correctly", {
   library(BiocParallel)
   library(dplyr)
 
-  # Load example data
-  faahko_sub <- loadXcmsData("faahko_sub")
+  # faahko_sub is loaded by helper-data.R
 
   # Peak detection
   cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
@@ -219,8 +216,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
   library(BiocParallel)
   library(Biobase)
 
-  # Load example data
-  faahko_sub <- loadXcmsData("faahko_sub")
+  # faahko_sub is loaded by helper-data.R
 
   # Add sample metadata
   pd <- data.frame(
@@ -262,8 +258,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long CAMERA annotations are present", {
   library(BiocParallel)
   library(dplyr)
 
-  # Load example data
-  faahko_sub <- loadXcmsData("faahko_sub")
+  # faahko_sub is loaded by helper-data.R
 
   # Peak detection
   cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
@@ -312,8 +307,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long works without CAMERA annotations", {
   library(xcms)
   library(BiocParallel)
 
-  # Load example data
-  faahko_sub <- loadXcmsData("faahko_sub")
+  # faahko_sub is loaded by helper-data.R
 
   # Peak detection
   cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
