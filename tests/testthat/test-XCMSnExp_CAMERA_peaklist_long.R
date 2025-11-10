@@ -2,15 +2,13 @@
 
 test_that("chromPeaks_classic returns a tibble with expected structure", {
   skip_if_not_installed("xcms")
-  skip_if_not_installed("faahKO")
   skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(BiocParallel)
-  library(faahKO)
 
   # Load example data
-  data("faahko_sub", package = "faahKO")
+  faahko_sub <- loadXcmsData("faahko_sub")
 
   # Peak detection
   cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
@@ -74,16 +72,16 @@ test_that("chromPeaks_classic works with XcmsExperiment objects", {
 test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
   skip_if_not_installed("xcms")
   skip_if_not_installed("CAMERA")
-  skip_if_not_installed("faahKO")
+  
   skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(CAMERA)
   library(BiocParallel)
-  library(faahKO)
+  
 
   # Load example data
-  data("faahko_sub", package = "faahKO")
+  faahko_sub <- loadXcmsData("faahko_sub")
 
   # Peak detection
   cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
@@ -139,17 +137,17 @@ test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
 test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
   skip_if_not_installed("xcms")
   skip_if_not_installed("CAMERA")
-  skip_if_not_installed("faahKO")
+  
   skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(CAMERA)
   library(BiocParallel)
-  library(faahKO)
+  
   library(dplyr)
 
   # Load example data
-  data("faahko_sub", package = "faahKO")
+  faahko_sub <- loadXcmsData("faahko_sub")
 
   # Peak detection
   cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
@@ -188,17 +186,17 @@ test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
 test_that("XCMSnExp_CAMERA_peaklist_long handles missing values correctly", {
   skip_if_not_installed("xcms")
   skip_if_not_installed("CAMERA")
-  skip_if_not_installed("faahKO")
+  
   skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(CAMERA)
   library(BiocParallel)
-  library(faahKO)
+  
   library(dplyr)
 
   # Load example data
-  data("faahko_sub", package = "faahKO")
+  faahko_sub <- loadXcmsData("faahko_sub")
 
   # Peak detection
   cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
@@ -234,18 +232,18 @@ test_that("XCMSnExp_CAMERA_peaklist_long handles missing values correctly", {
 test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
   skip_if_not_installed("xcms")
   skip_if_not_installed("CAMERA")
-  skip_if_not_installed("faahKO")
+  
   skip_if_not_installed("BiocParallel")
   skip_if_not_installed("Biobase")
 
   library(xcms)
   library(CAMERA)
   library(BiocParallel)
-  library(faahKO)
+  
   library(Biobase)
 
   # Load example data
-  data("faahko_sub", package = "faahKO")
+  faahko_sub <- loadXcmsData("faahko_sub")
 
   # Add sample metadata
   pd <- data.frame(
@@ -280,17 +278,17 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
 test_that("XCMSnExp_CAMERA_peaklist_long CAMERA annotations are present", {
   skip_if_not_installed("xcms")
   skip_if_not_installed("CAMERA")
-  skip_if_not_installed("faahKO")
+  
   skip_if_not_installed("BiocParallel")
 
   library(xcms)
   library(CAMERA)
   library(BiocParallel)
-  library(faahKO)
+  
   library(dplyr)
 
   # Load example data
-  data("faahko_sub", package = "faahKO")
+  faahko_sub <- loadXcmsData("faahko_sub")
 
   # Peak detection
   cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
