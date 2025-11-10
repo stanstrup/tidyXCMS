@@ -130,11 +130,11 @@ dim(peak_table_no_camera)
 # View first few rows
 head(peak_table_no_camera)
 
-# Check column names - note that isotopes, adduct, and pcgroup are present but filled with NA
+# Check column names - note that isotopes, adduct, and pcgroup are NOT present
 colnames(peak_table_no_camera)
 ```
 
-The resulting table contains all feature and peak information. The CAMERA annotation columns (`isotopes`, `adduct`, `pcgroup`) are present but filled with NA values since no CAMERA annotations were provided.
+The resulting table contains all feature and peak information. The CAMERA annotation columns (`isotopes`, `adduct`, `pcgroup`) are **not included** when no CAMERA annotations are provided, keeping the output cleaner and more memory-efficient.
 
 ## CAMERA Annotation (Optional)
 

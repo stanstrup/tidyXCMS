@@ -18,9 +18,7 @@ Imports:
     xcms (>= 3.18.0),
     dplyr,
     tidyr,
-    purrr,
     tibble,
-    methods,
     Biobase
 Suggests:
     CAMERA,
@@ -30,6 +28,7 @@ Suggests:
     BiocParallel,
     MsExperiment,
     msdata,
+    ggplot2,
     covr
 Config/testthat/edition: 3
 VignetteBuilder: knitr

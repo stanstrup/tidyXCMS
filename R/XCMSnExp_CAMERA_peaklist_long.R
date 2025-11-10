@@ -8,18 +8,19 @@
 #'   object containing peak detection and feature grouping results.
 #' @param xsAnnotate Optional. An `xsAnnotate` object from the CAMERA package
 #'   containing peak annotations (isotopes, adducts, pseudospectrum groups).
-#'   If NULL (default), annotation columns will be present but filled with NA.
+#'   If NULL (default), annotation columns will not be included in the output.
 #'
 #' @return A [tibble::tibble] in long format with one row per feature per sample.
 #'   The tibble contains:
 #'   \describe{
 #'     \item{Feature-level columns}{f_mzmed, f_mzmin, f_mzmax, f_rtmed, f_rtmin,
 #'       f_rtmax - feature summary statistics}
-#'     \item{CAMERA annotations}{isotopes, adduct, pcgroup (pseudospectrum group)}
+#'     \item{CAMERA annotations}{isotopes, adduct, pcgroup (pseudospectrum group) -
+#'       only present when xsAnnotate is provided}
 #'     \item{Peak-level columns}{mz, rt, into, intb, maxo, sn - individual peak
 #'       measurements}
 #'     \item{Sample information}{filepath, filename, fromFile - sample identifiers}
-#'     \item{Additional columns}{Any columns from pData(XCMSnExp)}
+#'     \item{Additional columns}{Any columns from pData(XCMSnExp) or sampleData(XcmsExperiment)}
 #'   }
 #'
 #' @details
@@ -57,7 +58,9 @@
 #'   \item The function uses "maxint" method for feature values, meaning it
 #'     takes the maximum intensity peak for each feature in each sample.
 #'   \item CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes,
-#'     adduct, and pcgroup columns will be present but filled with NA values.
+#'     adduct, and pcgroup columns will not be present in the output.
+#'   \item For XcmsExperiment objects, sample metadata is accessed via sampleData()
+#'     instead of pData().
 #' }
 #'
 #' @export
@@ -86,14 +89,17 @@
 #' # Example 2: With CAMERA annotations
 #' library(CAMERA)
 #'
+#' # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
+#' xset <- as(xdata, "xcmsSet")
+#'
 #' # CAMERA annotation
-#' xs <- xsAnnotate(xdata)
+#' xs <- xsAnnotate(xset)
 #' xs <- groupFWHM(xs)
 #' xs <- findIsotopes(xs)
 #' xs <- groupCorr(xs)
 #' xs <- findAdducts(xs)
 #'
-#' # Create long-format peak table
+#' # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
 #' peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
 #' head(peak_table)
 #'
@@ -129,7 +135,7 @@
 #' head(peak_table_exp)
 #' }
 #'
-#' @importFrom xcms chromPeaks chromPeakData featureDefinitions featureValues fileNames
+#' @importFrom xcms chromPeaks chromPeakData featureDefinitions featureValues fileNames sampleData
 #' @importFrom dplyr %>% mutate rename left_join right_join filter group_by
 #'   ungroup slice select rename_with any_of bind_cols as_tibble
 #' @importFrom tidyr unnest gather complete nesting
@@ -151,12 +157,6 @@ XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate = NULL) {
     temp_features <- temp_features %>%
       bind_cols(as_tibble(CAMERA::getPeaklist(xsAnnotate))[, c("isotopes", "adduct", "pcgroup")]) %>%
       mutate(pcgroup = as.integer(pcgroup))
-  } else {
-    # Add empty CAMERA columns when xsAnnotate is not provided
-    temp_features <- temp_features %>%
-      mutate(isotopes = NA_character_,
-             adduct = NA_character_,
-             pcgroup = NA_integer_)
   }
 
   temp_features <- temp_features %>%
@@ -186,14 +186,31 @@ XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate = NULL) {
     ungroup()
 
   # Complete to include all feature-sample combinations
-  out <- out %>%
-    complete(nesting(feature_id, f_mzmed, f_mzmin, f_mzmax, f_rtmed, f_rtmin, f_rtmax,
-                     isotopes, adduct, pcgroup, ms_level),
-             nesting(filepath, filename, fromFile))
+  if (!is.null(xsAnnotate)) {
+    out <- out %>%
+      complete(nesting(feature_id, f_mzmed, f_mzmin, f_mzmax, f_rtmed, f_rtmin, f_rtmax,
+                       isotopes, adduct, pcgroup, ms_level),
+               nesting(filepath, filename, fromFile))
+  } else {
+    out <- out %>%
+      complete(nesting(feature_id, f_mzmed, f_mzmin, f_mzmax, f_rtmed, f_rtmin, f_rtmax, ms_level),
+               nesting(filepath, filename, fromFile))
+  }
 
-  # Add sample metadata
-  out <- pData(XCMSnExp) %>%
-    mutate(fromFile = 1:n()) %>%
+  # Add sample metadata - handle both XCMSnExp and XcmsExperiment
+  if (inherits(XCMSnExp, "XcmsExperiment")) {
+    # For XcmsExperiment, use sampleData()
+    sample_metadata <- as.data.frame(sampleData(XCMSnExp)) %>%
+      mutate(fromFile = 1:n()) %>%
+      as_tibble()
+  } else {
+    # For XCMSnExp, use pData()
+    sample_metadata <- pData(XCMSnExp) %>%
+      mutate(fromFile = 1:n()) %>%
+      as_tibble()
+  }
+
+  out <- sample_metadata %>%
     right_join(out, by = "fromFile", multiple = "all")
 
   return(out)
