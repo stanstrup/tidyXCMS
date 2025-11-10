@@ -35,3 +35,4 @@ VignetteBuilder: knitr
 biocViews: Metabolomics, MassSpectrometry, DataImport
 URL: https://github.com/stanstrup/tidyXCMS
 BugReports: https://github.com/stanstrup/tidyXCMS/issues
+
