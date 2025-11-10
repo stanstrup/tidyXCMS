@@ -133,26 +133,67 @@ cat("Grouped peaks into", nrow(featureDefinitions(xdata)), "features\n")
 
 Use CAMERA to annotate isotopes, adducts, and group features into pseudospectra.
 
-```{r camera_annotation, message=FALSE}
-# Create xsAnnotate object
-xs <- xsAnnotate(xdata)
+**Note:** CAMERA requires an `xcmsSet` object, so we first convert the `XCMSnExp` object using `as("xcmsSet")`.
 
+### Creating a CAMERA object
+
+In this first step we create a CAMERA object from the XCMS object. We specify the polarity to help CAMERA determine appropriate adducts and fragments.
+
+```{r camera_setup, message=FALSE}
+# Convert to xcmsSet for CAMERA (required for compatibility)
+xset <- as(xdata, "xcmsSet")
+
+# Create xsAnnotate object with polarity
+xs <- xsAnnotate(xset, polarity = "positive")
+```
+
+### Grouping coeluting peaks
+
+The first step to grouping features is to group co-eluting peaks. This is a naïve approach that we will refine later.
+
+```{r camera_groupfwhm, message=FALSE}
 # Group peaks by retention time
-xs <- groupFWHM(xs, perfwhm = 0.6)
+xs <- groupFWHM(xs, perfwhm = 0.1, intval = "into", sigma = 6)
+```
 
+### Grouping based on correlation
+
+Now we group the features based on correlations. This looks at each group from the previous step and splits them into separate groups for peaks that correlate with each other.
+
+```{r camera_groupcorr, message=FALSE}
+# Group by correlation across samples
+xs <- groupCorr(xs,
+                calcIso = FALSE,   # Don't calculate isotope correlations yet
+                calcCiS = FALSE,   # Don't use intra-peak correlation
+                calcCaS = TRUE,    # Use correlation across samples
+                cor_eic_th = 0.7,
+                cor_exp_th = 0.7,
+                pval = 0.000001,
+                graphMethod = "lpc",
+                intval = "into")
+```
+
+### Isotope annotation
+
+This annotates peaks that are possible isotopes based on m/z difference and intensity patterns.
+
+```{r camera_isotopes, message=FALSE}
 # Find isotopes
-xs <- findIsotopes(xs, maxcharge = 2)
+xs <- findIsotopes(xs, ppm = 10, mzabs = 0.01, intval = "into", maxcharge = 2)
+```
 
-# Group by correlation
-xs <- groupCorr(xs, cor_eic_th = 0.75)
+### Annotation of adducts and fragments
 
+Now we try to annotate adducts and fragments based on expected mass differences.
+
+```{r camera_adducts, message=FALSE}
 # Find adducts
-xs <- findAdducts(xs, polarity = "positive")
+xs <- findAdducts(xs, ppm = 10, mzabs = 0.01, multiplier = 4, polarity = "positive")
 ```
 
 ## Create Long-Format Peak Table
 
-Now we can create our comprehensive long-format peak table!
+Now we can create our comprehensive long-format peak table! Note that we use the original `xdata` (XCMSnExp) object along with the CAMERA annotations from `xs`.
 
 ```{r create_table}
 peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
@@ -164,19 +205,81 @@ colnames(peak_table)
 
 # Understanding the Output
 
-The resulting tibble contains:
+The resulting tibble contains comprehensive information about each feature in each sample. Below is a complete description of all columns:
+
+## Column Reference Table
+
+The table has been organized into logical groups for easier understanding:
+
+| Column | Content |
+|--------|---------|
+| **Sample information** |
+| `filepath` | Path to the raw data file |
+| `filename` | The filename without path |
+| `fromFile` | The file number (the order files were supplied in) |
+| *Plus any columns from `pData(XCMSnExp)`* | Sample metadata columns you added |
+| **Feature identifiers** |
+| `feature_id` | The index of the feature after grouping across samples |
+| `peakidx` | The index of the peak before grouping across samples |
+| **Feature-level m/z statistics (across all samples)** |
+| `f_mzmed` | The median m/z found for that feature **across samples** |
+| `f_mzmin` | The minimum m/z found for that feature across samples |
+| `f_mzmax` | The maximum m/z found for that feature across samples |
+| **Feature-level retention time statistics (across all samples)** |
+| `f_rtmed` | The median retention time found for that feature across samples |
+| `f_rtmin` | The minimum retention time found for that feature across samples |
+| `f_rtmax` | The maximum retention time found for that feature across samples |
+| **CAMERA annotations** |
+| `isotopes` | The isotope annotation from CAMERA (e.g., "[M]+", "[M+1]+", "[M+2]+") |
+| `adduct` | The adduct annotation from CAMERA (e.g., "[M+H]+", "[M+Na]+", "[M+NH4]+") |
+| `pcgroup` | The feature grouping index from CAMERA - features with same ID likely come from the same compound |
+| **Peak-level m/z measurements (in that specific sample)** |
+| `mz` | The median m/z found for that feature in **that sample** |
+| `mzmin` | The minimum m/z found for that feature in that sample |
+| `mzmax` | The maximum m/z found for that feature in that sample |
+| **Peak-level retention time measurements (in that specific sample)** |
+| `rt` | The retention time found for that feature in that sample |
+| `rtmin` | The minimum retention time found for that feature in that sample |
+| `rtmax` | The maximum retention time found for that feature in that sample |
+| **Peak intensity measurements** |
+| `into` | The area under the peak |
+| `intb` | The area under the peak after baseline removal |
+| `maxo` | The maximum intensity (i.e., height) of the peak |
+| `sn` | The signal to noise ratio of that peak |
+| **Gaussian peak fitting parameters** |
+| `egauss` | RMSE of Gaussian fit |
+| `mu` | Gaussian parameter mu (center of the Gaussian; unit is scan number) |
+| `sigma` | Gaussian parameter sigma |
+| `h` | Gaussian parameter h (height of the Gaussian peak) |
+| **CentWave algorithm parameters** |
+| `f` | Region number of m/z ROI where the peak was localized |
+| `dppm` | m/z deviation of mass trace across scans in ppm |
+| `scale` | Scale on which the peak was localized |
+| `scpos` | Center of peak position found by wavelet analysis |
+| `scmin` | Left peak limit found by wavelet analysis (scan number) |
+| `scmax` | Right peak limit found by wavelet analysis (scan number) |
+| **Additional columns** |
+| `ms_level` | MS level (e.g., MS1, MS2) |
+| `is_filled` | Was the intensity found by gap filling (TRUE) or peak picking (FALSE) |
+
+**Important notes:**
+
+- **Each row represents one feature in one sample**
+- If a feature was not detected in a sample, peak-level columns (mz, rt, into, etc.) will be `NA`
+- Feature-level statistics (f_mzmed, f_rtmed, etc.) are always present and represent values across all samples
+- CAMERA annotations apply at the feature level and are the same across all samples for a given feature
+- The distinction between "feature-level" and "peak-level" is important:
+  - **Feature-level** (prefix `f_`): Statistics aggregated across all samples
+  - **Peak-level** (no prefix): Values for the specific peak in that specific sample
 
 ## Feature-Level Information
 
 These columns describe each feature (grouped peak):
 
-- `feature_id`: Unique identifier for each feature
-- `f_mzmed`, `f_mzmin`, `f_mzmax`: m/z statistics across samples
-- `f_rtmed`, `f_rtmin`, `f_rtmax`: Retention time statistics across samples
-
 ```{r feature_info}
 peak_table %>%
   select(feature_id, f_mzmed, f_rtmed) %>%
+  distinct() %>%
   head()
 ```
 
