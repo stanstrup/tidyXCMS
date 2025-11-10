@@ -1,0 +1,32 @@
+url: https://stanstrup.github.io/tidyXCMS
+template:
+  bootstrap: 5
+  bootswatch: flatly
+
+navbar:
+  structure:
+    left:  [home, reference, articles, news]
+    right: [github]
+  components:
+    home:
+      icon: fas fa-home fa-lg
+      aria-label: Home
+      href: index.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    articles:
+      text: Vignettes
+      menu:
+      - text: "Getting Started"
+        href: articles/getting-started.html
+    news:
+      text: Changelog
+      href: news/index.html
+    github:
+      icon: fab fa-github fa-lg
+      aria-label: GitHub repository
+      href: https://github.com/stanstrup/tidyXCMS
+
+news:
+  cran_dates: false
