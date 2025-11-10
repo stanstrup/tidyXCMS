@@ -1,13 +1,14 @@
-#' Create Long-Format Peak Table with CAMERA Annotations
+#' Create Long-Format Peak Table with Optional CAMERA Annotations
 #'
 #' Generates a comprehensive long-format peak table where each row represents
-#' one feature for one sample, including CAMERA annotations for isotopes,
-#' adducts, and pseudospectrum groups.
+#' one feature for one sample. Optionally includes CAMERA annotations for isotopes,
+#' adducts, and pseudospectrum groups if provided.
 #'
-#' @param XCMSnExp An [xcms::XCMSnExp-class] object containing peak detection
-#'   and feature grouping results.
-#' @param xsAnnotate An `xsAnnotate` object from the CAMERA package containing
-#'   peak annotations (isotopes, adducts, pseudospectrum groups).
+#' @param XCMSnExp An [xcms::XCMSnExp-class] or [xcms::XcmsExperiment-class]
+#'   object containing peak detection and feature grouping results.
+#' @param xsAnnotate Optional. An `xsAnnotate` object from the CAMERA package
+#'   containing peak annotations (isotopes, adducts, pseudospectrum groups).
+#'   If NULL (default), annotation columns will not be included in the output.
 #'
 #' @return A [tibble::tibble] in long format with one row per feature per sample.
 #'   The tibble contains:
@@ -27,9 +28,12 @@
 #'   \item Chromatographic peaks from [xcms::chromPeaks()]
 #'   \item Feature definitions from [xcms::featureDefinitions()]
 #'   \item Feature intensities from [xcms::featureValues()]
-#'   \item CAMERA annotations from the xsAnnotate object
+#'   \item CAMERA annotations from the xsAnnotate object (if provided)
 #'   \item Sample metadata from [Biobase::pData()]
 #' }
+#'
+#' The function supports both [xcms::XCMSnExp-class] and [xcms::XcmsExperiment-class]
+#' objects, providing flexibility for modern XCMS workflows.
 #'
 #' The function performs several data processing steps:
 #' \enumerate{
@@ -52,8 +56,8 @@
 #'     first occurrence.
 #'   \item The function uses "maxint" method for feature values, meaning it
 #'     takes the maximum intensity peak for each feature in each sample.
-#'   \item CAMERA must be run prior to using this function to obtain the
-#'     xsAnnotate object.
+#'   \item CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes,
+#'     adduct, and pcgroup columns will not be included in the output.
 #' }
 #'
 #' @export
@@ -61,7 +65,6 @@
 #' @examples
 #' \dontrun{
 #' library(xcms)
-#' library(CAMERA)
 #' library(BiocParallel)
 #'
 #' # Load example data
@@ -75,6 +78,13 @@
 #' pdp <- PeakDensityParam(sampleGroups = rep(1, length(fileNames(xdata))),
 #'                         minFraction = 0.5)
 #' xdata <- groupChromPeaks(xdata, param = pdp)
+#'
+#' # Example 1: Without CAMERA annotations
+#' peak_table_no_camera <- XCMSnExp_CAMERA_peaklist_long(xdata)
+#' head(peak_table_no_camera)
+#'
+#' # Example 2: With CAMERA annotations
+#' library(CAMERA)
 #'
 #' # CAMERA annotation
 #' xs <- xsAnnotate(xdata)
@@ -99,6 +109,24 @@
 #' peak_table %>%
 #'   filter(!is.na(adduct)) %>%
 #'   select(feature_id, f_mzmed, f_rtmed, adduct, pcgroup)
+#'
+#' # Example 3: With XcmsExperiment object
+#' library(MsExperiment)
+#' library(msdata)
+#'
+#' # Load data as XcmsExperiment
+#' fls <- dir(system.file("sciex", package = "msdata"), full.names = TRUE)
+#' xdata_exp <- readMsExperiment(spectraFiles = fls[1:2], BPPARAM = SerialParam())
+#'
+#' # Peak detection and grouping
+#' cwp <- CentWaveParam(peakwidth = c(5, 20), noise = 100)
+#' xdata_exp <- findChromPeaks(xdata_exp, param = cwp, BPPARAM = SerialParam())
+#' pdp <- PeakDensityParam(sampleGroups = rep(1, 2), minFraction = 0.5)
+#' xdata_exp <- groupChromPeaks(xdata_exp, param = pdp)
+#'
+#' # Create peak table without CAMERA
+#' peak_table_exp <- XCMSnExp_CAMERA_peaklist_long(xdata_exp)
+#' head(peak_table_exp)
 #' }
 #'
 #' @importFrom xcms chromPeaks chromPeakData featureDefinitions featureValues fileNames
@@ -107,18 +135,25 @@
 #' @importFrom tidyr unnest gather complete nesting
 #' @importFrom tibble as_tibble
 #' @importFrom Biobase pData
-XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate) {
+XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate = NULL) {
   # Extract peaks with file information
   temp_peaks <- chromPeaks_classic(XCMSnExp) %>%
     mutate(peakidx = 1:nrow(.)) %>%
     rename(fromFile = sample) %>%
     mutate(filepath = fileNames(XCMSnExp)[fromFile])
 
-  # Extract features and combine with CAMERA annotations
+  # Extract features and optionally combine with CAMERA annotations
   temp_features <- featureDefinitions(XCMSnExp) %>%
-    as_tibble() %>%
-    bind_cols(as_tibble(CAMERA::getPeaklist(xsAnnotate))[, c("isotopes", "adduct", "pcgroup")]) %>%
-    mutate(pcgroup = as.integer(pcgroup)) %>%
+    as_tibble()
+
+  # Add CAMERA annotations if provided
+  if (!is.null(xsAnnotate)) {
+    temp_features <- temp_features %>%
+      bind_cols(as_tibble(CAMERA::getPeaklist(xsAnnotate))[, c("isotopes", "adduct", "pcgroup")]) %>%
+      mutate(pcgroup = as.integer(pcgroup))
+  }
+
+  temp_features <- temp_features %>%
     mutate(feature_id = 1:nrow(.)) %>%
     unnest(peakidx)
 

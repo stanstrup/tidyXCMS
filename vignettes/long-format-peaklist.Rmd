@@ -1,8 +1,8 @@
 ---
-title: "Creating Long-Format Peak Tables with CAMERA Annotations"
+title: "Creating Long-Format Peak Tables with Optional CAMERA Annotations"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Creating Long-Format Peak Tables with CAMERA Annotations}
+  %\VignetteIndexEntry{Creating Long-Format Peak Tables with Optional CAMERA Annotations}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -23,11 +23,16 @@ that integrates:
 
 - Peak detection results from XCMS
 - Feature grouping (correspondence) information
-- CAMERA annotations (isotopes, adducts, pseudospectrum groups)
+- CAMERA annotations (isotopes, adducts, pseudospectrum groups) - **optional**
 - Sample metadata
 
 The resulting long-format table has one row per feature per sample, making it
 ideal for downstream analysis with tidyverse tools like `dplyr` and `ggplot2`.
+
+**Note:** CAMERA annotations are optional. You can create a peak table without
+CAMERA annotations by simply omitting the `xsAnnotate` parameter. This is useful
+for quick data exploration or when CAMERA annotations are not required for your
+analysis.
 
 # Setup
 
@@ -111,7 +116,27 @@ xdata <- groupChromPeaks(xdata, param = pdp)
 cat("Grouped peaks into", nrow(featureDefinitions(xdata)), "features\n")
 ```
 
-## CAMERA Annotation
+## Create Long-Format Peak Table (Without CAMERA)
+
+You can create a long-format peak table directly from the XCMS results without using CAMERA annotations. This is useful when you want to quickly explore your data or when CAMERA annotations are not needed for your analysis.
+
+```{r create_table_no_camera}
+# Create peak table without CAMERA
+peak_table_no_camera <- XCMSnExp_CAMERA_peaklist_long(xdata)
+
+# Check the structure
+dim(peak_table_no_camera)
+
+# View first few rows
+head(peak_table_no_camera)
+
+# Check column names - note that isotopes, adduct, and pcgroup are not present
+colnames(peak_table_no_camera)
+```
+
+The resulting table contains all feature and peak information, but the CAMERA annotation columns (`isotopes`, `adduct`, `pcgroup`) are not included.
+
+## CAMERA Annotation (Optional)
 
 Use CAMERA to annotate isotopes, adducts, and group features into pseudospectra.
 

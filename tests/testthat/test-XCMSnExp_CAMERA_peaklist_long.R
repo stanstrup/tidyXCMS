@@ -327,3 +327,89 @@ test_that("XCMSnExp_CAMERA_peaklist_long CAMERA annotations are present", {
 
   expect_gt(nrow(non_na_pcgroups), 0)
 })
+
+
+test_that("XCMSnExp_CAMERA_peaklist_long works without CAMERA annotations", {
+  skip_if_not_installed("xcms")
+  skip_if_not_installed("BiocParallel")
+
+  library(xcms)
+  library(BiocParallel)
+
+  # Load example data
+  faahko_sub <- loadXcmsData("faahko_sub")
+
+  # Peak detection
+  cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
+  xdata <- findChromPeaks(faahko_sub, param = cwp, BPPARAM = SerialParam())
+
+  # Peak grouping
+  pdp <- PeakDensityParam(sampleGroups = rep(1, length(fileNames(xdata))),
+                          minFraction = 0.5)
+  xdata <- groupChromPeaks(xdata, param = pdp)
+
+  # Create long-format peak table WITHOUT CAMERA
+  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata)
+
+  # Check it's a tibble
+  expect_s3_class(peak_table, "tbl_df")
+
+  # Check it has rows
+  expect_gt(nrow(peak_table), 0)
+
+  # Check for expected columns
+  expect_true("feature_id" %in% colnames(peak_table))
+  expect_true("f_mzmed" %in% colnames(peak_table))
+
+  # Check that CAMERA columns are NOT present
+  expect_false("isotopes" %in% colnames(peak_table))
+  expect_false("adduct" %in% colnames(peak_table))
+  expect_false("pcgroup" %in% colnames(peak_table))
+})
+
+
+test_that("XCMSnExp_CAMERA_peaklist_long works with XcmsExperiment", {
+  skip_if_not_installed("xcms")
+  skip_if_not_installed("MsExperiment")
+  skip_if_not_installed("msdata")
+  skip_if_not_installed("BiocParallel")
+
+  library(xcms)
+  library(MsExperiment)
+  library(BiocParallel)
+
+  # Load example files
+  fls <- dir(system.file("sciex", package = "msdata"), full.names = TRUE)
+
+  # Read as XcmsExperiment
+  xdata <- readMsExperiment(spectraFiles = fls[1:2], BPPARAM = SerialParam())
+
+  # Peak detection
+  cwp <- CentWaveParam(peakwidth = c(5, 20), noise = 100)
+  xdata <- findChromPeaks(xdata, param = cwp, BPPARAM = SerialParam())
+
+  # Peak grouping
+  pdp <- PeakDensityParam(sampleGroups = rep(1, 2), minFraction = 0.5)
+  xdata <- groupChromPeaks(xdata, param = pdp)
+
+  # Create long-format peak table
+  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata)
+
+  # Check it's a tibble
+  expect_s3_class(peak_table, "tbl_df")
+
+  # Check it has rows
+  expect_gt(nrow(peak_table), 0)
+
+  # Check for expected columns
+  expect_true("feature_id" %in% colnames(peak_table))
+  expect_true("f_mzmed" %in% colnames(peak_table))
+  expect_true("filename" %in% colnames(peak_table))
+  expect_true("mz" %in% colnames(peak_table))
+  expect_true("rt" %in% colnames(peak_table))
+
+  # Check that CAMERA columns are NOT present
+  expect_false("isotopes" %in% colnames(peak_table))
+  expect_false("adduct" %in% colnames(peak_table))
+  expect_false("pcgroup" %in% colnames(peak_table))
+})
