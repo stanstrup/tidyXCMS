@@ -30,9 +30,7 @@ The resulting long-format table has one row per feature per sample, making it
 ideal for downstream analysis with tidyverse tools like `dplyr` and `ggplot2`.
 
 **Note:** CAMERA annotations are optional. You can create a peak table without
-CAMERA annotations by simply omitting the `xsAnnotate` parameter. This is useful
-for quick data exploration or when CAMERA annotations are not required for your
-analysis.
+CAMERA annotations by simply omitting the `xsAnnotate` parameter.
 
 # Setup
 
