@@ -32,6 +32,8 @@ Suggests:
     ggplot2,
     covr,
     faahKO
+Remotes:
+    stanstrup/commonMZ
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 biocViews: Metabolomics, MassSpectrometry, DataImport
