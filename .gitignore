@@ -54,3 +54,4 @@ Thumbs.db
 # Node modules for semantic-release
 node_modules/
 package-lock.json
+.bioc_version

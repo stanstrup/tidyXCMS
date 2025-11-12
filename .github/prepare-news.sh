@@ -34,6 +34,9 @@ fi
 echo "Preparing NEWS.md and DESCRIPTION for version $BIOC_VERSION (from semantic-release: $NEXT_VERSION)..."
 NEXT_VERSION="$BIOC_VERSION"
 
+# Export for potential use by other scripts
+echo "$BIOC_VERSION" > .bioc_version
+
 # Format NEWS.md for R/pkgdown
 sed -i 's/^# \[\([0-9]\+\.[0-9]\+\.[0-9]\+\)\].*/## Changes in v\1/' NEWS.md
 sed -i 's/^## \[\([0-9]\+\.[0-9]\+\.[0-9]\+\)\].*/## Changes in v\1/' NEWS.md
@@ -44,9 +47,9 @@ sed -i 's/(\([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}\))$/ (\1)/' NEWS.md
 sed -i 's/### /### /' NEWS.md
 sed -i 's/\[compare\/v[0-9].*//' NEWS.md
 
-# Replace version numbers in NEWS.md with BIOC_VERSION
-# This ensures all version references use the 0.99.x format
-sed -i "s/## Changes in v[0-9]\+\.[0-9]\+\.[0-9]\+/## Changes in v$NEXT_VERSION/" NEWS.md
+# Replace ONLY the first (most recent) version number in NEWS.md with BIOC_VERSION
+# This ensures the latest release uses 0.99.x format without touching historical entries
+sed -i "0,/## Changes in v[0-9]\+\.[0-9]\+\.[0-9]\+/{s/## Changes in v[0-9]\+\.[0-9]\+\.[0-9]\+/## Changes in v$NEXT_VERSION/}" NEWS.md
 
 # Update DESCRIPTION version
 sed -i "s/^Version: .*/Version: $NEXT_VERSION/" DESCRIPTION
