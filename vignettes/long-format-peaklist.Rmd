@@ -42,6 +42,7 @@ library(commonMZ)
 library(BiocParallel)
 library(dplyr)
 library(ggplot2)
+library(tidyr)
 ```
 
 # Example Workflow
@@ -155,20 +156,10 @@ Now we try to annotate adducts and fragments based on expected mass differences.
 
 First, we get the adduct/fragment rules for positive mode:
 
-```{r camera_rules, message=FALSE}
-# Get adduct/fragment rules for CAMERA
+```{r camera_rules_filter, message=FALSE}
 # warn_clash=TRUE will warn about indistinguishable annotations (e.g., [M+NH4]+ vs -NH3)
-rules_pos <- MZ_CAMERA(mode = "pos", warn_clash = TRUE, clash_ppm = 5) %>%
-  as.data.frame()
+# Remove [M+NH4]+ if it's less common in your data
 
-# View the rules table
-head(rules_pos)
-```
-
-The `commonMZ::MZ_CAMERA()` function provides a curated list of adducts and neutral losses commonly observed in LC-MS data. Because an NH4+ adduct and a neutral loss of NH3 give the same mass difference, you may see warnings about clashing annotations. In such cases, you can filter out less common adducts:
-
-```{r camera_rules_filter, message=FALSE, eval=FALSE}
-# Example: Remove [M+NH4]+ if it's less common in your data
 rules_pos <- MZ_CAMERA(mode = "pos", warn_clash = TRUE, clash_ppm = 5) %>%
   filter(name != "[M+NH4]+") %>%
   as.data.frame()
@@ -178,7 +169,7 @@ Now we can annotate adducts using these rules:
 
 ```{r camera_adducts, message=FALSE}
 # Find adducts using the rules from commonMZ
-xs <- findAdducts(xs, ppm = 10, mzabs = 0.01, multiplier = 4, polarity = "positive", rules = rules_pos)
+xs <- findAdducts(xs, ppm = 500, mzabs = 0.2, multiplier = 4, polarity = "positive", rules = rules_pos)
 ```
 
 ## Create Long-Format Peak Table
@@ -282,7 +273,7 @@ peak_table %>%
 ```{r camera_info}
 # View features with adduct annotations
 peak_table %>%
-  filter(!is.na(adduct)) %>%
+  filter(adduct!="") %>%
   select(feature_id, f_mzmed, f_rtmed, isotopes, adduct, pcgroup) %>%
   distinct(feature_id, .keep_all = TRUE) %>%
   head()
@@ -355,8 +346,11 @@ peak_table %>%
 ```{r adduct_summary}
 # Count features by adduct type
 adduct_counts <- peak_table %>%
-  filter(!is.na(adduct)) %>%
+  filter(adduct!="") %>%
+  separate_rows(adduct, sep = "\\s(?=\\[M)") %>% 
   distinct(feature_id, adduct) %>%
+  mutate(adduct = gsub("^(\\[.*\\].*\\+).*","\\1",adduct)) %>% 
+  
   count(adduct, sort = TRUE)
 
 adduct_counts
@@ -368,11 +362,6 @@ We can create a pie chart showing the frequency of different adducts and fragmen
 
 ```{r adduct_pie, fig.width=7, fig.height=7, fig.alt="Pie chart showing the distribution of adduct and fragment annotations found by CAMERA across all features."}
 # Create pie chart of adduct frequencies
-adduct_counts <- peak_table %>%
-  filter(!is.na(adduct)) %>%
-  distinct(feature_id, adduct) %>%
-  count(adduct, sort = TRUE)
-
 pie(adduct_counts$n, labels = adduct_counts$adduct, main = "Distribution of Adduct Annotations")
 ```
 
