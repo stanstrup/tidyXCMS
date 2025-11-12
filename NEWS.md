@@ -1,18 +1,25 @@
-## Changes in v0.99.3
+## Changes in v0.99.4
+
+
+### Features
+
+* integrate commonMZ for CAMERA adduct/fragment rules ([ababed5](https://github.com/stanstrup/tidyXCMS/commit/ababed546a07201cc0782c72bcecc03d163400b8))
+
+## Changes in v0.99.4
 
 
 ### Bug Fixes
 
 * correct xdata file paths to use system-specific location ([8d60f1a](https://github.com/stanstrup/tidyXCMS/commit/8d60f1ab93fb37b09579cb34157425e51f942dc4))
 
-## Changes in v0.99.3
+## Changes in v0.99.4
 
 
 ### Bug Fixes
 
 * ensure package version stays below 1.0.0 for Bioconductor ([b1bc012](https://github.com/stanstrup/tidyXCMS/commit/b1bc012de886220414ab6302bd3ecafbef71eade))
 
-## Changes in v0.99.3
+## Changes in v0.99.4
 
 
 ### Bug Fixes
