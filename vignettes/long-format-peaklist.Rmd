@@ -118,16 +118,11 @@ xs <- groupFWHM(xs, perfwhm = 0.1, intval = "into", sigma = 6)
 
 Now we group the features based on correlations. This looks at each group from the previous step and splits them into separate groups for peaks that correlate with each other.
 
-**Note:** For this small example dataset, we use a simplified approach. In real workflows with more samples, you would use stricter parameters and enable correlation across samples (`calcCaS = TRUE`).
+**Note:** For this small example dataset, don't use correlation across samples as it is unreliable with this few samples.
 
 ```{r camera_groupcorr, message=FALSE}
 # Group by correlation
-# For small datasets, we skip correlation analysis to avoid errors
-# In production with adequate samples, use:
-# xs <- groupCorr(xs, calcCaS = TRUE, cor_eic_th = 0.7, pval = 0.05)
-
-# For this example, we skip the correlation step and proceed directly
-# xs <- groupCorr(xs, calcIso = FALSE, calcCiS = FALSE, calcCaS = FALSE)
+xs <- groupCorr(xs, calcIso = FALSE, calcCiS = TRUE, calcCaS = FALSE, cor_eic_th = 0.7, pval = 1E-6)
 ```
 
 ### Isotope annotation
@@ -145,7 +140,7 @@ Now we try to annotate adducts and fragments based on expected mass differences.
 
 ```{r camera_adducts, message=FALSE}
 # Find adducts
-xs <- findAdducts(xs, ppm = 10, mzabs = 0.01, multiplier = 4, polarity = "positive")
+xs <- findAdducts(xs, ppm = 200, mzabs = 0.1, multiplier = 4, polarity = "positive")
 ```
 
 ## Create Long-Format Peak Table
@@ -306,7 +301,7 @@ peak_table %>%
 ```{r plot_intensities, fig.width=7, fig.height=4, fig.alt="Boxplot showing the distribution of log10-transformed feature intensities across sample groups. The plot displays the median, quartiles, and outliers for each group."}
 # Plot intensity distribution by sample group
 peak_table %>%
-  filter(!is.na(into)) %>%
+  filter(feature_id == 10) %>%
   ggplot(aes(x = sample_group, y = log10(into), fill = sample_group)) +
   geom_boxplot() +
   labs(
