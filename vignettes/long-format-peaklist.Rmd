@@ -47,71 +47,21 @@ library(ggplot2)
 
 ## Load Example Data
 
-We'll use the `faahko_sub` dataset from XCMS, which contains LC-MS data from
-wild-type and knockout samples.
+We'll use the `xmse` dataset from XCMS, which contains preprocessed LC-MS data from
+wild-type and knockout samples. This dataset already has peak detection and feature
+grouping completed.
 
 ```{r load_data, message=FALSE}
-# Load example data from XCMS
-faahko_sub <- loadXcmsData("faahko_sub")
+# Load example data from XCMS (already preprocessed)
+xdata <- loadXcmsData("xmse")
 
-# Check the files
-fileNames(faahko_sub)
-```
-
-## Add Sample Metadata
-
-Let's add some sample information that will be included in our final table.
-
-```{r add_metadata}
-library(Biobase)
-
-pd <- data.frame(
-  sample_name = basename(fileNames(faahko_sub)),
-  sample_group = c("WT", "KO", "WT")[1:length(fileNames(faahko_sub))],
-  injection_order = 1:length(fileNames(faahko_sub)),
-  row.names = basename(fileNames(faahko_sub))
-)
-
-pData(faahko_sub) <- pd
-```
-
-## Peak Detection
-
-Perform chromatographic peak detection using the CentWave algorithm.
-
-```{r peak_detection, message=FALSE}
-# Define peak detection parameters
-cwp <- CentWaveParam(
-  peakwidth = c(20, 80),
-  noise = 5000,
-  ppm = 25
-)
-
-# Find peaks (using SerialParam for reproducibility)
-xdata <- findChromPeaks(faahko_sub, param = cwp, BPPARAM = SerialParam())
+# Check the sample information
+sampleData(xdata)
 
 # Check results
-cat("Detected", nrow(chromPeaks(xdata)), "peaks across",
-    length(fileNames(xdata)), "samples\n")
-```
-
-## Feature Grouping (Correspondence)
-
-Group peaks across samples into features (aligned peaks).
-
-```{r grouping, message=FALSE}
-# Define grouping parameters
-pdp <- PeakDensityParam(
-  sampleGroups = pData(xdata)$sample_group,
-  minFraction = 0.5,
-  bw = 30
-)
-
-# Group peaks
-xdata <- groupChromPeaks(xdata, param = pdp)
-
-# Check results
-cat("Grouped peaks into", nrow(featureDefinitions(xdata)), "features\n")
+cat("Dataset contains", nrow(chromPeaks(xdata)), "peaks across",
+    length(unique(chromPeaks(xdata)[, "sample"])), "samples,",
+    "grouped into", nrow(featureDefinitions(xdata)), "features\n")
 ```
 
 ## Create Long-Format Peak Table (Without CAMERA)
@@ -138,15 +88,18 @@ The resulting table contains all feature and peak information. The CAMERA annota
 
 Use CAMERA to annotate isotopes, adducts, and group features into pseudospectra.
 
-**Note:** CAMERA requires an `xcmsSet` object, so we first convert the `XCMSnExp` object using `as("xcmsSet")`.
+**Note:** CAMERA requires an `xcmsSet` object. Since our data is an `XcmsExperiment`, we first convert it to `XCMSnExp` and then to `xcmsSet`.
 
 ### Creating a CAMERA object
 
 In this first step we create a CAMERA object from the XCMS object. We specify the polarity to help CAMERA determine appropriate adducts and fragments.
 
 ```{r camera_setup, message=FALSE}
-# Convert to xcmsSet for CAMERA (required for compatibility)
-xset <- as(xdata, "xcmsSet")
+# Convert XcmsExperiment to xcmsSet for CAMERA (required for compatibility)
+# Two-step conversion: XcmsExperiment -> XCMSnExp -> xcmsSet
+xset <- xdata %>%
+  as("XCMSnExp") %>%
+  as("xcmsSet")
 
 # Create xsAnnotate object with polarity
 xs <- xsAnnotate(xset, polarity = "positive")
@@ -221,7 +174,7 @@ The table has been organized into logical groups for easier understanding:
 | `filepath` | Path to the raw data file |
 | `filename` | The filename without path |
 | `fromFile` | The file number (the order files were supplied in) |
-| *Plus any columns from `pData(XCMSnExp)`* | Sample metadata columns you added |
+| *Plus any columns from `sampleData()`* | Sample metadata columns (e.g., sample_name, sample_group, sample_type) |
 | **Feature identifiers** |
 | `feature_id` | The index of the feature after grouping across samples |
 | `peakidx` | The index of the peak before grouping across samples |
@@ -324,11 +277,11 @@ peak_table %>%
 
 - `filename`, `filepath`: Sample file information
 - `fromFile`: Sample index
-- Plus any columns from `pData()` (sample metadata)
+- Plus any columns from `sampleData()` (sample metadata)
 
 ```{r sample_info}
 peak_table %>%
-  select(feature_id, filename, sample_group, injection_order) %>%
+  select(feature_id, filename, sample_name, sample_group, sample_type) %>%
   head()
 ```
 
