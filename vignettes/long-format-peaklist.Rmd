@@ -37,6 +37,7 @@ CAMERA annotations by simply omitting the `xsAnnotate` parameter.
 ```{r setup, message=FALSE}
 library(tidyXCMS)
 library(xcms)
+library(MSnbase)
 library(CAMERA)
 library(commonMZ)
 library(BiocParallel)
