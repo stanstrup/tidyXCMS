@@ -5,7 +5,7 @@
 
 * replace non-existent fileNames<- with proper dataOrigin replacement ([3995b38](https://github.com/stanstrup/tidyXCMS/commit/3995b38641c161957872d9ad48a80e57f2dbeec6))
 
-## Changes in v0.99.7
+## Changes in v0.99.6
 
 
 ### Bug Fixes
@@ -13,35 +13,35 @@
 * add explicit MSnbase library call in vignette ([6f3c6fb](https://github.com/stanstrup/tidyXCMS/commit/6f3c6fb708ba67c24b893dc71f9b92b9cf0a1f59))
 * add explicit namespace references for fileNames in vignette ([7d1e9f9](https://github.com/stanstrup/tidyXCMS/commit/7d1e9f99f6188f790f73561434b9417e7bbd0868))
 
-## Changes in v0.99.7
+## Changes in v0.99.5
 
 
 ### Bug Fixes
 
 * add GitHub remote for commonMZ package ([5401ce0](https://github.com/stanstrup/tidyXCMS/commit/5401ce0d4f70441f14051b9bf6a146795dc0a116))
 
-## Changes in v0.99.7
+## Changes in v0.99.4
 
 
 ### Features
 
 * integrate commonMZ for CAMERA adduct/fragment rules ([ababed5](https://github.com/stanstrup/tidyXCMS/commit/ababed546a07201cc0782c72bcecc03d163400b8))
 
-## Changes in v0.99.7
+## Changes in v0.99.3
 
 
 ### Bug Fixes
 
 * correct xdata file paths to use system-specific location ([8d60f1a](https://github.com/stanstrup/tidyXCMS/commit/8d60f1ab93fb37b09579cb34157425e51f942dc4))
 
-## Changes in v0.99.7
+## Changes in v0.99.2
 
 
 ### Bug Fixes
 
 * ensure package version stays below 1.0.0 for Bioconductor ([b1bc012](https://github.com/stanstrup/tidyXCMS/commit/b1bc012de886220414ab6302bd3ecafbef71eade))
 
-## Changes in v0.99.7
+## Changes in v0.99.1
 
 
 ### Bug Fixes
