@@ -23,6 +23,7 @@ Imports:
     MsExperiment
 Suggests:
     CAMERA,
+    commonMZ,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
