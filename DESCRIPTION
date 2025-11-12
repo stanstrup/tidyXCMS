@@ -31,7 +31,8 @@ Suggests:
     msdata,
     ggplot2,
     covr,
-    faahKO
+    faahKO,
+    MsExperiment
 Remotes:
     stanstrup/commonMZ
 Config/testthat/edition: 3
