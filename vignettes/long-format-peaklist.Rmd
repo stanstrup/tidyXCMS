@@ -55,6 +55,20 @@ grouping completed.
 # Load example data from XCMS (already preprocessed)
 xdata <- loadXcmsData("xmse")
 
+# Fix file paths to use correct system-specific location
+# Extract relative paths (e.g., "KO/ko15.CDF", "WT/wt15.CDF")
+current_paths <- fileNames(xdata)
+relative_paths <- sub(".*/faahKO/cdf/", "", current_paths)
+
+# Get the correct base path for faahKO package on this system
+cdf_path <- file.path(find.package("faahKO"), "cdf")
+
+# Reconstruct full paths
+new_paths <- file.path(cdf_path, relative_paths)
+
+# Update the file paths in the xdata object
+fileNames(xdata) <- new_paths
+
 # Check the sample information
 sampleData(xdata)
 
