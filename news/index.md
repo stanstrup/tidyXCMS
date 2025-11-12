@@ -1,6 +1,13 @@
 # Changelog
 
-## Changes in v0.99.1
+## Changes in v0.99.2
+
+### Bug Fixes
+
+- ensure package version stays below 1.0.0 for Bioconductor
+  ([b1bc012](https://github.com/stanstrup/tidyXCMS/commit/b1bc012de886220414ab6302bd3ecafbef71eade))
+
+## Changes in v0.99.2
 
 ### Bug Fixes
 

@@ -21,9 +21,11 @@ Coming soon…
 
 ## Development
 
-This package uses: - **Semantic versioning** via semantic-release -
-**Automated documentation** via pkgdown - **Continuous integration** via
-GitHub Actions
+This package uses:
+
+- **Semantic versioning** via semantic-release
+- **Automated documentation** via pkgdown
+- **Continuous integration** via GitHub Actions
 
 ## License
 

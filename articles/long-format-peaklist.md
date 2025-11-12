@@ -20,8 +20,7 @@ making it ideal for downstream analysis with tidyverse tools like
 
 **Note:** CAMERA annotations are optional. You can create a peak table
 without CAMERA annotations by simply omitting the `xsAnnotate`
-parameter. This is useful for quick data exploration or when CAMERA
-annotations are not required for your analysis.
+parameter.
 
 ## Setup
 
@@ -594,7 +593,7 @@ sessionInfo()
 #>  [4] mzR_2.44.0          Rcpp_1.1.0          ggplot2_4.0.0      
 #>  [7] dplyr_1.1.4         CAMERA_1.66.0       Biobase_2.70.0     
 #> [10] BiocGenerics_0.56.0 generics_0.1.4      xcms_4.8.0         
-#> [13] BiocParallel_1.44.0 tidyXCMS_0.99.1    
+#> [13] BiocParallel_1.44.0 tidyXCMS_0.99.2    
 #> 
 #> loaded via a namespace (and not attached):
 #>   [1] DBI_1.2.3                   RBGL_1.86.0                
