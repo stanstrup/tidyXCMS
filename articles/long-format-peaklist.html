@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyXCMS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -91,10 +91,14 @@ create a peak table without CAMERA annotations by simply omitting the
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://stanstrup.github.io/tidyXCMS">tidyXCMS</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sneumann/xcms" class="external-link">xcms</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lgatto.github.io/MSnbase" class="external-link">MSnbase</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://msbi.ipb-halle.de/msbi/CAMERA/" class="external-link">CAMERA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">commonMZ</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Bioconductor/BiocParallel" class="external-link">BiocParallel</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/MsExperiment" class="external-link">MsExperiment</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="example-workflow">Example Workflow<a class="anchor" aria-label="anchor" href="#example-workflow"></a>
@@ -102,74 +106,54 @@ create a peak table without CAMERA annotations by simply omitting the
 <div class="section level3">
 <h3 id="load-example-data">Load Example Data<a class="anchor" aria-label="anchor" href="#load-example-data"></a>
 </h3>
-<p>We’ll use the <code>faahko_sub</code> dataset from XCMS, which
-contains LC-MS data from wild-type and knockout samples.</p>
+<p>We’ll use the <code>xmse</code> dataset from XCMS, which contains
+preprocessed LC-MS data from wild-type and knockout samples. This
+dataset already has peak detection and feature grouping completed.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Load example data from XCMS</span></span>
-<span><span class="va">faahko_sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/xcms/man/loadXcmsData.html" class="external-link">loadXcmsData</a></span><span class="op">(</span><span class="st">"faahko_sub"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># Load example data from XCMS (already preprocessed)</span></span>
+<span><span class="va">xdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/xcms/man/loadXcmsData.html" class="external-link">loadXcmsData</a></span><span class="op">(</span><span class="st">"xmse"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Check the files</span></span>
-<span><span class="fu">fileNames</span><span class="op">(</span><span class="va">faahko_sub</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "/home/runner/work/_temp/Library/faahKO/cdf/KO/ko15.CDF"</span></span>
-<span><span class="co">#&gt; [2] "/home/runner/work/_temp/Library/faahKO/cdf/KO/ko16.CDF"</span></span>
-<span><span class="co">#&gt; [3] "/home/runner/work/_temp/Library/faahKO/cdf/KO/ko18.CDF"</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="add-sample-metadata">Add Sample Metadata<a class="anchor" aria-label="anchor" href="#add-sample-metadata"></a>
-</h3>
-<p>Let’s add some sample information that will be included in our final
-table.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bioconductor.org/packages/Biobase" class="external-link">Biobase</a></span><span class="op">)</span></span>
+<span><span class="co"># Fix file paths to use correct system-specific location</span></span>
+<span><span class="co"># Get current dataOrigin values (these are repeated for each spectrum)</span></span>
+<span><span class="va">current_origins</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">spectra</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">$</span><span class="va">dataOrigin</span></span>
 <span></span>
-<span><span class="va">pd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  sample_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/path.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu">fileNames</span><span class="op">(</span><span class="va">faahko_sub</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  sample_group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WT"</span>, <span class="st">"KO"</span>, <span class="st">"WT"</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu">fileNames</span><span class="op">(</span><span class="va">faahko_sub</span><span class="op">)</span><span class="op">)</span><span class="op">]</span>,</span>
-<span>  injection_order <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu">fileNames</span><span class="op">(</span><span class="va">faahko_sub</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/path.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu">fileNames</span><span class="op">(</span><span class="va">faahko_sub</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
+<span><span class="co"># Get unique file paths</span></span>
+<span><span class="va">unique_old_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">current_origins</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/Biobase/man/phenoData.html" class="external-link">pData</a></span><span class="op">(</span><span class="va">faahko_sub</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">pd</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="peak-detection">Peak Detection<a class="anchor" aria-label="anchor" href="#peak-detection"></a>
-</h3>
-<p>Perform chromatographic peak detection using the CentWave
-algorithm.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Define peak detection parameters</span></span>
-<span><span class="va">cwp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/xcms/man/findChromPeaks-centWave.html" class="external-link">CentWaveParam</a></span><span class="op">(</span></span>
-<span>  peakwidth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">80</span><span class="op">)</span>,</span>
-<span>  noise <span class="op">=</span> <span class="fl">5000</span>,</span>
-<span>  ppm <span class="op">=</span> <span class="fl">25</span></span>
-<span><span class="op">)</span></span>
+<span><span class="co"># Extract relative paths (e.g., "KO/ko15.CDF", "WT/wt15.CDF")</span></span>
+<span><span class="va">relative_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">".*/faahKO/cdf/"</span>, <span class="st">""</span>, <span class="va">unique_old_paths</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Find peaks (using SerialParam for reproducibility)</span></span>
-<span><span class="va">xdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/xcms/man/findChromPeaks.html" class="external-link">findChromPeaks</a></span><span class="op">(</span><span class="va">faahko_sub</span>, param <span class="op">=</span> <span class="va">cwp</span>, BPPARAM <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/SerialParam-class.html" class="external-link">SerialParam</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># Get the correct base path for faahKO package on this system</span></span>
+<span><span class="va">cdf_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"faahKO"</span><span class="op">)</span>, <span class="st">"cdf"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Reconstruct full paths</span></span>
+<span><span class="va">unique_new_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">cdf_path</span>, <span class="va">relative_paths</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Create a named vector for path mapping</span></span>
+<span><span class="va">path_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="va">unique_new_paths</span>, <span class="va">unique_old_paths</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Replace all dataOrigin values (vectorized replacement)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">spectra</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">$</span><span class="va">dataOrigin</span> <span class="op">&lt;-</span> <span class="va">path_map</span><span class="op">[</span><span class="va">current_origins</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># Check the sample information</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span></span>
+<span><span class="co">#&gt; DataFrame with 8 rows and 4 columns</span></span>
+<span><span class="co">#&gt;   sample_name sample_group spectraOrigin sample_type</span></span>
+<span><span class="co">#&gt;   &lt;character&gt;  &lt;character&gt;   &lt;character&gt; &lt;character&gt;</span></span>
+<span><span class="co">#&gt; 1        ko15           KO /usr/local...          QC</span></span>
+<span><span class="co">#&gt; 2        ko16           KO /usr/local...       study</span></span>
+<span><span class="co">#&gt; 3        ko21           KO /usr/local...       study</span></span>
+<span><span class="co">#&gt; 4        ko22           KO /usr/local...          QC</span></span>
+<span><span class="co">#&gt; 5        wt15           WT /usr/local...       study</span></span>
+<span><span class="co">#&gt; 6        wt16           WT /usr/local...       study</span></span>
+<span><span class="co">#&gt; 7        wt21           WT /usr/local...          QC</span></span>
+<span><span class="co">#&gt; 8        wt22           WT /usr/local...       study</span></span>
 <span></span>
 <span><span class="co"># Check results</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Detected"</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">chromPeaks</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">)</span>, <span class="st">"peaks across"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu">fileNames</span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">)</span>, <span class="st">"samples\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Detected 1750 peaks across 3 samples</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="feature-grouping-correspondence">Feature Grouping (Correspondence)<a class="anchor" aria-label="anchor" href="#feature-grouping-correspondence"></a>
-</h3>
-<p>Group peaks across samples into features (aligned peaks).</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Define grouping parameters</span></span>
-<span><span class="va">pdp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/xcms/man/groupChromPeaks.html" class="external-link">PeakDensityParam</a></span><span class="op">(</span></span>
-<span>  sampleGroups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/Biobase/man/phenoData.html" class="external-link">pData</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">$</span><span class="va">sample_group</span>,</span>
-<span>  minFraction <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>  bw <span class="op">=</span> <span class="fl">30</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Group peaks</span></span>
-<span><span class="va">xdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/xcms/man/groupChromPeaks.html" class="external-link">groupChromPeaks</a></span><span class="op">(</span><span class="va">xdata</span>, param <span class="op">=</span> <span class="va">pdp</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Check results</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Grouped peaks into"</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">featureDefinitions</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">)</span>, <span class="st">"features\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Grouped peaks into 842 features</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Dataset contains"</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">chromPeaks</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">)</span>, <span class="st">"peaks across"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">chromPeaks</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">[</span>, <span class="st">"sample"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>, <span class="st">"samples,"</span>,</span>
+<span>    <span class="st">"grouped into"</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">featureDefinitions</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">)</span>, <span class="st">"features\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Dataset contains 3651 peaks across 8 samples, grouped into 351 features</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="create-long-format-peak-table-without-camera">Create Long-Format Peak Table (Without CAMERA)<a class="anchor" aria-label="anchor" href="#create-long-format-peak-table-without-camera"></a>
@@ -178,39 +162,40 @@ algorithm.</p>
 results without using CAMERA annotations. This is useful when you want
 to quickly explore your data or when CAMERA annotations are not needed
 for your analysis.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create peak table without CAMERA</span></span>
 <span><span class="va">peak_table_no_camera</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/XCMSnExp_CAMERA_peaklist_long.html">XCMSnExp_CAMERA_peaklist_long</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check the structure</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">peak_table_no_camera</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 2526   26</span></span>
+<span><span class="co">#&gt; [1] 2808   28</span></span>
 <span></span>
 <span><span class="co"># View first few rows</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">peak_table_no_camera</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 26</span></span></span>
-<span><span class="co">#&gt;   sample_name sample_group injection_order fromFile feature_id f_mzmed f_mzmin</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ko15.CDF    WT                         1        1          1    200.    200.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ko15.CDF    WT                         1        1          2    201.    201.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> ko15.CDF    WT                         1        1          3    205     205 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ko15.CDF    WT                         1        1          4    206.    206.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> ko15.CDF    WT                         1        1          5    206     206 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> ko15.CDF    WT                         1        1          6    207.    207.</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 19 more variables: f_mzmax &lt;dbl&gt;, f_rtmed &lt;dbl&gt;, f_rtmin &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   f_rtmax &lt;dbl&gt;, ms_level &lt;int&gt;, filepath &lt;chr&gt;, filename &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   peakidx &lt;dbl&gt;, mz &lt;dbl&gt;, mzmin &lt;dbl&gt;, mzmax &lt;dbl&gt;, rt &lt;dbl&gt;, rtmin &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   rtmax &lt;dbl&gt;, into &lt;dbl&gt;, intb &lt;dbl&gt;, maxo &lt;dbl&gt;, sn &lt;dbl&gt;, is_filled &lt;lgl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 28</span></span></span>
+<span><span class="co">#&gt;   sample_name sample_group spectraOrigin sample_type fromFile feature_id f_mzmed</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ko15        KO           /usr/local/l… QC                 1          1    200.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ko15        KO           /usr/local/l… QC                 1          2    205 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> ko15        KO           /usr/local/l… QC                 1          3    206 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ko15        KO           /usr/local/l… QC                 1          4    207.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> ko15        KO           /usr/local/l… QC                 1          5    233 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> ko15        KO           /usr/local/l… QC                 1          6    241.</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 21 more variables: f_mzmin &lt;dbl&gt;, f_mzmax &lt;dbl&gt;, f_rtmed &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   f_rtmin &lt;dbl&gt;, f_rtmax &lt;dbl&gt;, ms_level &lt;int&gt;, filepath &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   filename &lt;chr&gt;, peakidx &lt;dbl&gt;, mz &lt;dbl&gt;, mzmin &lt;dbl&gt;, mzmax &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   rt &lt;dbl&gt;, rtmin &lt;dbl&gt;, rtmax &lt;dbl&gt;, into &lt;dbl&gt;, intb &lt;dbl&gt;, maxo &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   sn &lt;dbl&gt;, is_filled &lt;lgl&gt;, merged &lt;lgl&gt;</span></span></span>
 <span></span>
 <span><span class="co"># Check column names - note that isotopes, adduct, and pcgroup are NOT present</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">peak_table_no_camera</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "sample_name"     "sample_group"    "injection_order" "fromFile"       </span></span>
-<span><span class="co">#&gt;  [5] "feature_id"      "f_mzmed"         "f_mzmin"         "f_mzmax"        </span></span>
-<span><span class="co">#&gt;  [9] "f_rtmed"         "f_rtmin"         "f_rtmax"         "ms_level"       </span></span>
-<span><span class="co">#&gt; [13] "filepath"        "filename"        "peakidx"         "mz"             </span></span>
-<span><span class="co">#&gt; [17] "mzmin"           "mzmax"           "rt"              "rtmin"          </span></span>
-<span><span class="co">#&gt; [21] "rtmax"           "into"            "intb"            "maxo"           </span></span>
-<span><span class="co">#&gt; [25] "sn"              "is_filled"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] "sample_name"   "sample_group"  "spectraOrigin" "sample_type"  </span></span>
+<span><span class="co">#&gt;  [5] "fromFile"      "feature_id"    "f_mzmed"       "f_mzmin"      </span></span>
+<span><span class="co">#&gt;  [9] "f_mzmax"       "f_rtmed"       "f_rtmin"       "f_rtmax"      </span></span>
+<span><span class="co">#&gt; [13] "ms_level"      "filepath"      "filename"      "peakidx"      </span></span>
+<span><span class="co">#&gt; [17] "mz"            "mzmin"         "mzmax"         "rt"           </span></span>
+<span><span class="co">#&gt; [21] "rtmin"         "rtmax"         "into"          "intb"         </span></span>
+<span><span class="co">#&gt; [25] "maxo"          "sn"            "is_filled"     "merged"</span></span></code></pre></div>
 <p>The resulting table contains all feature and peak information. The
 CAMERA annotation columns (<code>isotopes</code>, <code>adduct</code>,
 <code>pcgroup</code>) are <strong>not included</strong> when no CAMERA
@@ -223,17 +208,21 @@ memory-efficient.</p>
 <p>Use CAMERA to annotate isotopes, adducts, and group features into
 pseudospectra.</p>
 <p><strong>Note:</strong> CAMERA requires an <code>xcmsSet</code>
-object, so we first convert the <code>XCMSnExp</code> object using
-<code>as("xcmsSet")</code>.</p>
+object. Since our data is an <code>XcmsExperiment</code>, we first
+convert it to <code>XCMSnExp</code> and then to
+<code>xcmsSet</code>.</p>
 <div class="section level4">
 <h4 id="creating-a-camera-object">Creating a CAMERA object<a class="anchor" aria-label="anchor" href="#creating-a-camera-object"></a>
 </h4>
 <p>In this first step we create a CAMERA object from the XCMS object. We
 specify the polarity to help CAMERA determine appropriate adducts and
 fragments.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Convert to xcmsSet for CAMERA (required for compatibility)</span></span>
-<span><span class="va">xset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/methods/as.html" class="external-link">as</a></span><span class="op">(</span><span class="va">xdata</span>, <span class="st">"xcmsSet"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Convert XcmsExperiment to xcmsSet for CAMERA (required for compatibility)</span></span>
+<span><span class="co"># Two-step conversion: XcmsExperiment -&gt; XCMSnExp -&gt; xcmsSet</span></span>
+<span><span class="va">xset</span> <span class="op">&lt;-</span> <span class="va">xdata</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/methods/as.html" class="external-link">as</a></span><span class="op">(</span><span class="st">"XCMSnExp"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/methods/as.html" class="external-link">as</a></span><span class="op">(</span><span class="st">"xcmsSet"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create xsAnnotate object with polarity</span></span>
 <span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/xsAnnotate.html" class="external-link">xsAnnotate</a></span><span class="op">(</span><span class="va">xset</span>, polarity <span class="op">=</span> <span class="st">"positive"</span><span class="op">)</span></span></code></pre></div>
@@ -243,11 +232,11 @@ fragments.</p>
 </h4>
 <p>The first step to grouping features is to group co-eluting peaks.
 This is a naïve approach that we will refine later.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Group peaks by retention time</span></span>
 <span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/groupFWHM-methods.html" class="external-link">groupFWHM</a></span><span class="op">(</span><span class="va">xs</span>, perfwhm <span class="op">=</span> <span class="fl">0.1</span>, intval <span class="op">=</span> <span class="st">"into"</span>, sigma <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Start grouping after retention time.</span></span>
-<span><span class="co">#&gt; Created 465 pseudospectra.</span></span></code></pre></div>
+<span><span class="co">#&gt; Created 226 pseudospectra.</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="grouping-based-on-correlation">Grouping based on correlation<a class="anchor" aria-label="anchor" href="#grouping-based-on-correlation"></a>
@@ -255,45 +244,68 @@ This is a naïve approach that we will refine later.</p>
 <p>Now we group the features based on correlations. This looks at each
 group from the previous step and splits them into separate groups for
 peaks that correlate with each other.</p>
-<p><strong>Note:</strong> For this small example dataset, we use a
-simplified approach. In real workflows with more samples, you would use
-stricter parameters and enable correlation across samples
-(<code>calcCaS = TRUE</code>).</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p><strong>Note:</strong> For this small example dataset, don’t use
+correlation across samples as it is unreliable with this few
+samples.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Group by correlation</span></span>
-<span><span class="co"># For small datasets, we skip correlation analysis to avoid errors</span></span>
-<span><span class="co"># In production with adequate samples, use:</span></span>
-<span><span class="co"># xs &lt;- groupCorr(xs, calcCaS = TRUE, cor_eic_th = 0.7, pval = 0.05)</span></span>
-<span></span>
-<span><span class="co"># For this example, we skip the correlation step and proceed directly</span></span>
-<span><span class="co"># xs &lt;- groupCorr(xs, calcIso = FALSE, calcCiS = FALSE, calcCaS = FALSE)</span></span></code></pre></div>
+<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/groupCorr-methods.html" class="external-link">groupCorr</a></span><span class="op">(</span><span class="va">xs</span>, calcIso <span class="op">=</span> <span class="cn">FALSE</span>, calcCiS <span class="op">=</span> <span class="cn">TRUE</span>, calcCaS <span class="op">=</span> <span class="cn">FALSE</span>, cor_eic_th <span class="op">=</span> <span class="fl">0.7</span>, pval <span class="op">=</span> <span class="fl">1E-6</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Start grouping after correlation.</span></span>
+<span><span class="co">#&gt; Generating EIC's .. </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Calculating peak correlations in 226 Groups... </span></span>
+<span><span class="co">#&gt;  % finished: 10  20  30  40  50  60  70  80  90  100  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Calculating graph cross linking in 226 Groups... </span></span>
+<span><span class="co">#&gt;  % finished: 10  20  30  40  50  60  70  80  90  100  </span></span>
+<span><span class="co">#&gt; New number of ps-groups:  271 </span></span>
+<span><span class="co">#&gt; xsAnnotate has now 271 groups, instead of 226</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="isotope-annotation">Isotope annotation<a class="anchor" aria-label="anchor" href="#isotope-annotation"></a>
 </h4>
 <p>This annotates peaks that are possible isotopes based on m/z
 difference and intensity patterns.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Find isotopes</span></span>
 <span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/findIsotopes-methods.html" class="external-link">findIsotopes</a></span><span class="op">(</span><span class="va">xs</span>, ppm <span class="op">=</span> <span class="fl">10</span>, mzabs <span class="op">=</span> <span class="fl">0.01</span>, intval <span class="op">=</span> <span class="st">"into"</span>, maxcharge <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Generating peak matrix!</span></span>
 <span><span class="co">#&gt; Run isotope peak annotation</span></span>
 <span><span class="co">#&gt;  % finished: 10  20  30  40  50  60  70  80  90  100  </span></span>
-<span><span class="co">#&gt; Found isotopes: 39</span></span></code></pre></div>
+<span><span class="co">#&gt; Found isotopes: 29</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="annotation-of-adducts-and-fragments">Annotation of adducts and fragments<a class="anchor" aria-label="anchor" href="#annotation-of-adducts-and-fragments"></a>
 </h4>
 <p>Now we try to annotate adducts and fragments based on expected mass
-differences.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Find adducts</span></span>
-<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/findAdducts-methods.html" class="external-link">findAdducts</a></span><span class="op">(</span><span class="va">xs</span>, ppm <span class="op">=</span> <span class="fl">10</span>, mzabs <span class="op">=</span> <span class="fl">0.01</span>, multiplier <span class="op">=</span> <span class="fl">4</span>, polarity <span class="op">=</span> <span class="st">"positive"</span><span class="op">)</span></span>
+differences. We’ll use the <code>commonMZ</code> package to generate a
+comprehensive list of adduct and fragment rules for CAMERA.</p>
+<p>First, we get the adduct/fragment rules for positive mode:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># warn_clash=TRUE will warn about indistinguishable annotations (e.g., [M+NH4]+ vs -NH3)</span></span>
+<span><span class="co"># Remove [M+NH4]+ if it's less common in your data</span></span>
+<span></span>
+<span><span class="va">rules_pos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/commonMZ/man/MZ_CAMERA.html" class="external-link">MZ_CAMERA</a></span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"pos"</span>, warn_clash <span class="op">=</span> <span class="cn">TRUE</span>, clash_ppm <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name</span> <span class="op">!=</span> <span class="st">"[M+NH4]+"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in MZ_CAMERA(mode = "pos", warn_clash = TRUE, clash_ppm = 5): The following adducts/fragments seem to collide.</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
+<span><span class="co">#&gt;   first       second                             </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                              </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> [M+H-NH3]+  [M+NH4]+                           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> [M+H-C3H4]+ [M+H+(CH3)2CO-H2O]+ (acetone cond.)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Consider removing one of them. Example: </span></span>
+<span><span class="co">#&gt;  rules=rules[            !grepl("[M+NH4]+",rules[,"name"],fixed=TRUE)         ,]</span></span></code></pre></div>
+<p>Now we can annotate adducts using these rules:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Find adducts using the rules from commonMZ</span></span>
+<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/findAdducts-methods.html" class="external-link">findAdducts</a></span><span class="op">(</span><span class="va">xs</span>, ppm <span class="op">=</span> <span class="fl">500</span>, mzabs <span class="op">=</span> <span class="fl">0.2</span>, multiplier <span class="op">=</span> <span class="fl">4</span>, polarity <span class="op">=</span> <span class="st">"positive"</span>, rules <span class="op">=</span> <span class="va">rules_pos</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Generating peak matrix for peak annotation!</span></span>
 <span><span class="co">#&gt; Polarity is set in xsAnnotate: positive </span></span>
-<span><span class="co">#&gt; Ruleset could not read from object! Recalculate</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Calculating possible adducts in 465 Groups... </span></span>
+<span><span class="co">#&gt; Found and use user-defined ruleset!</span></span>
+<span><span class="co">#&gt; Calculating possible adducts in 271 Groups... </span></span>
 <span><span class="co">#&gt;  % finished: 10  20  30  40  50  60  70  80  90  100</span></span></code></pre></div>
 </div>
 </div>
@@ -303,21 +315,21 @@ differences.</p>
 <p>Now we can create our comprehensive long-format peak table! Note that
 we use the original <code>xdata</code> (XCMSnExp) object along with the
 CAMERA annotations from <code>xs</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">peak_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/XCMSnExp_CAMERA_peaklist_long.html">XCMSnExp_CAMERA_peaklist_long</a></span><span class="op">(</span><span class="va">xdata</span>, <span class="va">xs</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check the structure</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">peak_table</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 2526   29</span></span>
+<span><span class="co">#&gt; [1] 2808   31</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">peak_table</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "sample_name"     "sample_group"    "injection_order" "fromFile"       </span></span>
-<span><span class="co">#&gt;  [5] "feature_id"      "f_mzmed"         "f_mzmin"         "f_mzmax"        </span></span>
-<span><span class="co">#&gt;  [9] "f_rtmed"         "f_rtmin"         "f_rtmax"         "isotopes"       </span></span>
-<span><span class="co">#&gt; [13] "adduct"          "pcgroup"         "ms_level"        "filepath"       </span></span>
-<span><span class="co">#&gt; [17] "filename"        "peakidx"         "mz"              "mzmin"          </span></span>
-<span><span class="co">#&gt; [21] "mzmax"           "rt"              "rtmin"           "rtmax"          </span></span>
-<span><span class="co">#&gt; [25] "into"            "intb"            "maxo"            "sn"             </span></span>
-<span><span class="co">#&gt; [29] "is_filled"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] "sample_name"   "sample_group"  "spectraOrigin" "sample_type"  </span></span>
+<span><span class="co">#&gt;  [5] "fromFile"      "feature_id"    "f_mzmed"       "f_mzmin"      </span></span>
+<span><span class="co">#&gt;  [9] "f_mzmax"       "f_rtmed"       "f_rtmin"       "f_rtmax"      </span></span>
+<span><span class="co">#&gt; [13] "isotopes"      "adduct"        "pcgroup"       "ms_level"     </span></span>
+<span><span class="co">#&gt; [17] "filepath"      "filename"      "peakidx"       "mz"           </span></span>
+<span><span class="co">#&gt; [21] "mzmin"         "mzmax"         "rt"            "rtmin"        </span></span>
+<span><span class="co">#&gt; [25] "rtmax"         "into"          "intb"          "maxo"         </span></span>
+<span><span class="co">#&gt; [29] "sn"            "is_filled"     "merged"</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -358,8 +370,9 @@ understanding:</p>
 <td>The file number (the order files were supplied in)</td>
 </tr>
 <tr class="odd">
-<td><em>Plus any columns from <code>pData(XCMSnExp)</code></em></td>
-<td>Sample metadata columns you added</td>
+<td><em>Plus any columns from <code><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData()</a></code></em></td>
+<td>Sample metadata columns (e.g., sample_name, sample_group,
+sample_type)</td>
 </tr>
 <tr class="even">
 <td><strong>Feature identifiers</strong></td>
@@ -579,7 +592,7 @@ peak in that specific sample</li>
 <h3 id="feature-level-information">Feature-Level Information<a class="anchor" aria-label="anchor" href="#feature-level-information"></a>
 </h3>
 <p>These columns describe each feature (grouped peak):</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -587,12 +600,12 @@ peak in that specific sample</li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;   feature_id f_mzmed f_rtmed</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1    200.   <span style="text-decoration: underline;">2</span>877.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          2    201.   <span style="text-decoration: underline;">3</span>141.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          3    205    <span style="text-decoration: underline;">2</span>788.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          4    206.   <span style="text-decoration: underline;">2</span>796.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          5    206    <span style="text-decoration: underline;">2</span>785.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          6    207.   <span style="text-decoration: underline;">2</span>713.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1    200.   <span style="text-decoration: underline;">2</span>903.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          2    205    <span style="text-decoration: underline;">2</span>790.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          3    206    <span style="text-decoration: underline;">2</span>789.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          4    207.   <span style="text-decoration: underline;">2</span>719.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          5    233    <span style="text-decoration: underline;">3</span>024.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          6    241.   <span style="text-decoration: underline;">3</span>683.</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="camera-annotations">CAMERA Annotations<a class="anchor" aria-label="anchor" href="#camera-annotations"></a>
@@ -607,22 +620,22 @@ peak in that specific sample</li>
 <li>
 <code>pcgroup</code>: Pseudospectrum correlation group ID</li>
 </ul>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View features with adduct annotations</span></span>
 <span><span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">adduct</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">adduct</span><span class="op">!=</span><span class="st">""</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span>, <span class="va">isotopes</span>, <span class="va">adduct</span>, <span class="va">pcgroup</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">feature_id</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
-<span><span class="co">#&gt;   feature_id f_mzmed f_rtmed isotopes adduct pcgroup</span></span>
-<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1    200.   <span style="text-decoration: underline;">2</span>877. <span style="color: #949494;">""</span>       <span style="color: #949494;">""</span>         228</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          2    201.   <span style="text-decoration: underline;">3</span>141. <span style="color: #949494;">""</span>       <span style="color: #949494;">""</span>         227</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          3    205    <span style="text-decoration: underline;">2</span>788. <span style="color: #949494;">""</span>       <span style="color: #949494;">""</span>          10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          4    206.   <span style="text-decoration: underline;">2</span>796. <span style="color: #949494;">""</span>       <span style="color: #949494;">""</span>         457</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          5    206    <span style="text-decoration: underline;">2</span>785. <span style="color: #949494;">""</span>       <span style="color: #949494;">""</span>          41</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          6    207.   <span style="text-decoration: underline;">2</span>713. <span style="color: #949494;">""</span>       <span style="color: #949494;">""</span>         245</span></span></code></pre></div>
+<span><span class="co">#&gt;   feature_id f_mzmed f_rtmed isotopes  adduct                            pcgroup</span></span>
+<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          3    206    <span style="text-decoration: underline;">2</span>789. <span style="color: #949494;">""</span>        [M+2K]2+ 334.047 [M+H-NH3-CO2-C5…      11</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          6    241.   <span style="text-decoration: underline;">3</span>683. <span style="color: #949494;">""</span>        [M+H-S]+ 272.112 [M+H-CH3OH]+ 27…      87</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>         11    255.   <span style="text-decoration: underline;">3</span>682. <span style="color: #949494;">""</span>        [M+H-H2O]+ 272.112                     87</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>         13    266.   <span style="text-decoration: underline;">3</span>669. <span style="color: #949494;">""</span>        [M+H-C2H4-CO2]+ 337.215 [M+H-C4H…      44</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>         19    279    <span style="text-decoration: underline;">2</span>788. <span style="color: #949494;">""</span>        [M+H-C3H4O]+ 334.047 [M+H-C4H8]+…      11</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>         21    281.   <span style="text-decoration: underline;">3</span>669. <span style="color: #949494;">"</span>[1][M]+<span style="color: #949494;">"</span> [M+H-NH3-C3H4]+ 337.215                44</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="peak-level-information">Peak-Level Information<a class="anchor" aria-label="anchor" href="#peak-level-information"></a>
@@ -640,7 +653,7 @@ peak in that specific sample</li>
 <li>
 <code>sn</code>: Signal-to-noise ratio</li>
 </ul>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View detected peaks (non-NA intensities)</span></span>
 <span><span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">into</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -649,12 +662,12 @@ peak in that specific sample</li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
 <span><span class="co">#&gt;   feature_id filename    mz    rt     into    sn</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          3 ko15.CDF  205  <span style="text-decoration: underline;">2</span>785. 1<span style="text-decoration: underline;">924</span>712.    64</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          4 ko15.CDF  206. <span style="text-decoration: underline;">2</span>796.   <span style="text-decoration: underline;">57</span>359.  <span style="text-decoration: underline;">8</span>177</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          5 ko15.CDF  206  <span style="text-decoration: underline;">2</span>783.  <span style="text-decoration: underline;">213</span>659.    14</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          6 ko15.CDF  207. <span style="text-decoration: underline;">2</span>711.  <span style="text-decoration: underline;">349</span>011.    17</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          7 ko15.CDF  221. <span style="text-decoration: underline;">3</span>079.  <span style="text-decoration: underline;">163</span>255.  <span style="text-decoration: underline;">7</span>841</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          9 ko15.CDF  231  <span style="text-decoration: underline;">3</span>079.  <span style="text-decoration: underline;">328</span>034. <span style="text-decoration: underline;">10</span>059</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1 ko15.CDF  200. <span style="text-decoration: underline;">2</span>933.  <span style="text-decoration: underline;">135</span>162.    <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          2 ko15.CDF  205  <span style="text-decoration: underline;">2</span>792. 1<span style="text-decoration: underline;">924</span>712.    64</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          3 ko15.CDF  206  <span style="text-decoration: underline;">2</span>790.  <span style="text-decoration: underline;">213</span>659.    14</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          4 ko15.CDF  207. <span style="text-decoration: underline;">2</span>718.  <span style="text-decoration: underline;">349</span>011.    17</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          5 ko15.CDF  233  <span style="text-decoration: underline;">3</span>035.  <span style="text-decoration: underline;">286</span>221.    23</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          6 ko15.CDF  241. <span style="text-decoration: underline;">3</span>681. 1<span style="text-decoration: underline;">160</span>580.    11</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="sample-information">Sample Information<a class="anchor" aria-label="anchor" href="#sample-information"></a>
@@ -665,28 +678,29 @@ peak in that specific sample</li>
 information</li>
 <li>
 <code>fromFile</code>: Sample index</li>
-<li>Plus any columns from <code><a href="https://rdrr.io/pkg/Biobase/man/phenoData.html" class="external-link">pData()</a></code> (sample metadata)</li>
+<li>Plus any columns from <code><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData()</a></code> (sample
+metadata)</li>
 </ul>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">filename</span>, <span class="va">sample_group</span>, <span class="va">injection_order</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">filename</span>, <span class="va">sample_name</span>, <span class="va">sample_group</span>, <span class="va">sample_type</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
-<span><span class="co">#&gt;   feature_id filename sample_group injection_order</span></span>
-<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1 ko15.CDF WT                         1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          2 ko15.CDF WT                         1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          3 ko15.CDF WT                         1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          4 ko15.CDF WT                         1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          5 ko15.CDF WT                         1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          6 ko15.CDF WT                         1</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
+<span><span class="co">#&gt;   feature_id filename sample_name sample_group sample_type</span></span>
+<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1 ko15.CDF ko15        KO           QC         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          2 ko15.CDF ko15        KO           QC         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          3 ko15.CDF ko15        KO           QC         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          4 ko15.CDF ko15        KO           QC         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          5 ko15.CDF ko15        KO           QC         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          6 ko15.CDF ko15        KO           QC</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="missing-values">Missing Values<a class="anchor" aria-label="anchor" href="#missing-values"></a>
 </h3>
 <p>Features not detected in a sample have <code>NA</code> for peak-level
 columns:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Count detected features per sample</span></span>
 <span><span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">filename</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -694,12 +708,17 @@ columns:</p>
 <span>    n_features_detected <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">into</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    n_features_total <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 3</span></span></span>
 <span><span class="co">#&gt;   filename n_features_detected n_features_total</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ko15.CDF                 436              842</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ko16.CDF                 606              842</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> ko18.CDF                 365              842</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ko15.CDF                 350              351</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ko16.CDF                 350              351</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> ko21.CDF                 350              351</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ko22.CDF                 349              351</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> wt15.CDF                 348              351</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> wt16.CDF                 347              351</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> wt21.CDF                 348              351</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> wt22.CDF                 351              351</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -708,10 +727,10 @@ columns:</p>
 <div class="section level3">
 <h3 id="visualize-feature-intensities">Visualize Feature Intensities<a class="anchor" aria-label="anchor" href="#visualize-feature-intensities"></a>
 </h3>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot intensity distribution by sample group</span></span>
 <span><span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">into</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">feature_id</span> <span class="op">==</span> <span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">sample_group</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">into</span><span class="op">)</span>, fill <span class="op">=</span> <span class="va">sample_group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html" class="external-link">geom_boxplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
@@ -725,31 +744,46 @@ columns:</p>
 <div class="section level3">
 <h3 id="identify-features-with-adduct-annotations">Identify Features with Adduct Annotations<a class="anchor" aria-label="anchor" href="#identify-features-with-adduct-annotations"></a>
 </h3>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Count features by adduct type</span></span>
-<span><span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">adduct</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">adduct_counts</span> <span class="op">&lt;-</span> <span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">adduct</span><span class="op">!=</span><span class="st">""</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/separate_rows.html" class="external-link">separate_rows</a></span><span class="op">(</span><span class="va">adduct</span>, sep <span class="op">=</span> <span class="st">"\\s(?=\\[M)"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">adduct</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>adduct <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"^(\\[.*\\].*\\+).*"</span>,<span class="st">"\\1"</span>,<span class="va">adduct</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">adduct</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 75 × 2</span></span></span>
-<span><span class="co">#&gt;    adduct                       n</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> <span style="color: #949494;">""</span>                         768</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> <span style="color: #949494;">"</span>[2M+Na+2K]3+ 590.193<span style="color: #949494;">"</span>       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> <span style="color: #949494;">"</span>[2M+Na+3K-H]3+ 589.198<span style="color: #949494;">"</span>     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> <span style="color: #949494;">"</span>[3M+2Na]2+ 210.138<span style="color: #949494;">"</span>         1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> <span style="color: #949494;">"</span>[3M+H+Na]2+ 384.195<span style="color: #949494;">"</span>        1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> <span style="color: #949494;">"</span>[M+2H-CH4]2+ 524.213<span style="color: #949494;">"</span>       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> <span style="color: #949494;">"</span>[M+2Na-H]+ 384.234<span style="color: #949494;">"</span>         1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> <span style="color: #949494;">"</span>[M+H+NH3]+ 304.113<span style="color: #949494;">"</span>         1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> <span style="color: #949494;">"</span>[M+H-C2H4]+ 328.015<span style="color: #949494;">"</span>        1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> <span style="color: #949494;">"</span>[M+H-C2H4]+ 519.288<span style="color: #949494;">"</span>        1</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 65 more rows</span></span></span></code></pre></div>
+<span></span>
+<span><span class="va">adduct_counts</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 33 × 2</span></span></span>
+<span><span class="co">#&gt;    adduct                  n</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> [M+H]+                 12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> [M+Na]+                12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> [M+H-H2O]+             10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> [M+K]+                  6</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> [M+H-C3H9N-C2H4O2]+     5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> [M+H-CH4]+              5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> [M+H-O]+                5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> [M+H-NH3]+              4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> [M+H-CH3OH]+            3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> [M+H-S]+                3</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 23 more rows</span></span></span></code></pre></div>
+<div class="section level4">
+<h4 id="visualize-adduct-distribution">Visualize Adduct Distribution<a class="anchor" aria-label="anchor" href="#visualize-adduct-distribution"></a>
+</h4>
+<p>We can create a pie chart showing the frequency of different adducts
+and fragments found by CAMERA:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Create pie chart of adduct frequencies</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/pie.html" class="external-link">pie</a></span><span class="op">(</span><span class="va">adduct_counts</span><span class="op">$</span><span class="va">n</span>, labels <span class="op">=</span> <span class="va">adduct_counts</span><span class="op">$</span><span class="va">adduct</span>, main <span class="op">=</span> <span class="st">"Distribution of Adduct Annotations"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="long-format-peaklist_files/figure-html/adduct_pie-1.png" class="r-plt" alt="Pie chart showing the distribution of adduct and fragment annotations found by CAMERA across all features." width="672"></p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="find-features-present-in-all-samples">Find Features Present in All Samples<a class="anchor" aria-label="anchor" href="#find-features-present-in-all-samples"></a>
 </h3>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Features detected in all samples</span></span>
 <span><span class="va">complete_features</span> <span class="op">&lt;-</span> <span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">feature_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -761,12 +795,12 @@ columns:</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">n_detected</span> <span class="op">==</span> <span class="va">n_samples</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Found"</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">complete_features</span><span class="op">)</span>, <span class="st">"features detected in all samples\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Found 217 features detected in all samples</span></span></code></pre></div>
+<span><span class="co">#&gt; Found 345 features detected in all samples</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="coefficient-of-variation-analysis">Coefficient of Variation Analysis<a class="anchor" aria-label="anchor" href="#coefficient-of-variation-analysis"></a>
 </h3>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate CV for each feature</span></span>
 <span><span class="va">feature_cv</span> <span class="op">&lt;-</span> <span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">into</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -784,35 +818,38 @@ columns:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
 <span><span class="co">#&gt;   feature_id f_mzmed f_rtmed mean_intensity sd_intensity    cv</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        498    486.   <span style="text-decoration: underline;">2</span>798.        <span style="text-decoration: underline;">227</span>942.         246. 0.108</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        454    466.   <span style="text-decoration: underline;">3</span>193.        <span style="text-decoration: underline;">173</span>672.         607. 0.350</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        245    369.   <span style="text-decoration: underline;">3</span>770.        <span style="text-decoration: underline;">996</span>200.        <span style="text-decoration: underline;">6</span>299. 0.632</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        286    386.   <span style="text-decoration: underline;">3</span>446.        <span style="text-decoration: underline;">205</span>233.        <span style="text-decoration: underline;">1</span>332. 0.649</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        235    366.   <span style="text-decoration: underline;">2</span>767.       1<span style="text-decoration: underline;">096</span>511.       <span style="text-decoration: underline;">14</span>736. 1.34 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>        108    311.   <span style="text-decoration: underline;">3</span>070.        <span style="text-decoration: underline;">277</span>669.        <span style="text-decoration: underline;">4</span>432. 1.60</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>         75    338.   <span style="text-decoration: underline;">3</span>026.        <span style="text-decoration: underline;">425</span>823.       <span style="text-decoration: underline;">33</span>850.  7.95</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        237    498.   <span style="text-decoration: underline;">3</span>432.       1<span style="text-decoration: underline;">608</span>474.      <span style="text-decoration: underline;">195</span>924. 12.2 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        185    438.   <span style="text-decoration: underline;">3</span>464.       2<span style="text-decoration: underline;">151</span>297.      <span style="text-decoration: underline;">280</span>666. 13.0 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        261    523.   <span style="text-decoration: underline;">3</span>405.       6<span style="text-decoration: underline;">295</span>635.      <span style="text-decoration: underline;">879</span>251. 14.0 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        113    365    <span style="text-decoration: underline;">2</span>687.      13<span style="text-decoration: underline;">311</span>820.     1<span style="text-decoration: underline;">922</span>776. 14.4 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>        157    404.   <span style="text-decoration: underline;">2</span>695.        <span style="text-decoration: underline;">324</span>147.       <span style="text-decoration: underline;">46</span>898. 14.5</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="extract-specific-features-for-further-analysis">Extract Specific Features for Further Analysis<a class="anchor" aria-label="anchor" href="#extract-specific-features-for-further-analysis"></a>
 </h3>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get a specific feature across all samples</span></span>
 <span><span class="va">feature_123</span> <span class="op">&lt;-</span> <span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">feature_id</span> <span class="op">==</span> <span class="fl">123</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">filename</span>, <span class="va">sample_group</span>, <span class="va">mz</span>, <span class="va">rt</span>, <span class="va">into</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">feature_123</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 6</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
 <span><span class="co">#&gt;   feature_id filename sample_group    mz    rt    into</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        123 ko15.CDF WT             <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        123 ko16.CDF KO            316. <span style="text-decoration: underline;">3</span>450. <span style="text-decoration: underline;">167</span>161.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        123 ko18.CDF WT             <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        123 ko15.CDF KO            371. <span style="text-decoration: underline;">3</span>657. <span style="text-decoration: underline;">563</span>419.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        123 ko16.CDF KO            371. <span style="text-decoration: underline;">3</span>657. <span style="text-decoration: underline;">320</span>434.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        123 ko21.CDF KO            371. <span style="text-decoration: underline;">3</span>649. <span style="text-decoration: underline;">123</span>876.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        123 ko22.CDF KO            371. <span style="text-decoration: underline;">3</span>633. <span style="text-decoration: underline;">173</span>440.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        123 wt15.CDF WT            371. <span style="text-decoration: underline;">3</span>632. <span style="text-decoration: underline;">570</span>454.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>        123 wt16.CDF WT            371. <span style="text-decoration: underline;">3</span>639. <span style="text-decoration: underline;">287</span>139.</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.5.2 (2025-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -836,71 +873,74 @@ columns:</p>
 <span><span class="co">#&gt; [8] base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt;  [1] MSnbase_2.36.0      ProtGenerics_1.42.0 S4Vectors_0.48.0   </span></span>
-<span><span class="co">#&gt;  [4] mzR_2.44.0          Rcpp_1.1.0          ggplot2_4.0.0      </span></span>
-<span><span class="co">#&gt;  [7] dplyr_1.1.4         CAMERA_1.66.0       Biobase_2.70.0     </span></span>
-<span><span class="co">#&gt; [10] BiocGenerics_0.56.0 generics_0.1.4      xcms_4.8.0         </span></span>
-<span><span class="co">#&gt; [13] BiocParallel_1.44.0 tidyXCMS_0.99.2    </span></span>
+<span><span class="co">#&gt;  [1] MsExperiment_1.12.0 tidyr_1.3.1         ggplot2_4.0.0      </span></span>
+<span><span class="co">#&gt;  [4] dplyr_1.1.4         commonMZ_0.0.2      CAMERA_1.66.0      </span></span>
+<span><span class="co">#&gt;  [7] MSnbase_2.36.0      ProtGenerics_1.42.0 S4Vectors_0.48.0   </span></span>
+<span><span class="co">#&gt; [10] mzR_2.44.0          Rcpp_1.1.0          Biobase_2.70.0     </span></span>
+<span><span class="co">#&gt; [13] BiocGenerics_0.56.0 generics_0.1.4      xcms_4.8.0         </span></span>
+<span><span class="co">#&gt; [16] BiocParallel_1.44.0 tidyXCMS_0.99.6    </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;   [1] DBI_1.2.3                   RBGL_1.86.0                </span></span>
-<span><span class="co">#&gt;   [3] gridExtra_2.3               rlang_1.1.6                </span></span>
-<span><span class="co">#&gt;   [5] magrittr_2.0.4              clue_0.3-66                </span></span>
-<span><span class="co">#&gt;   [7] MassSpecWavelet_1.76.0      matrixStats_1.5.0          </span></span>
-<span><span class="co">#&gt;   [9] compiler_4.5.2              systemfonts_1.3.1          </span></span>
-<span><span class="co">#&gt;  [11] vctrs_0.6.5                 reshape2_1.4.4             </span></span>
-<span><span class="co">#&gt;  [13] stringr_1.6.0               pkgconfig_2.0.3            </span></span>
-<span><span class="co">#&gt;  [15] MetaboCoreUtils_1.18.0      crayon_1.5.3               </span></span>
-<span><span class="co">#&gt;  [17] fastmap_1.2.0               backports_1.5.0            </span></span>
-<span><span class="co">#&gt;  [19] XVector_0.50.0              labeling_0.4.3             </span></span>
-<span><span class="co">#&gt;  [21] utf8_1.2.6                  rmarkdown_2.30             </span></span>
-<span><span class="co">#&gt;  [23] graph_1.88.0                preprocessCore_1.72.0      </span></span>
-<span><span class="co">#&gt;  [25] ragg_1.5.0                  purrr_1.2.0                </span></span>
-<span><span class="co">#&gt;  [27] xfun_0.54                   MultiAssayExperiment_1.36.0</span></span>
-<span><span class="co">#&gt;  [29] cachem_1.1.0                jsonlite_2.0.0             </span></span>
-<span><span class="co">#&gt;  [31] progress_1.2.3              DelayedArray_0.36.0        </span></span>
-<span><span class="co">#&gt;  [33] prettyunits_1.2.0           parallel_4.5.2             </span></span>
-<span><span class="co">#&gt;  [35] cluster_2.1.8.1             R6_2.6.1                   </span></span>
-<span><span class="co">#&gt;  [37] bslib_0.9.0                 stringi_1.8.7              </span></span>
-<span><span class="co">#&gt;  [39] RColorBrewer_1.1-3          limma_3.66.0               </span></span>
-<span><span class="co">#&gt;  [41] rpart_4.1.24                GenomicRanges_1.62.0       </span></span>
-<span><span class="co">#&gt;  [43] jquerylib_0.1.4             Seqinfo_1.0.0              </span></span>
-<span><span class="co">#&gt;  [45] SummarizedExperiment_1.40.0 iterators_1.0.14           </span></span>
-<span><span class="co">#&gt;  [47] knitr_1.50                  base64enc_0.1-3            </span></span>
-<span><span class="co">#&gt;  [49] IRanges_2.44.0              BiocBaseUtils_1.12.0       </span></span>
-<span><span class="co">#&gt;  [51] nnet_7.3-20                 Matrix_1.7-4               </span></span>
-<span><span class="co">#&gt;  [53] igraph_2.2.1                tidyselect_1.2.1           </span></span>
-<span><span class="co">#&gt;  [55] rstudioapi_0.17.1           abind_1.4-8                </span></span>
-<span><span class="co">#&gt;  [57] yaml_2.3.10                 doParallel_1.0.17          </span></span>
-<span><span class="co">#&gt;  [59] codetools_0.2-20            affy_1.88.0                </span></span>
-<span><span class="co">#&gt;  [61] lattice_0.22-7              tibble_3.3.0               </span></span>
-<span><span class="co">#&gt;  [63] plyr_1.8.9                  withr_3.0.2                </span></span>
-<span><span class="co">#&gt;  [65] S7_0.2.0                    evaluate_1.0.5             </span></span>
-<span><span class="co">#&gt;  [67] foreign_0.8-90              desc_1.4.3                 </span></span>
-<span><span class="co">#&gt;  [69] Spectra_1.20.0              pillar_1.11.1              </span></span>
-<span><span class="co">#&gt;  [71] affyio_1.80.0               BiocManager_1.30.26        </span></span>
-<span><span class="co">#&gt;  [73] MatrixGenerics_1.22.0       checkmate_2.3.3            </span></span>
-<span><span class="co">#&gt;  [75] foreach_1.5.2               MALDIquant_1.22.3          </span></span>
-<span><span class="co">#&gt;  [77] ncdf4_1.24                  hms_1.1.4                  </span></span>
-<span><span class="co">#&gt;  [79] scales_1.4.0                MsExperiment_1.12.0        </span></span>
-<span><span class="co">#&gt;  [81] glue_1.8.0                  Hmisc_5.2-4                </span></span>
-<span><span class="co">#&gt;  [83] MsFeatures_1.18.0           lazyeval_0.2.2             </span></span>
-<span><span class="co">#&gt;  [85] tools_4.5.2                 mzID_1.48.0                </span></span>
-<span><span class="co">#&gt;  [87] data.table_1.17.8           QFeatures_1.20.0           </span></span>
-<span><span class="co">#&gt;  [89] vsn_3.78.0                  fs_1.6.6                   </span></span>
-<span><span class="co">#&gt;  [91] XML_3.99-0.20               grid_4.5.2                 </span></span>
-<span><span class="co">#&gt;  [93] impute_1.84.0               tidyr_1.3.1                </span></span>
-<span><span class="co">#&gt;  [95] colorspace_2.1-2            MsCoreUtils_1.21.0         </span></span>
-<span><span class="co">#&gt;  [97] PSMatch_1.14.0              htmlTable_2.4.3            </span></span>
-<span><span class="co">#&gt;  [99] Formula_1.2-5               cli_3.6.5                  </span></span>
-<span><span class="co">#&gt; [101] textshaping_1.0.4           S4Arrays_1.10.0            </span></span>
-<span><span class="co">#&gt; [103] AnnotationFilter_1.34.0     pcaMethods_2.2.0           </span></span>
-<span><span class="co">#&gt; [105] gtable_0.3.6                sass_0.4.10                </span></span>
-<span><span class="co">#&gt; [107] digest_0.6.37               SparseArray_1.10.1         </span></span>
-<span><span class="co">#&gt; [109] htmlwidgets_1.6.4           farver_2.1.2               </span></span>
-<span><span class="co">#&gt; [111] htmltools_0.5.8.1           pkgdown_2.2.0              </span></span>
-<span><span class="co">#&gt; [113] lifecycle_1.0.4             statmod_1.5.1              </span></span>
-<span><span class="co">#&gt; [115] MASS_7.3-65</span></span></code></pre></div>
+<span><span class="co">#&gt;   [1] RColorBrewer_1.1-3          rstudioapi_0.17.1          </span></span>
+<span><span class="co">#&gt;   [3] jsonlite_2.0.0              MultiAssayExperiment_1.36.0</span></span>
+<span><span class="co">#&gt;   [5] magrittr_2.0.4              farver_2.1.2               </span></span>
+<span><span class="co">#&gt;   [7] MALDIquant_1.22.3           rmarkdown_2.30             </span></span>
+<span><span class="co">#&gt;   [9] fs_1.6.6                    ragg_1.5.0                 </span></span>
+<span><span class="co">#&gt;  [11] vctrs_0.6.5                 base64enc_0.1-3            </span></span>
+<span><span class="co">#&gt;  [13] htmltools_0.5.8.1           S4Arrays_1.10.0            </span></span>
+<span><span class="co">#&gt;  [15] BiocBaseUtils_1.12.0        progress_1.2.3             </span></span>
+<span><span class="co">#&gt;  [17] cellranger_1.1.0            SparseArray_1.10.1         </span></span>
+<span><span class="co">#&gt;  [19] Formula_1.2-5               mzID_1.48.0                </span></span>
+<span><span class="co">#&gt;  [21] sass_0.4.10                 bslib_0.9.0                </span></span>
+<span><span class="co">#&gt;  [23] htmlwidgets_1.6.4           desc_1.4.3                 </span></span>
+<span><span class="co">#&gt;  [25] plyr_1.8.9                  impute_1.84.0              </span></span>
+<span><span class="co">#&gt;  [27] cachem_1.1.0                igraph_2.2.1               </span></span>
+<span><span class="co">#&gt;  [29] lifecycle_1.0.4             iterators_1.0.14           </span></span>
+<span><span class="co">#&gt;  [31] pkgconfig_2.0.3             Matrix_1.7-4               </span></span>
+<span><span class="co">#&gt;  [33] R6_2.6.1                    fastmap_1.2.0              </span></span>
+<span><span class="co">#&gt;  [35] MatrixGenerics_1.22.0       clue_0.3-66                </span></span>
+<span><span class="co">#&gt;  [37] digest_0.6.37               pcaMethods_2.2.0           </span></span>
+<span><span class="co">#&gt;  [39] colorspace_2.1-2            textshaping_1.0.4          </span></span>
+<span><span class="co">#&gt;  [41] Hmisc_5.2-4                 GenomicRanges_1.62.0       </span></span>
+<span><span class="co">#&gt;  [43] labeling_0.4.3              Spectra_1.20.0             </span></span>
+<span><span class="co">#&gt;  [45] abind_1.4-8                 compiler_4.5.2             </span></span>
+<span><span class="co">#&gt;  [47] withr_3.0.2                 bit64_4.6.0-1              </span></span>
+<span><span class="co">#&gt;  [49] doParallel_1.0.17           htmlTable_2.4.3            </span></span>
+<span><span class="co">#&gt;  [51] S7_0.2.0                    backports_1.5.0            </span></span>
+<span><span class="co">#&gt;  [53] DBI_1.2.3                   MASS_7.3-65                </span></span>
+<span><span class="co">#&gt;  [55] DelayedArray_0.36.0         tools_4.5.2                </span></span>
+<span><span class="co">#&gt;  [57] PSMatch_1.14.0              foreign_0.8-90             </span></span>
+<span><span class="co">#&gt;  [59] nnet_7.3-20                 glue_1.8.0                 </span></span>
+<span><span class="co">#&gt;  [61] QFeatures_1.20.0            grid_4.5.2                 </span></span>
+<span><span class="co">#&gt;  [63] checkmate_2.3.3             cluster_2.1.8.1            </span></span>
+<span><span class="co">#&gt;  [65] reshape2_1.4.4              gtable_0.3.6               </span></span>
+<span><span class="co">#&gt;  [67] tzdb_0.5.0                  preprocessCore_1.72.0      </span></span>
+<span><span class="co">#&gt;  [69] data.table_1.17.8           hms_1.1.4                  </span></span>
+<span><span class="co">#&gt;  [71] MetaboCoreUtils_1.18.0      utf8_1.2.6                 </span></span>
+<span><span class="co">#&gt;  [73] XVector_0.50.0              foreach_1.5.2              </span></span>
+<span><span class="co">#&gt;  [75] pillar_1.11.1               stringr_1.6.0              </span></span>
+<span><span class="co">#&gt;  [77] vroom_1.6.6                 limma_3.66.0               </span></span>
+<span><span class="co">#&gt;  [79] lattice_0.22-7              bit_4.6.0                  </span></span>
+<span><span class="co">#&gt;  [81] tidyselect_1.2.1            RBGL_1.86.0                </span></span>
+<span><span class="co">#&gt;  [83] knitr_1.50                  gridExtra_2.3              </span></span>
+<span><span class="co">#&gt;  [85] IRanges_2.44.0              Seqinfo_1.0.0              </span></span>
+<span><span class="co">#&gt;  [87] SummarizedExperiment_1.40.0 xfun_0.54                  </span></span>
+<span><span class="co">#&gt;  [89] statmod_1.5.1               matrixStats_1.5.0          </span></span>
+<span><span class="co">#&gt;  [91] stringi_1.8.7               lazyeval_0.2.2             </span></span>
+<span><span class="co">#&gt;  [93] yaml_2.3.10                 evaluate_1.0.5             </span></span>
+<span><span class="co">#&gt;  [95] codetools_0.2-20            MsCoreUtils_1.21.0         </span></span>
+<span><span class="co">#&gt;  [97] tibble_3.3.0                BiocManager_1.30.26        </span></span>
+<span><span class="co">#&gt;  [99] graph_1.88.0                cli_3.6.5                  </span></span>
+<span><span class="co">#&gt; [101] affyio_1.80.0               rpart_4.1.24               </span></span>
+<span><span class="co">#&gt; [103] systemfonts_1.3.1           jquerylib_0.1.4            </span></span>
+<span><span class="co">#&gt; [105] MassSpecWavelet_1.76.0      readxl_1.4.5               </span></span>
+<span><span class="co">#&gt; [107] XML_3.99-0.20               parallel_4.5.2             </span></span>
+<span><span class="co">#&gt; [109] pkgdown_2.2.0               readr_2.1.5                </span></span>
+<span><span class="co">#&gt; [111] prettyunits_1.2.0           AnnotationFilter_1.34.0    </span></span>
+<span><span class="co">#&gt; [113] MsFeatures_1.18.0           scales_1.4.0               </span></span>
+<span><span class="co">#&gt; [115] affy_1.88.0                 ncdf4_1.24                 </span></span>
+<span><span class="co">#&gt; [117] purrr_1.2.0                 crayon_1.5.3               </span></span>
+<span><span class="co">#&gt; [119] rlang_1.1.6                 vsn_3.78.0</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
