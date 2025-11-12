@@ -1,11 +1,18 @@
-## Changes in v0.99.2
+## Changes in v0.99.3
+
+
+### Bug Fixes
+
+* correct xdata file paths to use system-specific location ([8d60f1a](https://github.com/stanstrup/tidyXCMS/commit/8d60f1ab93fb37b09579cb34157425e51f942dc4))
+
+## Changes in v0.99.3
 
 
 ### Bug Fixes
 
 * ensure package version stays below 1.0.0 for Bioconductor ([b1bc012](https://github.com/stanstrup/tidyXCMS/commit/b1bc012de886220414ab6302bd3ecafbef71eade))
 
-## Changes in v0.99.2
+## Changes in v0.99.3
 
 
 ### Bug Fixes
