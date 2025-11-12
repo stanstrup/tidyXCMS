@@ -60,18 +60,26 @@ grouping completed.
 xdata <- loadXcmsData("xmse")
 
 # Fix file paths to use correct system-specific location
+# Get current dataOrigin values (these are repeated for each spectrum)
+current_origins <- spectra(xdata)$dataOrigin
+
+# Get unique file paths
+unique_old_paths <- unique(current_origins)
+
 # Extract relative paths (e.g., "KO/ko15.CDF", "WT/wt15.CDF")
-current_paths <- xcms::fileNames(xdata)
-relative_paths <- sub(".*/faahKO/cdf/", "", current_paths)
+relative_paths <- sub(".*/faahKO/cdf/", "", unique_old_paths)
 
 # Get the correct base path for faahKO package on this system
 cdf_path <- file.path(find.package("faahKO"), "cdf")
 
 # Reconstruct full paths
-new_paths <- file.path(cdf_path, relative_paths)
+unique_new_paths <- file.path(cdf_path, relative_paths)
 
-# Update the file paths in the xdata object
-xcms::fileNames(xdata) <- new_paths
+# Create a named vector for path mapping
+path_map <- setNames(unique_new_paths, unique_old_paths)
+
+# Replace all dataOrigin values (vectorized replacement)
+spectra(xdata)$dataOrigin <- path_map[current_origins]
 
 # Check the sample information
 sampleData(xdata)
