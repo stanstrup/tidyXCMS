@@ -635,7 +635,7 @@ sessionInfo()
 #>  [7] MSnbase_2.36.0      ProtGenerics_1.42.0 S4Vectors_0.48.0   
 #> [10] mzR_2.44.0          Rcpp_1.1.0          Biobase_2.70.0     
 #> [13] BiocGenerics_0.56.0 generics_0.1.4      xcms_4.8.0         
-#> [16] BiocParallel_1.44.0 tidyXCMS_0.99.6    
+#> [16] BiocParallel_1.44.0 tidyXCMS_0.99.7    
 #> 
 #> loaded via a namespace (and not attached):
 #>   [1] RColorBrewer_1.1-3          rstudioapi_0.17.1          
