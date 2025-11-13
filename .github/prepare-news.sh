@@ -51,5 +51,9 @@ sed -i 's/\[compare\/v[0-9].*//' NEWS.md
 # This ensures the latest release uses 0.99.x format without touching historical entries
 sed -i "0,/## Changes in v[0-9]\+\.[0-9]\+\.[0-9]\+/{s/## Changes in v[0-9]\+\.[0-9]\+\.[0-9]\+/## Changes in v$NEXT_VERSION/}" NEWS.md
 
+# Add commit SHA to the version header for traceability
+COMMIT_SHA=$(git rev-parse --short HEAD)
+sed -i "0,/## Changes in v$NEXT_VERSION/{s/## Changes in v$NEXT_VERSION/## Changes in v$NEXT_VERSION (commit: $COMMIT_SHA)/}" NEWS.md
+
 # Update DESCRIPTION version
 sed -i "s/^Version: .*/Version: $NEXT_VERSION/" DESCRIPTION

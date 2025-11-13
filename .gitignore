@@ -56,3 +56,6 @@ Thumbs.db
 node_modules/
 package-lock.json
 .bioc_version
+
+# Backup files
+*.backup

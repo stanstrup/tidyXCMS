@@ -1,4 +1,4 @@
-## Changes in v0.99.17
+## Changes in v0.99.17 (commit: d9352af)
 
 
 ### Bug Fixes
@@ -6,14 +6,14 @@
 * correct fileNames documentation link ([018a7f6](https://github.com/stanstrup/tidyXCMS/commit/018a7f6465b2f11c8e40f5d50deec2837c16eb02))
 * remove sample_index from documentation ([a63298c](https://github.com/stanstrup/tidyXCMS/commit/a63298c4c0e214099b3459d074ea16bbd84e5cf2))
 
-## Changes in v0.99.16
+## Changes in v0.99.16 (commit: ac33a5d)
 
 
 ### Bug Fixes
 
 * resolve R CMD check warnings and test failures ([238aaea](https://github.com/stanstrup/tidyXCMS/commit/238aaea68e9de307dfeea8a2ea5bc8254b159dd6))
 
-## Changes in v0.99.15
+## Changes in v0.99.15 (commit: b839a77)
 
 
 ### Code Refactoring
@@ -29,14 +29,14 @@
 
 Co-Authored-By: Claude <noreply@anthropic.com>
 
-## Changes in v0.99.14
+## Changes in v0.99.14 (commit: 76e5916)
 
 
 ### Bug Fixes
 
 * use list.files with recursive search for CDF path matching ([e85f6f5](https://github.com/stanstrup/tidyXCMS/commit/e85f6f5fd3ec246a17e9de7c28c92accb87f4580))
 
-## Changes in v0.99.13
+## Changes in v0.99.13 (commit: ee81fef)
 
 
 ### Bug Fixes
@@ -44,21 +44,21 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 * improve path matching in vignette to use basename ([80a3aa1](https://github.com/stanstrup/tidyXCMS/commit/80a3aa1b48d6f46c761b516696523b79c89db235))
 * resolve semantic-release sync-bioc-tag.sh execution failure ([2609ea2](https://github.com/stanstrup/tidyXCMS/commit/2609ea2231b4a372aae0dc4e55293b1676138e65))
 
-## Changes in v0.99.12
+## Changes in v0.99.12 (commit: be6976b)
 
 
 ### Bug Fixes
 
 * add missing comma in Remotes and add S4Vectors to Suggests ([974a3a8](https://github.com/stanstrup/tidyXCMS/commit/974a3a8344ebd6ce73de67cdf6c7c822fee9859a))
 
-## Changes in v0.99.11
+## Changes in v0.99.11 (commit: d82953f)
 
 
 ### Bug Fixes
 
 * correct sampleData assignment and add alt text to vignette plots ([aa576af](https://github.com/stanstrup/tidyXCMS/commit/aa576af90ea253439eef412393759bbc4660c5a9))
 
-## Changes in v0.99.10
+## Changes in v0.99.10 (commit: 2f68705)
 
 
 ### Bug Fixes
@@ -68,14 +68,14 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 * exclude .bioc_version file from package build ([38da0f1](https://github.com/stanstrup/tidyXCMS/commit/38da0f1ba19b5249bd9df05e6844d2c90e0c7189))
 * handle both XCMSnExp and XcmsExperiment in pData test ([6251bc9](https://github.com/stanstrup/tidyXCMS/commit/6251bc9ce415af0640346c09519ba85020072c55))
 
-## Changes in v0.99.9
+## Changes in v0.99.9 (commit: d105433)
 
 
 ### Features
 
 * add groupFeatures integration from MsFeatures package ([bea8117](https://github.com/stanstrup/tidyXCMS/commit/bea81177149f638e608c2b21411621fa13e0b776))
 
-## Changes in v0.99.8
+## Changes in v0.99.8 (commit: 0e05abc)
 
 
 ### Bug Fixes
@@ -107,14 +107,14 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 * integrate commonMZ for CAMERA adduct/fragment rules ([ababed5](https://github.com/stanstrup/tidyXCMS/commit/ababed546a07201cc0782c72bcecc03d163400b8))
 * make CAMERA annotations optional with XcmsExperiment support ([dc802ab](https://github.com/stanstrup/tidyXCMS/commit/dc802abd45298110d9a9e07a2ea7304179c4859d))
 
-## Changes in v0.99.7
+## Changes in v0.99.7 (commit: 08d950f)
 
 
 ### Bug Fixes
 
 * replace non-existent fileNames<- with proper dataOrigin replacement ([3995b38](https://github.com/stanstrup/tidyXCMS/commit/3995b38641c161957872d9ad48a80e57f2dbeec6))
 
-## Changes in v0.99.6
+## Changes in v0.99.6 (commit: 42429bf)
 
 
 ### Bug Fixes
@@ -122,35 +122,35 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 * add explicit MSnbase library call in vignette ([6f3c6fb](https://github.com/stanstrup/tidyXCMS/commit/6f3c6fb708ba67c24b893dc71f9b92b9cf0a1f59))
 * add explicit namespace references for fileNames in vignette ([7d1e9f9](https://github.com/stanstrup/tidyXCMS/commit/7d1e9f99f6188f790f73561434b9417e7bbd0868))
 
-## Changes in v0.99.5
+## Changes in v0.99.5 (commit: f952c46)
 
 
 ### Bug Fixes
 
 * add GitHub remote for commonMZ package ([5401ce0](https://github.com/stanstrup/tidyXCMS/commit/5401ce0d4f70441f14051b9bf6a146795dc0a116))
 
-## Changes in v0.99.4
+## Changes in v0.99.4 (commit: 41f32fd)
 
 
 ### Features
 
 * integrate commonMZ for CAMERA adduct/fragment rules ([ababed5](https://github.com/stanstrup/tidyXCMS/commit/ababed546a07201cc0782c72bcecc03d163400b8))
 
-## Changes in v0.99.3
+## Changes in v0.99.3 (commit: 729c750)
 
 
 ### Bug Fixes
 
 * correct xdata file paths to use system-specific location ([8d60f1a](https://github.com/stanstrup/tidyXCMS/commit/8d60f1ab93fb37b09579cb34157425e51f942dc4))
 
-## Changes in v0.99.2
+## Changes in v0.99.2 (commit: cfed50a)
 
 
 ### Bug Fixes
 
 * ensure package version stays below 1.0.0 for Bioconductor ([b1bc012](https://github.com/stanstrup/tidyXCMS/commit/b1bc012de886220414ab6302bd3ecafbef71eade))
 
-## Changes in v0.99.1
+## Changes in v0.99.1 (commit: b1ef759)
 
 
 ### Bug Fixes
