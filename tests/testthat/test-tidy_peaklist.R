@@ -51,8 +51,25 @@ test_that("tidy_peaklist returns expected structure", {
   library(xcms)
   library(CAMERA)
   library(BiocParallel)
+  library(dplyr)
 
   # Use preloaded xdata (XCMSnExp with peaks and grouping)
+
+  # Fix file paths to match current system (needed for CAMERA groupCorr)
+  # This follows the approach in the vignette
+  cdf_path <- file.path(find.package("faahKO"), "cdf")
+  real_paths <- list.files(cdf_path, recursive = TRUE, full.names = TRUE)
+
+  path_mapping <- tibble(
+    real_path = real_paths,
+    basename_file = basename(real_paths)
+  )
+
+  spectra_df <- tibble(dataOrigin = spectra(xdata)$dataOrigin) %>%
+    mutate(basename_file = basename(dataOrigin)) %>%
+    left_join(path_mapping, by = "basename_file")
+
+  spectra(xdata)$dataOrigin <- spectra_df$real_path
 
   # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
   xset <- as(xdata, "xcmsSet")
@@ -222,6 +239,22 @@ test_that("tidy_peaklist CAMERA annotations are present", {
   library(dplyr)
 
   # Use preloaded xdata (XCMSnExp with peaks and grouping)
+
+  # Fix file paths to match current system (needed for CAMERA groupCorr)
+  # This follows the approach in the vignette
+  cdf_path <- file.path(find.package("faahKO"), "cdf")
+  real_paths <- list.files(cdf_path, recursive = TRUE, full.names = TRUE)
+
+  path_mapping <- tibble(
+    real_path = real_paths,
+    basename_file = basename(real_paths)
+  )
+
+  spectra_df <- tibble(dataOrigin = spectra(xdata)$dataOrigin) %>%
+    mutate(basename_file = basename(dataOrigin)) %>%
+    left_join(path_mapping, by = "basename_file")
+
+  spectra(xdata)$dataOrigin <- spectra_df$real_path
 
   # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
   xset <- as(xdata, "xcmsSet")
