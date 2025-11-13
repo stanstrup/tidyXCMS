@@ -21,8 +21,8 @@ if ! gh auth status &>/dev/null; then
   exit 1
 fi
 
-# List of tags to remove
-TAGS_TO_REMOVE="1.0.0 1.0.1 1.0.2 1.0.3 1.0.4 1.0.5 1.0.6 v1.0.0"
+# List of tags to remove (both 1.x.x and 2.x.x versions)
+TAGS_TO_REMOVE="1.0.0 1.0.1 1.0.2 1.0.3 1.0.4 1.0.5 1.0.6 v1.0.0 v2.0.0 v2.0.1 v2.0.2 v2.0.3 2.0.0 2.0.1 2.0.2 2.0.3"
 
 # Delete GitHub releases (using --cleanup-tag to also remove tags)
 for tag in $TAGS_TO_REMOVE; do

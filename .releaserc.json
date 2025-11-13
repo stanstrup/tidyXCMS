@@ -1,6 +1,6 @@
 {
   "branches": ["main", "master"],
-  "tagFormat": "${version}",
+  "tagFormat": false,
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
@@ -13,12 +13,6 @@
       }
     ],
     "@semantic-release/release-notes-generator",
-    [
-      "@semantic-release/changelog",
-      {
-        "changelogFile": "NEWS.md"
-      }
-    ],
     [
       "@semantic-release/exec",
       {
