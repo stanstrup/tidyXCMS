@@ -1,3 +1,10 @@
+## Changes in v0.99.14
+
+
+### Bug Fixes
+
+* use list.files with recursive search for CDF path matching ([e85f6f5](https://github.com/stanstrup/tidyXCMS/commit/e85f6f5fd3ec246a17e9de7c28c92accb87f4580))
+
 ## Changes in v0.99.13
 
 
