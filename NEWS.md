@@ -1,3 +1,12 @@
+## Changes in v0.99.29 (commit: 88c761a)
+
+## [1.0.1](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.0...semantic-release-1.0.1) (2025-11-13)
+
+
+### Bug Fixes
+
+* strip semantic-release version header from NEWS.md ([9617b0c](https://github.com/stanstrup/tidyXCMS/commit/9617b0cf043f6865ac71aa4b0243ebe6fcc3d735))
+
 ## Changes in v0.99.28 (commit: 8c46f9b)
 
 ### Bug Fixes
