@@ -46,6 +46,7 @@ _pkgdown.yaml
 # IDE
 .vscode/
 .idea/
+.claude/
 
 # OS
 .DS_Store
