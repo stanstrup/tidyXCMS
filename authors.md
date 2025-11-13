@@ -11,13 +11,13 @@ Source:
 [`DESCRIPTION`](https://github.com/stanstrup/tidyXCMS/blob/main/DESCRIPTION)
 
 Stanstrup J (2025). *tidyXCMS: Tidy Interface for XCMS Metabolomics Data
-Processing*. R package version 0.99.19,
+Processing*. R package version 0.99.20,
 <https://stanstrup.github.io/tidyXCMS>.
 
     @Manual{,
       title = {tidyXCMS: Tidy Interface for XCMS Metabolomics Data Processing},
       author = {Jan Stanstrup},
       year = {2025},
-      note = {R package version 0.99.19},
+      note = {R package version 0.99.20},
       url = {https://stanstrup.github.io/tidyXCMS},
     }
