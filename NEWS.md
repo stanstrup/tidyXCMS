@@ -1,3 +1,44 @@
+## Changes in v0.99.20 (commit: c7c96ef)
+
+
+### Bug Fixes
+
+* add missing comma in Remotes and add S4Vectors to Suggests ([974a3a8](https://github.com/stanstrup/tidyXCMS/commit/974a3a8344ebd6ce73de67cdf6c7c822fee9859a))
+* add missing rlang import for syms function ([b0c0a58](https://github.com/stanstrup/tidyXCMS/commit/b0c0a58bebb497af837c63340163f97fb0c9d65f))
+* apply feature_group fix before CAMERA annotation in test ([c6a09e3](https://github.com/stanstrup/tidyXCMS/commit/c6a09e302c95b4f0a904a004e7ca51c88a2ed6c0))
+* correct fileNames documentation link ([018a7f6](https://github.com/stanstrup/tidyXCMS/commit/018a7f6465b2f11c8e40f5d50deec2837c16eb02))
+* correct sampleData assignment and add alt text to vignette plots ([aa576af](https://github.com/stanstrup/tidyXCMS/commit/aa576af90ea253439eef412393759bbc4660c5a9))
+* ensure git tags are pushed to remote during release ([8c9014b](https://github.com/stanstrup/tidyXCMS/commit/8c9014b9d9370ae1a69577c774161fe4b5753bd8))
+* exclude .bioc_version file from package build ([38da0f1](https://github.com/stanstrup/tidyXCMS/commit/38da0f1ba19b5249bd9df05e6844d2c90e0c7189))
+* handle both XCMSnExp and XcmsExperiment in pData test ([6251bc9](https://github.com/stanstrup/tidyXCMS/commit/6251bc9ce415af0640346c09519ba85020072c55))
+* improve path matching in vignette to use basename ([80a3aa1](https://github.com/stanstrup/tidyXCMS/commit/80a3aa1b48d6f46c761b516696523b79c89db235))
+* prevent semantic-release from creating 1.0.x tags and releases ([5863644](https://github.com/stanstrup/tidyXCMS/commit/586364490d188501ab997a1c147594ec99f9fff8))
+* remove sample_index from documentation ([a63298c](https://github.com/stanstrup/tidyXCMS/commit/a63298c4c0e214099b3459d074ea16bbd84e5cf2))
+* resolve NEWS.md duplicate versions and sync with GitHub releases ([90f9180](https://github.com/stanstrup/tidyXCMS/commit/90f91809628bec07e59417ebc81cba4da0a5eac7))
+* resolve R CMD check warnings and test failures ([238aaea](https://github.com/stanstrup/tidyXCMS/commit/238aaea68e9de307dfeea8a2ea5bc8254b159dd6))
+* resolve semantic-release sync-bioc-tag.sh execution failure ([2609ea2](https://github.com/stanstrup/tidyXCMS/commit/2609ea2231b4a372aae0dc4e55293b1676138e65))
+* use list.files with recursive search for CDF path matching ([e85f6f5](https://github.com/stanstrup/tidyXCMS/commit/e85f6f5fd3ec246a17e9de7c28c92accb87f4580))
+
+
+### Code Refactoring
+
+* comprehensive code improvements and function rename to tidy_peaklist ([079448c](https://github.com/stanstrup/tidyXCMS/commit/079448caa0bebf7d1ac4eafc623d708a8ee2db92))
+
+
+### Features
+
+* add commit SHAs to NEWS.md for traceability ([07a41ce](https://github.com/stanstrup/tidyXCMS/commit/07a41cec272fb97b3ce3d0256f4173e269fdd590))
+* add groupFeatures integration from MsFeatures package ([bea8117](https://github.com/stanstrup/tidyXCMS/commit/bea81177149f638e608c2b21411621fa13e0b776))
+
+
+### BREAKING CHANGES
+
+* Function renamed from XCMSnExp_CAMERA_peaklist_long to tidy_peaklist. Users must update function calls in existing code.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
 ## Changes in v0.99.19 (commit: 624a737)
 
 
