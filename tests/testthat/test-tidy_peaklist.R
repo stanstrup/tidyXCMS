@@ -622,21 +622,6 @@ test_that("tidy_peaklist returns correct column types with CAMERA", {
 
   # Use preloaded xdata (XCMSnExp with peaks and grouping)
 
-  # Fix file paths for CAMERA groupCorr
-  cdf_path <- file.path(find.package("faahKO"), "cdf")
-  real_paths <- list.files(cdf_path, recursive = TRUE, full.names = TRUE)
-
-  path_mapping <- tibble(
-    real_path = real_paths,
-    basename_file = basename(real_paths)
-  )
-
-  spectra_df <- tibble(dataOrigin = as.character(spectra(xdata)$dataOrigin)) %>%
-    mutate(basename_file = basename(dataOrigin)) %>%
-    left_join(path_mapping, by = "basename_file")
-
-  spectra(xdata)$dataOrigin <- spectra_df$real_path
-
   # Convert to xcmsSet for CAMERA
   xset <- as(xdata, "xcmsSet")
 
