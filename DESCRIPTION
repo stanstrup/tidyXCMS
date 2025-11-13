@@ -37,9 +37,10 @@ Suggests:
     ggpie,
     ggalluvial,
     MSnbase,
-    RColorBrewer
+    RColorBrewer,
+    S4Vectors
 Remotes:
-    stanstrup/commonMZ
+    stanstrup/commonMZ,
     showteeth/ggpie
 Config/testthat/edition: 3
 VignetteBuilder: knitr
