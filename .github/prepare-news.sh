@@ -76,6 +76,16 @@ echo "Creating git commit for version $BIOC_VERSION..."
 git config user.name "github-actions[bot]" || true
 git config user.email "github-actions[bot]@users.noreply.github.com" || true
 
+# Delete any semantic-release tags that were created locally
+echo "Cleaning up any semantic-release tags..."
+SEMANTIC_TAGS=$(git tag | grep "^semantic-release-" || true)
+if [ -n "$SEMANTIC_TAGS" ]; then
+  for tag in $SEMANTIC_TAGS; do
+    echo "Deleting local semantic-release tag: $tag"
+    git tag -d "$tag" || true
+  done
+fi
+
 # Add modified files
 git add NEWS.md DESCRIPTION .bioc_version
 
@@ -85,7 +95,7 @@ git commit -m "chore(release): $BIOC_VERSION [skip ci]
 $RELEASE_NOTES"
 
 # Push the commit using GITHUB_TOKEN
-# The git remote is already configured by semantic-release checkout
-git push
+# Use --no-follow-tags to prevent pushing any tags
+git push --no-follow-tags
 
 echo "Committed and pushed version $BIOC_VERSION"
