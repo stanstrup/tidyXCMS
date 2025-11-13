@@ -1,3 +1,10 @@
+## Changes in v0.99.16
+
+
+### Bug Fixes
+
+* resolve R CMD check warnings and test failures ([238aaea](https://github.com/stanstrup/tidyXCMS/commit/238aaea68e9de307dfeea8a2ea5bc8254b159dd6))
+
 ## Changes in v0.99.15
 
 
