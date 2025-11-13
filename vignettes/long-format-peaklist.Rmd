@@ -47,6 +47,9 @@ library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(MsExperiment)
+library(ggalluvial)
+library(RColorBrewer)
+library(ggpie)
 ```
 
 # Example Workflow
@@ -212,8 +215,6 @@ In addition to CAMERA annotations, you can use the `MsFeatures` package to group
 The `groupFeatures()` function adds a `feature_group` column to the feature definitions. Let's demonstrate with retention time-based grouping:
 
 ```{r msfeatures_grouping, message=FALSE}
-library(MsFeatures)
-
 # Group features with similar retention times (within 10 seconds)
 xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
 
@@ -287,9 +288,6 @@ peak_table_combined %>%
 We can also visually compare the mapping.
 
 ```{r, fig.width=7, fig.height=10}
-library(ggalluvial)
-library(RColorBrewer)
-
 group_mapping <- peak_table_combined %>%
   filter(adduct != "") %>%
   select(feature_id, feature_group, f_mzmed, f_rtmed, isotopes, adduct, pcgroup) %>%
@@ -531,9 +529,6 @@ adduct_counts
 We can create a pie chart showing the frequency of different adducts and fragments found by CAMERA:
 
 ```{r adduct_pie, fig.width=7, fig.height=7, fig.alt="Pie chart showing the distribution of adduct and fragment annotations found by CAMERA across all features.", warning=FALSE}
-
-library(ggpie)
-
 # Create pie chart of adduct frequencies
 adduct_counts %>% 
   mutate(count = n) %>% 
