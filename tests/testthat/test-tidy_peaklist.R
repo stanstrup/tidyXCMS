@@ -528,7 +528,14 @@ test_that("tidy_peaklist includes sample metadata correctly", {
     row.names = basename(fileNames(xdata_copy))
   )
 
-  pData(xdata_copy) <- pd
+  # Handle both XCMSnExp and XcmsExperiment objects
+  if (inherits(xdata_copy, "XcmsExperiment")) {
+    # For XcmsExperiment, use sampleData<- (requires DataFrame, not data.frame)
+    sampleData(xdata_copy) <- S4Vectors::DataFrame(pd)
+  } else {
+    # For XCMSnExp, use pData<-
+    pData(xdata_copy) <- pd
+  }
 
   # Create peak table
   peak_table <- tidy_peaklist(xdata_copy)

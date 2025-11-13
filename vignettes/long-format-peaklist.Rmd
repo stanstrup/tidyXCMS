@@ -480,7 +480,7 @@ peak_table %>%
 
 Features not detected in a sample have `NA` for peak-level columns:
 
-```{r missing_values}
+```{r missing_values, fig.alt="Histogram showing the distribution of feature detection rates across samples. The x-axis shows detection rate from 0 to 1, and the y-axis shows the frequency (count) of features at each detection rate."}
 # Count for each feature how many samples the peak was found in
 detection_rate <- peak_table %>%
   group_by(feature_id, f_mzmed, f_rtmed) %>%

@@ -63,7 +63,7 @@
 #'     was applied to the object, the feature_group column will be included in the output.
 #'   \item For XcmsExperiment objects, sample metadata is accessed via sampleData()
 #'     instead of pData().
-#'   \item For large datasets (many features × many samples), the output can be
+#'   \item For large datasets (many features x many samples), the output can be
 #'     memory-intensive. A warning is issued if the expected output exceeds 10 million rows.
 #' }
 #'
@@ -240,7 +240,8 @@ tidy_peaklist <- function(x, xsAnnotate = NULL) {
   peaks %>%
     mutate(peakidx = seq_len(n_peaks)) %>%
     rename(fromFile = sample) %>%
-    mutate(filepath = fileNames(x)[fromFile])
+    mutate(filepath = fileNames(x)[fromFile],
+           filename = basename(filepath))
 }
 
 
@@ -303,7 +304,6 @@ tidy_peaklist <- function(x, xsAnnotate = NULL) {
            any_of(c("isotopes", "adduct", "pcgroup", "feature_group"))) %>%
     rename_with(~paste0("f_", .), .cols = any_of(c("mzmed", "mzmin", "mzmax", "rtmed", "rtmin", "rtmax"))) %>%
     left_join(temp_peaks, by = "peakidx") %>%
-    mutate(filename = basename(filepath)) %>%
     left_join(temp_peaks_tab, by = c("feature_id", "filename"))
 
   # Filter to match peak intensities with feature intensities
@@ -353,7 +353,7 @@ tidy_peaklist <- function(x, xsAnnotate = NULL) {
   # Warn if expected output will be very large (> 10 million rows)
   if (expected_rows > 1e7) {
     warning(sprintf(
-      "Creating large data frame with %s rows (%d features × %d samples). Consider filtering features first.",
+      "Creating large data frame with %s rows (%d features x %d samples). Consider filtering features first.",
       format(expected_rows, big.mark = ","),
       n_features,
       n_samples
