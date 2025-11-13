@@ -15,7 +15,26 @@ tidyXCMS provides a modern, tidy interface for working with XCMS metabolomics da
 
 ## Usage
 
-Coming soon...
+```r
+library(tidyXCMS)
+library(xcms)
+
+# Load preprocessed XCMS data
+xdata <- loadXcmsData("xmse")
+
+# Create long-format peak table
+peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata)
+
+# Result: one row per feature per sample
+# Includes peak intensities, m/z, RT, and sample metadata
+head(peak_table)
+```
+
+Optional annotations:
+- **CAMERA**: Add isotope, adduct, and pseudospectrum annotations
+- **MsFeatures**: Group features by retention time, correlation, or EIC similarity
+
+See the [vignette](https://stanstrup.github.io/tidyXCMS/articles/long-format-peaklist.html) for detailed examples.
 
 ## Development
 
