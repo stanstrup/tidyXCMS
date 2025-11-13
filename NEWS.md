@@ -1,3 +1,11 @@
+## Changes in v0.99.17
+
+
+### Bug Fixes
+
+* correct fileNames documentation link ([018a7f6](https://github.com/stanstrup/tidyXCMS/commit/018a7f6465b2f11c8e40f5d50deec2837c16eb02))
+* remove sample_index from documentation ([a63298c](https://github.com/stanstrup/tidyXCMS/commit/a63298c4c0e214099b3459d074ea16bbd84e5cf2))
+
 ## Changes in v0.99.16
 
 
