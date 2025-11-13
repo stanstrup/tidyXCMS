@@ -50,6 +50,18 @@ for tag in $TAGS_TO_REMOVE; do
   fi
 done
 
+# Delete tags directly from GitHub (in case releases are gone but tags remain)
+echo ""
+echo "Deleting tags from GitHub..."
+for tag in $TAGS_TO_REMOVE; do
+  if git ls-remote --tags origin | grep -q "refs/tags/$tag$"; then
+    echo "Deleting remote tag: $tag"
+    git push origin ":refs/tags/$tag" 2>&1 || echo "  Failed to delete $tag"
+  else
+    echo "  - Remote tag $tag not found"
+  fi
+done
+
 # Delete local tags if they still exist
 echo ""
 echo "Cleaning up local tags..."
