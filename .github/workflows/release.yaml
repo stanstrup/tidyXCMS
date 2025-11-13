@@ -30,8 +30,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Make prepare-news.sh executable
-        run: chmod +x ./.github/prepare-news.sh
+      - name: Make scripts executable
+        run: |
+          chmod +x ./.github/prepare-news.sh
+          chmod +x ./.github/sync-bioc-tag.sh
 
       - name: Release
         env:
