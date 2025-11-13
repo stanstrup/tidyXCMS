@@ -21,15 +21,22 @@ if ! gh auth status &>/dev/null; then
   exit 1
 fi
 
-# List of tags to remove (both 1.x.x and 2.x.x versions, plus any semantic-release-* tags)
-TAGS_TO_REMOVE="1.0.0 1.0.1 1.0.2 1.0.3 1.0.4 1.0.5 1.0.6 v1.0.0 v2.0.0 v2.0.1 v2.0.2 v2.0.3 2.0.0 2.0.1 2.0.2 2.0.3"
+# Fetch all tags from remote first
+echo "Fetching all tags from remote..."
+git fetch --tags origin
 
-# Also find and remove any semantic-release-* tags
-echo "Checking for semantic-release-* tags..."
-SEMANTIC_TAGS=$(git tag | grep "^semantic-release-" || true)
+# List of tags to remove (both 1.x.x and 2.x.x versions, plus any semantic-release-* tags)
+TAGS_TO_REMOVE="1.0.0 1.0.1 1.0.2 1.0.3 1.0.4 1.0.5 1.0.6 v1.0.0 v2.0.0 v2.0.1 v2.0.2 v2.0.3 2.0.0 2.0.1 2.0.2 2.0.3 semantic-release-1.0.0"
+
+# Also find and remove any other semantic-release-* tags
+echo "Checking for additional semantic-release-* tags..."
+SEMANTIC_TAGS=$(git tag | grep "^semantic-release-" | grep -v "semantic-release-1.0.0" || true)
 if [ -n "$SEMANTIC_TAGS" ]; then
   TAGS_TO_REMOVE="$TAGS_TO_REMOVE $SEMANTIC_TAGS"
 fi
+
+echo "Tags to remove: $TAGS_TO_REMOVE"
+echo ""
 
 # Delete GitHub releases (using --cleanup-tag to also remove tags)
 for tag in $TAGS_TO_REMOVE; do
