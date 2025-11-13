@@ -22,6 +22,8 @@ The tibble contains:
 f_rtmax - feature summary statistics}
 \item{CAMERA annotations}{isotopes, adduct, pcgroup (pseudospectrum group) -
 only present when xsAnnotate is provided}
+\item{MsFeatures grouping}{feature_group - feature group ID from
+\code{\link[MsFeatures:groupFeatures]{MsFeatures::groupFeatures()}}, only present if groupFeatures was applied}
 \item{Peak-level columns}{mz, rt, into, intb, maxo, sn - individual peak
 measurements}
 \item{Sample information}{filepath, filename, fromFile - sample identifiers}
@@ -69,6 +71,8 @@ first occurrence.
 takes the maximum intensity peak for each feature in each sample.
 \item CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes,
 adduct, and pcgroup columns will not be present in the output.
+\item MsFeatures grouping is automatically detected. If \code{\link[MsFeatures:groupFeatures]{MsFeatures::groupFeatures()}}
+was applied to the object, the feature_group column will be included in the output.
 \item For XcmsExperiment objects, sample metadata is accessed via sampleData()
 instead of pData().
 }

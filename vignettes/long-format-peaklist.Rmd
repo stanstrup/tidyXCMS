@@ -254,6 +254,10 @@ xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
 xset_grouped <- xdata_grouped %>%
   as("xcmsSet")
 
+# featuregroups seem to corrupt the feature matrix. We fix before CAMERA
+xset_grouped@groups <- apply(xset_grouped@groups[, !(colnames(xset_grouped@groups) %in% "feature_group")], 2, as.numeric)
+
+
 # Apply CAMERA annotation as before
 xs_grouped <- xsAnnotate(xset_grouped, polarity = "positive")
 xs_grouped <- groupFWHM(xs_grouped, perfwhm = 0.1, intval = "into", sigma = 6)
@@ -272,9 +276,6 @@ xs_grouped <- findAdducts(xs_grouped, ppm = 500, mzabs = 0.2, multiplier = 4,
 # Create peak table with both CAMERA and MsFeatures annotations
 peak_table_combined <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped, xs_grouped)
 
-# Check that both types of annotations are present
-c("feature_group", "isotopes", "adduct", "pcgroup") %in% colnames(peak_table_combined)
-
 # View combined annotations
 peak_table_combined %>%
   filter(adduct != "") %>%
@@ -282,6 +283,65 @@ peak_table_combined %>%
   distinct(feature_id, .keep_all = TRUE) %>%
   head()
 ```
+
+We can also visually compare the mapping.
+
+```{r, fig.width=7, fig.height=10}
+library(ggalluvial)
+library(RColorBrewer)
+
+group_mapping <- peak_table_combined %>%
+  filter(adduct != "") %>%
+  select(feature_id, feature_group, f_mzmed, f_rtmed, isotopes, adduct, pcgroup) %>%
+  distinct(feature_id, .keep_all = TRUE)
+
+# Determine ordering by the most common pairs
+order_group_mapping <- group_mapping %>%
+  count(feature_group, pcgroup, sort = TRUE)
+
+# Choose ordering to align best-matching pairs
+left_order  <- unique(order_group_mapping$feature_group)
+right_order <- unique(order_group_mapping$pcgroup)
+
+group_mapping <- group_mapping %>%
+  mutate(
+    feature_group = factor(feature_group, levels = left_order),
+    pcgroup       = factor(pcgroup,       levels = right_order)
+  )
+
+ggplot(group_mapping, aes(axis1 = feature_group, axis2 = pcgroup, fill = feature_group)) +
+  geom_alluvium(alpha = 0.7) +
+  geom_stratum() +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
+  theme_minimal() +
+  labs(x = "", y = "Count", title = "Flow between groupings A and B") +
+  guides(fill="none") +
+  scale_fill_manual(values = rep(brewer.pal(12, "Set3"), length.out = length(unique(group_mapping$feature_group))))
+
+```
+
+
+```{r}
+group_mapping_different <- group_mapping %>%
+  group_by(feature_group) %>%
+  mutate(n_pc = n_distinct(pcgroup)) %>%
+  group_by(pcgroup) %>%
+  mutate(n_fg = n_distinct(feature_group)) %>%
+  ungroup() %>%
+  filter(n_pc > 1 | n_fg > 1)
+
+
+ggplot(group_mapping_different, aes(axis1 = feature_group, axis2 = pcgroup, fill = feature_group)) +
+  geom_alluvium(alpha = 0.7) +
+  geom_stratum() +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
+  theme_minimal() +
+  labs(x = "", y = "Count", title = "Flow between groupings A and B") +
+  guides(fill="none") +
+  scale_fill_manual(values = rep(brewer.pal(12, "Set3"), length.out = length(unique(group_mapping_different$feature_group))))
+```
+
+
 
 Now you have both:
 - **`feature_group`**: Groups features based on retention time (from MsFeatures)
@@ -470,9 +530,26 @@ adduct_counts
 
 We can create a pie chart showing the frequency of different adducts and fragments found by CAMERA:
 
-```{r adduct_pie, fig.width=7, fig.height=7, fig.alt="Pie chart showing the distribution of adduct and fragment annotations found by CAMERA across all features."}
+```{r adduct_pie, fig.width=7, fig.height=7, fig.alt="Pie chart showing the distribution of adduct and fragment annotations found by CAMERA across all features.", warning=FALSE}
+
+library(ggpie)
+
 # Create pie chart of adduct frequencies
-pie(adduct_counts$n, labels = adduct_counts$adduct, main = "Distribution of Adduct Annotations")
+adduct_counts %>% 
+  mutate(count = n) %>% 
+    ggpie(data = ., 
+          group_key = "adduct", 
+          count_type = "count",
+          label_info = "group", 
+          label_type = "circle",
+          label_size = 4, 
+          label_pos = "out"
+          ) +
+    guides(fill="none") +
+    ggtitle("Distribution of Adduct Annotations")
+
+
+
 ```
 
 ## Find Features Present in All Samples

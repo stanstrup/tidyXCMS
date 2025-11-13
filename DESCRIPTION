@@ -32,9 +32,12 @@ Suggests:
     msdata,
     ggplot2,
     covr,
-    faahKO
+    faahKO,
+    ggpie,
+    ggalluvial
 Remotes:
     stanstrup/commonMZ
+    showteeth/ggpie
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 biocViews: Metabolomics, MassSpectrometry, DataImport
