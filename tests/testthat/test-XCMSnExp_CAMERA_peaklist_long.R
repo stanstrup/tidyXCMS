@@ -191,8 +191,8 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
 
   # Handle both XCMSnExp and XcmsExperiment objects
   if (inherits(xdata_copy, "XcmsExperiment")) {
-    # For XcmsExperiment, use sampleData<-
-    sampleData(xdata_copy) <- pd
+    # For XcmsExperiment, use sampleData<- (requires DataFrame, not data.frame)
+    sampleData(xdata_copy) <- S4Vectors::DataFrame(pd)
   } else {
     # For XCMSnExp, use pData<-
     pData(xdata_copy) <- pd
