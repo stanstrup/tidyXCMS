@@ -31,8 +31,9 @@ head(peak_table)
 ```
 
 Optional annotations:
-- **CAMERA**: Add isotope, adduct, and pseudospectrum annotations
-- **MsFeatures**: Group features by retention time, correlation, or EIC similarity
+
+- **CAMERA**: Group features by retention time, correlation across samples or EIC similarity. Add isotope, adduct, and pseudo-spectra annotations
+- **MsFeatures**: Group features by retention time and correlation across samples.
 
 See the [vignette](https://stanstrup.github.io/tidyXCMS/articles/long-format-peaklist.html) for detailed examples.
 
