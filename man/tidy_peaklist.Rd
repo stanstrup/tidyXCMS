@@ -18,18 +18,46 @@ If NULL (default), annotation columns will not be included in the output.}
 \value{
 A \link[tibble:tibble]{tibble::tibble} in long format with one row per feature per sample
 (or one row per peak per sample if features are not defined).
-The tibble contains:
+The tibble contains the following columns with their data types:
 \describe{
-\item{Feature-level columns}{f_mzmed, f_mzmin, f_mzmax, f_rtmed, f_rtmin,
-f_rtmax - feature summary statistics (only if features are defined)}
-\item{CAMERA annotations}{isotopes, adduct, pcgroup (pseudospectrum group) -
-only present when xsAnnotate is provided}
-\item{MsFeatures grouping}{feature_group - feature group ID from
-\code{\link[MsFeatures:groupFeatures]{MsFeatures::groupFeatures()}}, only present if groupFeatures was applied}
-\item{Peak-level columns}{mz, rt, into, intb, maxo, sn - individual peak
-measurements}
-\item{Sample information}{filepath, filename, fromFile - sample identifiers}
-\item{Additional columns}{Any columns from pData(x) or sampleData(x)}
+\item{feature_id}{integer: Feature identifier (1, 2, 3, ...). Only present
+when features are defined via \code{\link[xcms:groupChromPeaks]{xcms::groupChromPeaks()}}.}
+\item{f_mzmed, f_mzmin, f_mzmax}{numeric: Feature-level m/z statistics
+(median, minimum, maximum). Only present when features are defined.}
+\item{f_rtmed, f_rtmin, f_rtmax}{numeric: Feature-level retention time
+statistics in seconds (median, minimum, maximum). Only present when
+features are defined.}
+\item{ms_level}{integer: MS level (typically 1 for MS1 features). Only
+present when features are defined.}
+\item{isotopes}{character: Isotope annotations from CAMERA (e.g., "\code{"[M]+"}",
+"\code{"[M+1]+"}"). Only present when xsAnnotate is provided.}
+\item{adduct}{character: Adduct annotations from CAMERA (e.g., "\code{"[M+H]+"}",
+"\code{"[M+Na]+"}"). Only present when xsAnnotate is provided.}
+\item{pcgroup}{integer: Pseudospectrum group ID from CAMERA. Features with
+the same pcgroup are believed to originate from the same compound. Only
+present when xsAnnotate is provided.}
+\item{feature_group}{character: Feature group identifier from
+\code{\link[MsFeatures:groupFeatures]{MsFeatures::groupFeatures()}} (e.g., "FG.001", "FG.002"). Only present
+if groupFeatures was applied.}
+\item{mz, mzmin, mzmax}{numeric: Peak m/z values (centroid, minimum, maximum).}
+\item{rt, rtmin, rtmax}{numeric: Peak retention time in seconds (apex, minimum,
+maximum).}
+\item{into}{numeric: Integrated peak intensity (integrated area of original
+(raw) peak).}
+\item{intb}{numeric: Baseline-corrected integrated peak intensity.}
+\item{maxo}{numeric: Maximum peak intensity (apex).}
+\item{sn}{numeric: Signal-to-noise ratio.}
+\item{is_filled}{logical: Whether the peak was gap-filled (TRUE) or originally
+detected (FALSE).}
+\item{filepath}{character: Full file path to the raw data file.}
+\item{filename}{character: Basename of the raw data file.}
+\item{fromFile}{numeric: Sample index (1-based) corresponding to the order
+in \code{\link[xcms:fileNames]{xcms::fileNames()}}.}
+\item{peakidx}{numeric: Internal peak index from \code{\link[xcms:XCMSnExp-class]{xcms::chromPeaks()}}.}
+\item{sample_index}{integer: Sample index from sample metadata.}
+\item{spectraOrigin}{character: Original spectra file path.}
+\item{Additional columns}{Variable types: Any columns from \code{\link[Biobase:phenoData]{Biobase::pData()}}
+or \code{\link[MsExperiment:MsExperiment]{MsExperiment::sampleData()}} are included with their original data types.}
 }
 }
 \description{
@@ -73,7 +101,7 @@ adduct, and pcgroup columns will not be present in the output.
 was applied to the object, the feature_group column will be included in the output.
 \item For XcmsExperiment objects, sample metadata is accessed via sampleData()
 instead of pData().
-\item For large datasets (many features × many samples), the output can be
+\item For large datasets (many features x many samples), the output can be
 memory-intensive. A warning is issued if the expected output exceeds 10 million rows.
 }
 }

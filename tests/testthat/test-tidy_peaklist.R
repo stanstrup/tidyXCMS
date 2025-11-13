@@ -599,3 +599,141 @@ test_that("tidy_peaklist issues warning for large datasets", {
     peak_table <- tidy_peaklist(xdata)
   )
 })
+
+
+# Column type verification tests ------------------------------------------
+
+test_that("tidy_peaklist returns correct column types (basic)", {
+
+  library(xcms)
+  library(BiocParallel)
+
+  # Use preloaded xdata (XCMSnExp with peaks and grouping)
+
+  # Create peak table without CAMERA
+  peak_table <- tidy_peaklist(xdata)
+
+  # Feature columns (should be present since features are defined)
+  expect_true(is.integer(peak_table$feature_id))
+  expect_true(is.numeric(peak_table$f_mzmed))
+  expect_true(is.numeric(peak_table$f_mzmin))
+  expect_true(is.numeric(peak_table$f_mzmax))
+  expect_true(is.numeric(peak_table$f_rtmed))
+  expect_true(is.numeric(peak_table$f_rtmin))
+  expect_true(is.numeric(peak_table$f_rtmax))
+  expect_true(is.integer(peak_table$ms_level))
+
+  # Peak columns
+  expect_true(is.numeric(peak_table$mz))
+  expect_true(is.numeric(peak_table$mzmin))
+  expect_true(is.numeric(peak_table$mzmax))
+  expect_true(is.numeric(peak_table$rt))
+  expect_true(is.numeric(peak_table$rtmin))
+  expect_true(is.numeric(peak_table$rtmax))
+  expect_true(is.numeric(peak_table$into))
+  expect_true(is.numeric(peak_table$intb))
+  expect_true(is.numeric(peak_table$maxo))
+  expect_true(is.numeric(peak_table$sn))
+  expect_true(is.logical(peak_table$is_filled))
+
+  # Sample information columns
+  expect_true(is.character(peak_table$filepath))
+  expect_true(is.character(peak_table$filename))
+  expect_true(is.numeric(peak_table$fromFile))
+  expect_true(is.numeric(peak_table$peakidx))
+})
+
+
+test_that("tidy_peaklist returns correct column types with CAMERA", {
+
+  library(xcms)
+  library(CAMERA)
+  library(BiocParallel)
+  library(dplyr)
+
+  # Use preloaded xdata (XCMSnExp with peaks and grouping)
+
+  # Fix file paths for CAMERA groupCorr
+  cdf_path <- file.path(find.package("faahKO"), "cdf")
+  real_paths <- list.files(cdf_path, recursive = TRUE, full.names = TRUE)
+
+  path_mapping <- tibble(
+    real_path = real_paths,
+    basename_file = basename(real_paths)
+  )
+
+  spectra_df <- tibble(dataOrigin = spectra(xdata)$dataOrigin) %>%
+    mutate(basename_file = basename(dataOrigin)) %>%
+    left_join(path_mapping, by = "basename_file")
+
+  spectra(xdata)$dataOrigin <- spectra_df$real_path
+
+  # Convert to xcmsSet for CAMERA
+  xset <- as(xdata, "xcmsSet")
+
+  # CAMERA annotation
+  xs <- xsAnnotate(xset)
+  xs <- groupFWHM(xs)
+  xs <- findIsotopes(xs)
+  xs <- groupCorr(xs)
+  xs <- findAdducts(xs, polarity = "positive")
+
+  # Create peak table with CAMERA
+  peak_table <- tidy_peaklist(xdata, xs)
+
+  # CAMERA annotation columns should be present and have correct types
+  expect_true("isotopes" %in% colnames(peak_table))
+  expect_true("adduct" %in% colnames(peak_table))
+  expect_true("pcgroup" %in% colnames(peak_table))
+
+  expect_true(is.character(peak_table$isotopes))
+  expect_true(is.character(peak_table$adduct))
+  expect_true(is.integer(peak_table$pcgroup))
+})
+
+
+test_that("tidy_peaklist returns correct column types with MsFeatures", {
+
+  library(xcms)
+  library(MsFeatures)
+  library(BiocParallel)
+
+  # Use preloaded xdata and apply MsFeatures grouping
+  xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
+
+  # Create peak table
+  peak_table <- tidy_peaklist(xdata_grouped)
+
+  # feature_group column should be present and character type
+  expect_true("feature_group" %in% colnames(peak_table))
+  expect_true(is.character(peak_table$feature_group))
+})
+
+
+test_that("tidy_peaklist returns correct column types with XcmsExperiment", {
+
+  library(xcms)
+  library(MsExperiment)
+  library(BiocParallel)
+
+  # Use preloaded xmse (XcmsExperiment with peaks and grouping)
+
+  # Create peak table
+  peak_table <- tidy_peaklist(xmse)
+
+  # Should have same basic types as XCMSnExp
+  expect_true(is.integer(peak_table$feature_id))
+  expect_true(is.numeric(peak_table$f_mzmed))
+  expect_true(is.numeric(peak_table$mz))
+  expect_true(is.numeric(peak_table$rt))
+  expect_true(is.numeric(peak_table$into))
+  expect_true(is.character(peak_table$filepath))
+  expect_true(is.character(peak_table$filename))
+  expect_true(is.numeric(peak_table$fromFile))
+
+  # XcmsExperiment may have additional columns from sampleData
+  expect_true("sample_index" %in% colnames(peak_table))
+  expect_true(is.integer(peak_table$sample_index))
+  expect_true("spectraOrigin" %in% colnames(peak_table))
+  expect_true(is.character(peak_table$spectraOrigin))
+})
