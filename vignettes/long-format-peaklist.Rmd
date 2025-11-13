@@ -256,7 +256,7 @@ peak_table_grouped %>%
 
 ## Combining CAMERA and MsFeatures Annotations
 
-For comprehensive annotation, you can combine both approaches. Apply `groupFeatures()` first, then proceed with CAMERA annotation:
+You can also combine both approaches. Apply `groupFeatures()` first, then proceed with CAMERA annotation:
 
 ```{r combined_annotation, message=FALSE}
 # Apply feature grouping
@@ -296,6 +296,18 @@ peak_table_combined %>%
   head()
 ```
 
+
+
+Now you have both:
+
+- **`feature_group`**: Groups features based on retention time (from MsFeatures)
+- **`pcgroup`**: Groups features into pseudospectra (from CAMERA)
+- **`isotopes`** and **`adduct`**: Isotope and adduct annotations (from CAMERA)
+
+This combined approach gives you multiple perspectives on which features might originate from the same compound.
+
+\
+
 We can also visually compare the mapping.
 
 ```{r, fig.width=7, fig.height=10, fig.alt="Alluvium diagram showing the flow and mapping between MsFeatures groupings (left) and CAMERA pseudospectrum groups (right). Each colored flow represents features that belong to specific groups in both systems."}
@@ -330,7 +342,9 @@ ggplot(group_mapping, aes(axis1 = feature_group, axis2 = pcgroup, fill = feature
 ```
 
 
-```{r, fig.width=7, fig.height=10, fig.alt="Alluvium diagram filtered to show only cases where MsFeatures groups map to multiple CAMERA pseudospectrum groups or vice versa, highlighting discrepancies between the two grouping methods."}
+Or just look at those that are not mapped the same by CAMERA and groupFeatures.
+
+```{r, fig.width=7, fig.height=6, fig.alt="Alluvium diagram filtered to show only cases where MsFeatures groups map to multiple CAMERA pseudospectrum groups or vice versa, highlighting discrepancies between the two grouping methods."}
 group_mapping_different <- group_mapping %>%
   group_by(feature_group) %>%
   mutate(n_pc = n_distinct(pcgroup)) %>%
@@ -351,13 +365,6 @@ ggplot(group_mapping_different, aes(axis1 = feature_group, axis2 = pcgroup, fill
 ```
 
 
-
-Now you have both:
-- **`feature_group`**: Groups features based on retention time (from MsFeatures)
-- **`pcgroup`**: Groups features into pseudospectra (from CAMERA)
-- **`isotopes`** and **`adduct`**: Isotope and adduct annotations (from CAMERA)
-
-This combined approach gives you multiple perspectives on which features might originate from the same compound.
 
 # Understanding the Output
 
@@ -560,21 +567,6 @@ adduct_counts %>%
 
 ```
 
-## Find Features Present in All Samples
-
-```{r complete_features}
-# Features detected in all samples
-complete_features <- peak_table %>%
-  group_by(feature_id) %>%
-  summarise(
-    n_detected = sum(!is.na(into)),
-    n_samples = n(),
-    .groups = "drop"
-  ) %>%
-  filter(n_detected == n_samples)
-
-cat("Found", nrow(complete_features), "features detected in all samples\n")
-```
 
 ## Coefficient of Variation Analysis
 
