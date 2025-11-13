@@ -1,3 +1,10 @@
+## Changes in v0.99.22 (commit: 9ee946e)
+
+
+### Bug Fixes
+
+* ensure commit messages use Bioconductor version instead of semantic version ([bd5b03f](https://github.com/stanstrup/tidyXCMS/commit/bd5b03fdbef75d18e4ae0dc6f43b6cf7080333d5))
+
 ## Changes in v0.99.21 (commit: 35572fd)
 
 
