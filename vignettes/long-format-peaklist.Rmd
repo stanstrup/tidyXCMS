@@ -298,7 +298,7 @@ peak_table_combined %>%
 
 We can also visually compare the mapping.
 
-```{r, fig.width=7, fig.height=10}
+```{r, fig.width=7, fig.height=10, fig.alt="Alluvium diagram showing the flow and mapping between MsFeatures groupings (left) and CAMERA pseudospectrum groups (right). Each colored flow represents features that belong to specific groups in both systems."}
 group_mapping <- peak_table_combined %>%
   filter(adduct != "") %>%
   select(feature_id, feature_group, f_mzmed, f_rtmed, isotopes, adduct, pcgroup) %>%
@@ -330,7 +330,7 @@ ggplot(group_mapping, aes(axis1 = feature_group, axis2 = pcgroup, fill = feature
 ```
 
 
-```{r}
+```{r, fig.width=7, fig.height=10, fig.alt="Alluvium diagram filtered to show only cases where MsFeatures groups map to multiple CAMERA pseudospectrum groups or vice versa, highlighting discrepancies between the two grouping methods."}
 group_mapping_different <- group_mapping %>%
   group_by(feature_group) %>%
   mutate(n_pc = n_distinct(pcgroup)) %>%
