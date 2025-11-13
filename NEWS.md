@@ -1,3 +1,16 @@
+## Changes in v0.99.24 (commit: f4cf5c4)
+
+## [1.0.1](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.0...semantic-release-1.0.1) (2025-11-13)
+
+
+### Bug Fixes
+
+* update cleanup script with all incorrect tags found ([1e62586](https://github.com/stanstrup/tidyXCMS/commit/1e62586c457fd8959e648b3fbafb5fe4b0ca4f5e))
+
+
+
+
+
 ## Changes in v0.99.23 (commit: bb3f423)
 
 # 1.0.0 (2025-11-13)
