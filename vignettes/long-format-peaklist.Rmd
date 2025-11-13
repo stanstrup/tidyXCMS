@@ -18,20 +18,19 @@ knitr::opts_chunk$set(
 
 The `tidyXCMS` package provides functions to work with XCMS metabolomics data in
 a tidy, long-format structure. This vignette demonstrates how to use the
-`XCMSnExp_CAMERA_peaklist_long()` function to create a comprehensive peak table
-that integrates:
+`XCMSnExp_CAMERA_peaklist_long()` function to create peak tables from XCMS results.
+
+The resulting long-format table has one row per feature per sample, integrating:
 
 - Peak detection results from XCMS
 - Feature grouping (correspondence) information
-- CAMERA annotations (isotopes, adducts, pseudospectrum groups) - **optional**
-- MsFeatures grouping (retention time, abundance correlation, EIC similarity) - **optional**
 - Sample metadata
 
-The resulting long-format table has one row per feature per sample, making it
-ideal for downstream analysis with tidyverse tools like `dplyr` and `ggplot2`.
+This structure makes the data ideal for downstream analysis with tidyverse tools
+like `dplyr` and `ggplot2`.
 
-**Note:** Both CAMERA annotations and MsFeatures grouping are optional. You can create
-a peak table with either, both, or neither of these annotation types.
+You can optionally enhance these tables with additional annotations, which we'll
+explore later in this vignette.
 
 # Setup
 
@@ -105,29 +104,29 @@ cat("Dataset contains", nrow(chromPeaks(xdata)), "peaks across",
     "grouped into", nrow(featureDefinitions(xdata)), "features\n")
 ```
 
-## Create Long-Format Peak Table (Without CAMERA)
+## Creating a Basic Long-Format Peak Table
 
-You can create a long-format peak table directly from the XCMS results without using CAMERA annotations. This is useful when you want to quickly explore your data or when CAMERA annotations are not needed for your analysis.
+Let's start by creating a long-format peak table directly from the XCMS results. This gives us all the essential peak information in a tidy format.
 
 ```{r create_table_no_camera}
-# Create peak table without CAMERA
-peak_table_no_camera <- XCMSnExp_CAMERA_peaklist_long(xdata)
+# Create basic peak table
+peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata)
 
 # Check the structure
-dim(peak_table_no_camera)
+dim(peak_table)
 
 # View first few rows
-head(peak_table_no_camera)
+head(peak_table)
 
-# Check column names - note that isotopes, adduct, and pcgroup are NOT present
-colnames(peak_table_no_camera)
+# Check column names
+colnames(peak_table)
 ```
 
-The resulting table contains all feature and peak information. The CAMERA annotation columns (`isotopes`, `adduct`, `pcgroup`) are **not included** when no CAMERA annotations are provided, keeping the output cleaner and more memory-efficient.
+The resulting table contains all feature and peak information from XCMS, organized with one row per feature per sample.
 
-## CAMERA Annotation (Optional)
+## Enhancing Peak Tables with CAMERA Annotations
 
-Use CAMERA to annotate isotopes, adducts, and group features into pseudospectra.
+CAMERA can annotate isotopes, adducts, and group features into pseudospectra, providing valuable chemical context to your peak table.
 
 **Note:** CAMERA requires an `xcmsSet` object. Since our data is an `XcmsExperiment`, we first convert it to `XCMSnExp` and then to `xcmsSet`.
 
@@ -197,21 +196,23 @@ Now we can annotate adducts using these rules:
 xs <- findAdducts(xs, ppm = 500, mzabs = 0.2, multiplier = 4, polarity = "positive", rules = rules_pos)
 ```
 
-## Create Long-Format Peak Table
+### Creating the Peak Table with CAMERA Annotations
 
-Now we can create our comprehensive long-format peak table! Note that we use the original `xdata` (XCMSnExp) object along with the CAMERA annotations from `xs`.
+Now we can create a peak table that includes all the CAMERA annotations. We pass both the original `xdata` object and the CAMERA annotations from `xs`:
 
 ```{r create_table}
-peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
+peak_table_camera <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
 
 # Check the structure
-dim(peak_table)
-colnames(peak_table)
+dim(peak_table_camera)
+colnames(peak_table_camera)
 ```
 
-## MsFeatures Grouping (Optional)
+The table now includes additional columns for CAMERA annotations: `isotopes`, `adduct`, and `pcgroup` (pseudospectrum correlation group).
 
-In addition to CAMERA annotations, you can use the `MsFeatures` package to group features based on retention time similarity, abundance correlation, or EIC similarity. This provides an alternative or complementary approach to CAMERA's pseudospectrum grouping.
+## Enhancing Peak Tables with MsFeatures Grouping
+
+The `MsFeatures` package offers another way to enhance peak tables by grouping features based on retention time similarity, abundance correlation, or EIC similarity.
 
 ### Why Use MsFeatures?
 
@@ -253,9 +254,9 @@ peak_table_grouped %>%
   head(10)
 ```
 
-### Combining CAMERA and MsFeatures
+## Combining CAMERA and MsFeatures Annotations
 
-You can use both CAMERA annotations and MsFeatures grouping together. Apply `groupFeatures()` first, then proceed with CAMERA annotation:
+For comprehensive annotation, you can combine both approaches. Apply `groupFeatures()` first, then proceed with CAMERA annotation:
 
 ```{r combined_annotation, message=FALSE}
 # Apply feature grouping
@@ -444,13 +445,15 @@ peak_table %>%
 
 ## CAMERA Annotations
 
+When CAMERA annotations are included, these additional columns are available:
+
 - `isotopes`: Isotope annotation (e.g., "[M]+", "[M+1]+")
 - `adduct`: Adduct annotation (e.g., "[M+H]+", "[M+Na]+")
 - `pcgroup`: Pseudospectrum correlation group ID
 
 ```{r camera_info}
-# View features with adduct annotations
-peak_table %>%
+# View features with adduct annotations (using the CAMERA-annotated table)
+peak_table_camera %>%
   filter(adduct!="") %>%
   select(feature_id, f_mzmed, f_rtmed, isotopes, adduct, pcgroup) %>%
   distinct(feature_id, .keep_all = TRUE) %>%
@@ -522,13 +525,13 @@ peak_table %>%
 ## Identify Features with Adduct Annotations
 
 ```{r adduct_summary}
-# Count features by adduct type
-adduct_counts <- peak_table %>%
+# Count features by adduct type (using the CAMERA-annotated table)
+adduct_counts <- peak_table_camera %>%
   filter(adduct!="") %>%
-  separate_rows(adduct, sep = "\\s(?=\\[M)") %>% 
+  separate_rows(adduct, sep = "\\s(?=\\[M)") %>%
   distinct(feature_id, adduct) %>%
-  mutate(adduct = gsub("^(\\[.*\\].*\\+).*","\\1",adduct)) %>% 
-  
+  mutate(adduct = gsub("^(\\[.*\\].*\\+).*","\\1",adduct)) %>%
+
   count(adduct, sort = TRUE)
 
 adduct_counts
