@@ -22,14 +22,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "./.github/prepare-news.sh ${nextRelease.version}"
-      }
-    ],
-    [
-      "@semantic-release/git",
-      {
-        "assets": ["NEWS.md", "DESCRIPTION", ".bioc_version"],
-        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        "prepareCmd": "./.github/prepare-news.sh ${nextRelease.version} '${nextRelease.notes}'"
       }
     ],
     [
