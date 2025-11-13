@@ -39,23 +39,32 @@ echo "Preparing NEWS.md and DESCRIPTION for version $BIOC_VERSION..."
 # Export for potential use by other scripts
 echo "$BIOC_VERSION" > .bioc_version
 
-# Format NEWS.md for R/pkgdown
-sed -i 's/^# \[\([0-9]\+\.[0-9]\+\.[0-9]\+\)\].*/## Changes in v\1/' NEWS.md
-sed -i 's/^## \[\([0-9]\+\.[0-9]\+\.[0-9]\+\)\].*/## Changes in v\1/' NEWS.md
-sed -i 's/^# \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/## Changes in v\1/' NEWS.md
-sed -i 's/^## \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/## Changes in v\1/' NEWS.md
-sed -i '/^# tidyXCMS/d' NEWS.md
-sed -i 's/(\([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}\))$/ (\1)/' NEWS.md
-sed -i 's/### /### /' NEWS.md
-sed -i 's/\[compare\/v[0-9].*//' NEWS.md
+# Get current date
+RELEASE_DATE=$(date +%Y-%m-%d)
 
-# Replace ONLY the first (most recent) version number in NEWS.md with BIOC_VERSION
-# This ensures the latest release uses 0.99.x format without touching historical entries
-sed -i "0,/## Changes in v[0-9]\+\.[0-9]\+\.[0-9]\+/{s/## Changes in v[0-9]\+\.[0-9]\+\.[0-9]\+/## Changes in v$BIOC_VERSION/}" NEWS.md
-
-# Add commit SHA to the version header for traceability
+# Get current commit SHA for traceability
 COMMIT_SHA=$(git rev-parse --short HEAD)
-sed -i "0,/## Changes in v$BIOC_VERSION/{s/## Changes in v$BIOC_VERSION/## Changes in v$BIOC_VERSION (commit: $COMMIT_SHA)/}" NEWS.md
+
+# Create new NEWS.md entry at the top
+# First, save existing NEWS.md content
+if [ -f NEWS.md ]; then
+  cp NEWS.md NEWS.md.bak
+else
+  touch NEWS.md.bak
+fi
+
+# Create new NEWS.md with new entry at the top
+{
+  echo "## Changes in v$BIOC_VERSION (commit: $COMMIT_SHA)"
+  echo ""
+  echo "$RELEASE_NOTES"
+  echo ""
+  # Add existing content below
+  cat NEWS.md.bak
+} > NEWS.md
+
+# Clean up backup
+rm NEWS.md.bak
 
 # Update DESCRIPTION version
 sed -i "s/^Version: .*/Version: $BIOC_VERSION/" DESCRIPTION
