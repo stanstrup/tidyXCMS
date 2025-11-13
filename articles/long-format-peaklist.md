@@ -697,7 +697,10 @@ detection_rate <- peak_table %>%
 hist(detection_rate$detection_rate, breaks=10, main = "Histogram of feature detection rate")
 ```
 
-![](long-format-peaklist_files/figure-html/missing_values-1.png)
+![Histogram showing the distribution of feature detection rates across
+samples. The x-axis shows detection rate from 0 to 1, and the y-axis
+shows the frequency (count) of features at each detection
+rate.](long-format-peaklist_files/figure-html/missing_values-1.png)
 
 ## Downstream Analysis Examples
 
