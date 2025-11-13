@@ -1,3 +1,10 @@
+## Changes in v0.99.9
+
+
+### Features
+
+* add groupFeatures integration from MsFeatures package ([bea8117](https://github.com/stanstrup/tidyXCMS/commit/bea81177149f638e608c2b21411621fa13e0b776))
+
 ## Changes in v0.99.8
 
 
