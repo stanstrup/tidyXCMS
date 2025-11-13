@@ -1,3 +1,11 @@
+## Changes in v0.99.13
+
+
+### Bug Fixes
+
+* improve path matching in vignette to use basename ([80a3aa1](https://github.com/stanstrup/tidyXCMS/commit/80a3aa1b48d6f46c761b516696523b79c89db235))
+* resolve semantic-release sync-bioc-tag.sh execution failure ([2609ea2](https://github.com/stanstrup/tidyXCMS/commit/2609ea2231b4a372aae0dc4e55293b1676138e65))
+
 ## Changes in v0.99.12
 
 
