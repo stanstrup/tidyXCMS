@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyXCMS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.15</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,8 +68,8 @@
 </h2>
 <p>The <code>tidyXCMS</code> package provides functions to work with
 XCMS metabolomics data in a tidy, long-format structure. This vignette
-demonstrates how to use the <code><a href="../reference/XCMSnExp_CAMERA_peaklist_long.html">XCMSnExp_CAMERA_peaklist_long()</a></code>
-function to create peak tables from XCMS results.</p>
+demonstrates how to use the <code><a href="../reference/tidy_peaklist.html">tidy_peaklist()</a></code> function to
+create peak tables from XCMS results.</p>
 <p>The resulting long-format table has one row per feature per sample,
 integrating:</p>
 <ul>
@@ -88,18 +88,21 @@ which we’ll explore later in this vignette.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://stanstrup.github.io/tidyXCMS">tidyXCMS</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sneumann/xcms" class="external-link">xcms</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lgatto.github.io/MSnbase" class="external-link">MSnbase</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://msbi.ipb-halle.de/msbi/CAMERA/" class="external-link">CAMERA</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/MsFeatures" class="external-link">MsFeatures</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">commonMZ</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Bioconductor/BiocParallel" class="external-link">BiocParallel</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/MsExperiment" class="external-link">MsExperiment</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://corybrunson.github.io/ggalluvial/" class="external-link">ggalluvial</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">RColorBrewer</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/showteeth/ggpie" class="external-link">ggpie</a></span><span class="op">)</span></span></code></pre></div>
+<span></span>
+<span><span class="co"># Optional packages for enhanced functionality</span></span>
+<span><span class="co"># Install if needed: BiocManager::install("CAMERA") or install.packages("commonMZ")</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"MSnbase"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lgatto.github.io/MSnbase" class="external-link">MSnbase</a></span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"CAMERA"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://msbi.ipb-halle.de/msbi/CAMERA/" class="external-link">CAMERA</a></span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"MsFeatures"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/MsFeatures" class="external-link">MsFeatures</a></span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"commonMZ"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">commonMZ</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggalluvial"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://corybrunson.github.io/ggalluvial/" class="external-link">ggalluvial</a></span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"RColorBrewer"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">RColorBrewer</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggpie"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/showteeth/ggpie" class="external-link">ggpie</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="example-workflow">Example Workflow<a class="anchor" aria-label="anchor" href="#example-workflow"></a>
@@ -171,7 +174,7 @@ XCMS results. This gives us all the essential peak information in a tidy
 format.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create basic peak table</span></span>
-<span><span class="va">peak_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/XCMSnExp_CAMERA_peaklist_long.html">XCMSnExp_CAMERA_peaklist_long</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span></span>
+<span><span class="va">peak_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_peaklist.html">tidy_peaklist</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check the structure</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">peak_table</span><span class="op">)</span></span>
@@ -320,7 +323,7 @@ comprehensive list of adduct and fragment rules for CAMERA.</p>
 annotations. We pass both the original <code>xdata</code> object and the
 CAMERA annotations from <code>xs</code>:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">peak_table_camera</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/XCMSnExp_CAMERA_peaklist_long.html">XCMSnExp_CAMERA_peaklist_long</a></span><span class="op">(</span><span class="va">xdata</span>, <span class="va">xs</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">peak_table_camera</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_peaklist.html">tidy_peaklist</a></span><span class="op">(</span><span class="va">xdata</span>, <span class="va">xs</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check the structure</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">peak_table_camera</span><span class="op">)</span></span>
@@ -415,7 +418,7 @@ groups, the <code>feature_group</code> column is automatically
 included:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create peak table with feature grouping</span></span>
-<span><span class="va">peak_table_grouped</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/XCMSnExp_CAMERA_peaklist_long.html">XCMSnExp_CAMERA_peaklist_long</a></span><span class="op">(</span><span class="va">xdata_grouped</span><span class="op">)</span></span>
+<span><span class="va">peak_table_grouped</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_peaklist.html">tidy_peaklist</a></span><span class="op">(</span><span class="va">xdata_grouped</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check that feature_group column is present</span></span>
 <span><span class="st">"feature_group"</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">peak_table_grouped</span><span class="op">)</span></span>
@@ -453,7 +456,7 @@ annotation:</p>
 <span></span>
 <span><span class="co"># Create peak table with both CAMERA and MsFeatures annotations</span></span>
 <span><span class="co"># Reuse the xs object created earlier (CAMERA annotations are the same)</span></span>
-<span><span class="va">peak_table_combined</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/XCMSnExp_CAMERA_peaklist_long.html">XCMSnExp_CAMERA_peaklist_long</a></span><span class="op">(</span><span class="va">xdata_grouped</span>, <span class="va">xs</span><span class="op">)</span></span>
+<span><span class="va">peak_table_combined</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_peaklist.html">tidy_peaklist</a></span><span class="op">(</span><span class="va">xdata_grouped</span>, <span class="va">xs</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># View combined annotations</span></span>
 <span><span class="va">peak_table_combined</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -1058,12 +1061,12 @@ and fragments found by CAMERA:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
 <span><span class="co">#&gt;  [1] ggpie_0.2.5         RColorBrewer_1.1-3  ggalluvial_0.12.5  </span></span>
-<span><span class="co">#&gt;  [4] MsExperiment_1.12.0 tidyr_1.3.1         ggplot2_4.0.0      </span></span>
-<span><span class="co">#&gt;  [7] dplyr_1.1.4         commonMZ_0.0.2      MsFeatures_1.18.0  </span></span>
-<span><span class="co">#&gt; [10] CAMERA_1.66.0       MSnbase_2.36.0      ProtGenerics_1.42.0</span></span>
-<span><span class="co">#&gt; [13] S4Vectors_0.48.0    mzR_2.44.0          Rcpp_1.1.0         </span></span>
-<span><span class="co">#&gt; [16] Biobase_2.70.0      BiocGenerics_0.56.0 generics_0.1.4     </span></span>
-<span><span class="co">#&gt; [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.13   </span></span>
+<span><span class="co">#&gt;  [4] commonMZ_0.0.2      MsFeatures_1.18.0   CAMERA_1.66.0      </span></span>
+<span><span class="co">#&gt;  [7] MSnbase_2.36.0      S4Vectors_0.48.0    mzR_2.44.0         </span></span>
+<span><span class="co">#&gt; [10] Rcpp_1.1.0          Biobase_2.70.0      BiocGenerics_0.56.0</span></span>
+<span><span class="co">#&gt; [13] generics_0.1.4      MsExperiment_1.12.0 ProtGenerics_1.42.0</span></span>
+<span><span class="co">#&gt; [16] tidyr_1.3.1         ggplot2_4.0.0       dplyr_1.1.4        </span></span>
+<span><span class="co">#&gt; [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.15   </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;   [1] rstudioapi_0.17.1           jsonlite_2.0.0             </span></span>
@@ -1089,7 +1092,7 @@ and fragments found by CAMERA:</p>
 <span><span class="co">#&gt;  [41] Hmisc_5.2-4                 GenomicRanges_1.62.0       </span></span>
 <span><span class="co">#&gt;  [43] labeling_0.4.3              Spectra_1.20.0             </span></span>
 <span><span class="co">#&gt;  [45] abind_1.4-8                 compiler_4.5.2             </span></span>
-<span><span class="co">#&gt;  [47] withr_3.0.2                 bit64_4.6.0-1              </span></span>
+<span><span class="co">#&gt;  [47] bit64_4.6.0-1               withr_3.0.2                </span></span>
 <span><span class="co">#&gt;  [49] doParallel_1.0.17           htmlTable_2.4.3            </span></span>
 <span><span class="co">#&gt;  [51] S7_0.2.0                    backports_1.5.0            </span></span>
 <span><span class="co">#&gt;  [53] DBI_1.2.3                   MASS_7.3-65                </span></span>

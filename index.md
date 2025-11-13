@@ -25,7 +25,7 @@ library(xcms)
 xdata <- loadXcmsData("xmse")
 
 # Create long-format peak table
-peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata)
+peak_table <- tidy_peaklist(xdata)
 
 # Result: one row per feature per sample
 # Includes peak intensities, m/z, RT, and sample metadata

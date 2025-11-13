@@ -1,5 +1,28 @@
 # Changelog
 
+## Changes in v0.99.15
+
+### Code Refactoring
+
+- comprehensive code improvements and function rename to tidy_peaklist
+  ([079448c](https://github.com/stanstrup/tidyXCMS/commit/079448caa0bebf7d1ac4eafc623d708a8ee2db92))
+
+### BREAKING CHANGES
+
+- Function renamed from XCMSnExp_CAMERA_peaklist_long to tidy_peaklist.
+  Users must update function calls in existing code.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+## Changes in v0.99.14
+
+### Bug Fixes
+
+- use list.files with recursive search for CDF path matching
+  ([e85f6f5](https://github.com/stanstrup/tidyXCMS/commit/e85f6f5fd3ec246a17e9de7c28c92accb87f4580))
+
 ## Changes in v0.99.13
 
 ### Bug Fixes

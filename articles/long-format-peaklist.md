@@ -5,7 +5,7 @@
 The `tidyXCMS` package provides functions to work with XCMS metabolomics
 data in a tidy, long-format structure. This vignette demonstrates how to
 use the
-[`XCMSnExp_CAMERA_peaklist_long()`](https://stanstrup.github.io/tidyXCMS/reference/XCMSnExp_CAMERA_peaklist_long.md)
+[`tidy_peaklist()`](https://stanstrup.github.io/tidyXCMS/reference/tidy_peaklist.md)
 function to create peak tables from XCMS results.
 
 The resulting long-format table has one row per feature per sample,
@@ -26,18 +26,21 @@ which we’ll explore later in this vignette.
 ``` r
 library(tidyXCMS)
 library(xcms)
-library(MSnbase)
-library(CAMERA)
-library(MsFeatures)
-library(commonMZ)
 library(BiocParallel)
 library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(MsExperiment)
-library(ggalluvial)
-library(RColorBrewer)
-library(ggpie)
+
+# Optional packages for enhanced functionality
+# Install if needed: BiocManager::install("CAMERA") or install.packages("commonMZ")
+if (requireNamespace("MSnbase", quietly = TRUE)) library(MSnbase)
+if (requireNamespace("CAMERA", quietly = TRUE)) library(CAMERA)
+if (requireNamespace("MsFeatures", quietly = TRUE)) library(MsFeatures)
+if (requireNamespace("commonMZ", quietly = TRUE)) library(commonMZ)
+if (requireNamespace("ggalluvial", quietly = TRUE)) library(ggalluvial)
+if (requireNamespace("RColorBrewer", quietly = TRUE)) library(RColorBrewer)
+if (requireNamespace("ggpie", quietly = TRUE)) library(ggpie)
 ```
 
 ## Example Workflow
@@ -112,7 +115,7 @@ format.
 
 ``` r
 # Create basic peak table
-peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata)
+peak_table <- tidy_peaklist(xdata)
 
 # Check the structure
 dim(peak_table)
@@ -271,7 +274,7 @@ We pass both the original `xdata` object and the CAMERA annotations from
 `xs`:
 
 ``` r
-peak_table_camera <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
+peak_table_camera <- tidy_peaklist(xdata, xs)
 
 # Check the structure
 dim(peak_table_camera)
@@ -360,7 +363,7 @@ groups, the `feature_group` column is automatically included:
 
 ``` r
 # Create peak table with feature grouping
-peak_table_grouped <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped)
+peak_table_grouped <- tidy_peaklist(xdata_grouped)
 
 # Check that feature_group column is present
 "feature_group" %in% colnames(peak_table_grouped)
@@ -398,7 +401,7 @@ xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
 
 # Create peak table with both CAMERA and MsFeatures annotations
 # Reuse the xs object created earlier (CAMERA annotations are the same)
-peak_table_combined <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped, xs)
+peak_table_combined <- tidy_peaklist(xdata_grouped, xs)
 
 # View combined annotations
 peak_table_combined %>%
@@ -820,12 +823,12 @@ sessionInfo()
 #> 
 #> other attached packages:
 #>  [1] ggpie_0.2.5         RColorBrewer_1.1-3  ggalluvial_0.12.5  
-#>  [4] MsExperiment_1.12.0 tidyr_1.3.1         ggplot2_4.0.0      
-#>  [7] dplyr_1.1.4         commonMZ_0.0.2      MsFeatures_1.18.0  
-#> [10] CAMERA_1.66.0       MSnbase_2.36.0      ProtGenerics_1.42.0
-#> [13] S4Vectors_0.48.0    mzR_2.44.0          Rcpp_1.1.0         
-#> [16] Biobase_2.70.0      BiocGenerics_0.56.0 generics_0.1.4     
-#> [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.13   
+#>  [4] commonMZ_0.0.2      MsFeatures_1.18.0   CAMERA_1.66.0      
+#>  [7] MSnbase_2.36.0      S4Vectors_0.48.0    mzR_2.44.0         
+#> [10] Rcpp_1.1.0          Biobase_2.70.0      BiocGenerics_0.56.0
+#> [13] generics_0.1.4      MsExperiment_1.12.0 ProtGenerics_1.42.0
+#> [16] tidyr_1.3.1         ggplot2_4.0.0       dplyr_1.1.4        
+#> [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.15   
 #> 
 #> loaded via a namespace (and not attached):
 #>   [1] rstudioapi_0.17.1           jsonlite_2.0.0             
@@ -851,7 +854,7 @@ sessionInfo()
 #>  [41] Hmisc_5.2-4                 GenomicRanges_1.62.0       
 #>  [43] labeling_0.4.3              Spectra_1.20.0             
 #>  [45] abind_1.4-8                 compiler_4.5.2             
-#>  [47] withr_3.0.2                 bit64_4.6.0-1              
+#>  [47] bit64_4.6.0-1               withr_3.0.2                
 #>  [49] doParallel_1.0.17           htmlTable_2.4.3            
 #>  [51] S7_0.2.0                    backports_1.5.0            
 #>  [53] DBI_1.2.3                   MASS_7.3-65                
