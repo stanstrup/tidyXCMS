@@ -64,7 +64,15 @@ grouping completed.
 # Load example data from XCMS (already preprocessed)
 xdata <- loadXcmsData("xmse")
 
-# Fix file paths to use correct system-specific location
+# Check the sample information
+sampleData(xdata)
+```
+
+### Fix File Paths
+
+The example data contains file paths from the original system. We need to update them to match the current system:
+
+```{r fix_paths, message=FALSE}
 # Get current dataOrigin values (these are repeated for each spectrum)
 current_origins <- spectra(xdata)$dataOrigin
 
@@ -85,9 +93,6 @@ path_map <- setNames(unique_new_paths, unique_old_paths)
 
 # Replace all dataOrigin values (vectorized replacement)
 spectra(xdata)$dataOrigin <- path_map[current_origins]
-
-# Check the sample information
-sampleData(xdata)
 
 # Check results
 cat("Dataset contains", nrow(chromPeaks(xdata)), "peaks across",
