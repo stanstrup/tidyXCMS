@@ -32,35 +32,107 @@ tidy_peaklist(x, xsAnnotate = NULL)
 
 A [tibble::tibble](https://tibble.tidyverse.org/reference/tibble.html)
 in long format with one row per feature per sample (or one row per peak
-per sample if features are not defined). The tibble contains:
+per sample if features are not defined). The tibble contains the
+following columns with their data types:
 
-- Feature-level columns:
+- feature_id:
 
-  f_mzmed, f_mzmin, f_mzmax, f_rtmed, f_rtmin, f_rtmax - feature summary
-  statistics (only if features are defined)
+  integer: Feature identifier (1, 2, 3, ...). Only present when features
+  are defined via
+  [`xcms::groupChromPeaks()`](https://rdrr.io/pkg/xcms/man/groupChromPeaks.html).
 
-- CAMERA annotations:
+- f_mzmed, f_mzmin, f_mzmax:
 
-  isotopes, adduct, pcgroup (pseudospectrum group) - only present when
-  xsAnnotate is provided
+  numeric: Feature-level m/z statistics (median, minimum, maximum). Only
+  present when features are defined.
 
-- MsFeatures grouping:
+- f_rtmed, f_rtmin, f_rtmax:
 
-  feature_group - feature group ID from
-  [`MsFeatures::groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html),
-  only present if groupFeatures was applied
+  numeric: Feature-level retention time statistics in seconds (median,
+  minimum, maximum). Only present when features are defined.
 
-- Peak-level columns:
+- ms_level:
 
-  mz, rt, into, intb, maxo, sn - individual peak measurements
+  integer: MS level (typically 1 for MS1 features). Only present when
+  features are defined.
 
-- Sample information:
+- isotopes:
 
-  filepath, filename, fromFile - sample identifiers
+  character: Isotope annotations from CAMERA (e.g., "`"[M]+"`",
+  "`"[M+1]+"`"). Only present when xsAnnotate is provided.
+
+- adduct:
+
+  character: Adduct annotations from CAMERA (e.g., "`"[M+H]+"`",
+  "`"[M+Na]+"`"). Only present when xsAnnotate is provided.
+
+- pcgroup:
+
+  integer: Pseudospectrum group ID from CAMERA. Features with the same
+  pcgroup are believed to originate from the same compound. Only present
+  when xsAnnotate is provided.
+
+- feature_group:
+
+  character: Feature group identifier from
+  [`MsFeatures::groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html)
+  (e.g., "FG.001", "FG.002"). Only present if groupFeatures was applied.
+
+- mz, mzmin, mzmax:
+
+  numeric: Peak m/z values (centroid, minimum, maximum).
+
+- rt, rtmin, rtmax:
+
+  numeric: Peak retention time in seconds (apex, minimum, maximum).
+
+- into:
+
+  numeric: Integrated peak intensity (integrated area of original (raw)
+  peak).
+
+- intb:
+
+  numeric: Baseline-corrected integrated peak intensity.
+
+- maxo:
+
+  numeric: Maximum peak intensity (apex).
+
+- sn:
+
+  numeric: Signal-to-noise ratio.
+
+- is_filled:
+
+  logical: Whether the peak was gap-filled (TRUE) or originally detected
+  (FALSE).
+
+- filepath:
+
+  character: Full file path to the raw data file.
+
+- filename:
+
+  character: Basename of the raw data file.
+
+- fromFile:
+
+  numeric: Sample index (1-based) corresponding to the order in
+  [xcms::fileNames,MsExperiment-method](https://rdrr.io/pkg/xcms/man/XcmsExperiment.html).
+
+- peakidx:
+
+  numeric: Internal peak index from
+  [`xcms::chromPeaks()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html).
 
 - Additional columns:
 
-  Any columns from pData(x) or sampleData(x)
+  Variable types: Any columns from
+  [`Biobase::pData()`](https://rdrr.io/pkg/Biobase/man/phenoData.html)
+  or
+  [`MsExperiment::sampleData()`](https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html)
+  are included with their original data types.
 
 ## Details
 
@@ -122,7 +194,7 @@ particular sample.
 - For XcmsExperiment objects, sample metadata is accessed via
   sampleData() instead of pData().
 
-- For large datasets (many features × many samples), the output can be
+- For large datasets (many features x many samples), the output can be
   memory-intensive. A warning is issued if the expected output exceeds
   10 million rows.
 

@@ -71,27 +71,81 @@ If NULL (default), annotation columns will not be included in the output.</p></d
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble::tibble</a> in long format with one row per feature per sample
 (or one row per peak per sample if features are not defined).
-The tibble contains:</p><dl><dt>Feature-level columns</dt>
-<dd><p>f_mzmed, f_mzmin, f_mzmax, f_rtmed, f_rtmin,
-f_rtmax - feature summary statistics (only if features are defined)</p></dd>
+The tibble contains the following columns with their data types:</p><dl><dt>feature_id</dt>
+<dd><p>integer: Feature identifier (1, 2, 3, ...). Only present
+when features are defined via <code><a href="https://rdrr.io/pkg/xcms/man/groupChromPeaks.html" class="external-link">xcms::groupChromPeaks()</a></code>.</p></dd>
 
-<dt>CAMERA annotations</dt>
-<dd><p>isotopes, adduct, pcgroup (pseudospectrum group) -
-only present when xsAnnotate is provided</p></dd>
+<dt>f_mzmed, f_mzmin, f_mzmax</dt>
+<dd><p>numeric: Feature-level m/z statistics
+(median, minimum, maximum). Only present when features are defined.</p></dd>
 
-<dt>MsFeatures grouping</dt>
-<dd><p>feature_group - feature group ID from
-<code><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">MsFeatures::groupFeatures()</a></code>, only present if groupFeatures was applied</p></dd>
+<dt>f_rtmed, f_rtmin, f_rtmax</dt>
+<dd><p>numeric: Feature-level retention time
+statistics in seconds (median, minimum, maximum). Only present when
+features are defined.</p></dd>
 
-<dt>Peak-level columns</dt>
-<dd><p>mz, rt, into, intb, maxo, sn - individual peak
-measurements</p></dd>
+<dt>ms_level</dt>
+<dd><p>integer: MS level (typically 1 for MS1 features). Only
+present when features are defined.</p></dd>
 
-<dt>Sample information</dt>
-<dd><p>filepath, filename, fromFile - sample identifiers</p></dd>
+<dt>isotopes</dt>
+<dd><p>character: Isotope annotations from CAMERA (e.g., "<code>"[M]+"</code>",
+"<code>"[M+1]+"</code>"). Only present when xsAnnotate is provided.</p></dd>
+
+<dt>adduct</dt>
+<dd><p>character: Adduct annotations from CAMERA (e.g., "<code>"[M+H]+"</code>",
+"<code>"[M+Na]+"</code>"). Only present when xsAnnotate is provided.</p></dd>
+
+<dt>pcgroup</dt>
+<dd><p>integer: Pseudospectrum group ID from CAMERA. Features with
+the same pcgroup are believed to originate from the same compound. Only
+present when xsAnnotate is provided.</p></dd>
+
+<dt>feature_group</dt>
+<dd><p>character: Feature group identifier from
+<code><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">MsFeatures::groupFeatures()</a></code> (e.g., "FG.001", "FG.002"). Only present
+if groupFeatures was applied.</p></dd>
+
+<dt>mz, mzmin, mzmax</dt>
+<dd><p>numeric: Peak m/z values (centroid, minimum, maximum).</p></dd>
+
+<dt>rt, rtmin, rtmax</dt>
+<dd><p>numeric: Peak retention time in seconds (apex, minimum,
+maximum).</p></dd>
+
+<dt>into</dt>
+<dd><p>numeric: Integrated peak intensity (integrated area of original
+(raw) peak).</p></dd>
+
+<dt>intb</dt>
+<dd><p>numeric: Baseline-corrected integrated peak intensity.</p></dd>
+
+<dt>maxo</dt>
+<dd><p>numeric: Maximum peak intensity (apex).</p></dd>
+
+<dt>sn</dt>
+<dd><p>numeric: Signal-to-noise ratio.</p></dd>
+
+<dt>is_filled</dt>
+<dd><p>logical: Whether the peak was gap-filled (TRUE) or originally
+detected (FALSE).</p></dd>
+
+<dt>filepath</dt>
+<dd><p>character: Full file path to the raw data file.</p></dd>
+
+<dt>filename</dt>
+<dd><p>character: Basename of the raw data file.</p></dd>
+
+<dt>fromFile</dt>
+<dd><p>numeric: Sample index (1-based) corresponding to the order
+in <a href="https://rdrr.io/pkg/xcms/man/XcmsExperiment.html" class="external-link">xcms::fileNames,MsExperiment-method</a>.</p></dd>
+
+<dt>peakidx</dt>
+<dd><p>numeric: Internal peak index from <code><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">xcms::chromPeaks()</a></code>.</p></dd>
 
 <dt>Additional columns</dt>
-<dd><p>Any columns from pData(x) or sampleData(x)</p></dd>
+<dd><p>Variable types: Any columns from <code><a href="https://rdrr.io/pkg/Biobase/man/phenoData.html" class="external-link">Biobase::pData()</a></code>
+or <code><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">MsExperiment::sampleData()</a></code> are included with their original data types.</p></dd>
 
 
 </dl></div>
@@ -126,7 +180,7 @@ adduct, and pcgroup columns will not be present in the output.</p></li>
 was applied to the object, the feature_group column will be included in the output.</p></li>
 <li><p>For XcmsExperiment objects, sample metadata is accessed via sampleData()
 instead of pData().</p></li>
-<li><p>For large datasets (many features × many samples), the output can be
+<li><p>For large datasets (many features x many samples), the output can be
 memory-intensive. A warning is issued if the expected output exceeds 10 million rows.</p></li>
 </ul></div>
 

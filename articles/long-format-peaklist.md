@@ -851,7 +851,7 @@ sessionInfo()
 #>  [29] iterators_1.0.14            pkgconfig_2.0.3            
 #>  [31] Matrix_1.7-4                R6_2.6.1                   
 #>  [33] fastmap_1.2.0               MatrixGenerics_1.22.0      
-#>  [35] clue_0.3-66                 digest_0.6.37              
+#>  [35] clue_0.3-66                 digest_0.6.38              
 #>  [37] ggnewscale_0.5.2            pcaMethods_2.2.0           
 #>  [39] colorspace_2.1-2            textshaping_1.0.4          
 #>  [41] Hmisc_5.2-4                 GenomicRanges_1.62.0       
@@ -866,7 +866,7 @@ sessionInfo()
 #>  [59] nnet_7.3-20                 glue_1.8.0                 
 #>  [61] QFeatures_1.20.0            grid_4.5.2                 
 #>  [63] checkmate_2.3.3             cluster_2.1.8.1            
-#>  [65] reshape2_1.4.4              gtable_0.3.6               
+#>  [65] reshape2_1.4.5              gtable_0.3.6               
 #>  [67] tzdb_0.5.0                  preprocessCore_1.72.0      
 #>  [69] data.table_1.17.8           hms_1.1.4                  
 #>  [71] MetaboCoreUtils_1.18.0      utf8_1.2.6                 
