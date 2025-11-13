@@ -17,6 +17,8 @@
 #'       f_rtmax - feature summary statistics}
 #'     \item{CAMERA annotations}{isotopes, adduct, pcgroup (pseudospectrum group) -
 #'       only present when xsAnnotate is provided}
+#'     \item{MsFeatures grouping}{feature_group - feature group ID from
+#'       [MsFeatures::groupFeatures()], only present if groupFeatures was applied}
 #'     \item{Peak-level columns}{mz, rt, into, intb, maxo, sn - individual peak
 #'       measurements}
 #'     \item{Sample information}{filepath, filename, fromFile - sample identifiers}
@@ -59,6 +61,8 @@
 #'     takes the maximum intensity peak for each feature in each sample.
 #'   \item CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes,
 #'     adduct, and pcgroup columns will not be present in the output.
+#'   \item MsFeatures grouping is automatically detected. If [MsFeatures::groupFeatures()]
+#'     was applied to the object, the feature_group column will be included in the output.
 #'   \item For XcmsExperiment objects, sample metadata is accessed via sampleData()
 #'     instead of pData().
 #' }
@@ -162,6 +166,9 @@ XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate = NULL) {
   temp_features <- featureDefinitions(XCMSnExp) %>%
     as_tibble()
 
+  # Check if feature_group column exists (from groupFeatures)
+  has_feature_group <- "feature_group" %in% colnames(temp_features)
+
   # Add CAMERA annotations if provided
   if (!is.null(xsAnnotate)) {
     camera_annot <- as_tibble(CAMERA::getPeaklist(xsAnnotate))
@@ -186,7 +193,8 @@ XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate = NULL) {
 
   # Join features with peaks
   out <- temp_features %>%
-    select(mzmed, mzmin, mzmax, rtmed, rtmin, rtmax, peakidx, feature_id, any_of(c("isotopes", "adduct", "pcgroup"))) %>%
+    select(mzmed, mzmin, mzmax, rtmed, rtmin, rtmax, peakidx, feature_id,
+           any_of(c("isotopes", "adduct", "pcgroup", "feature_group"))) %>%
     rename_with(~paste0("f_", .), .cols = any_of(c("mzmed", "mzmin", "mzmax", "rtmed", "rtmin", "rtmax"))) %>%
     left_join(temp_peaks, by = "peakidx") %>%
     mutate(filename = basename(filepath)) %>%
@@ -201,16 +209,25 @@ XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate = NULL) {
     ungroup()
 
   # Complete to include all feature-sample combinations
+  # Build the nesting columns dynamically based on what's present
+  feature_cols <- c("feature_id", "f_mzmed", "f_mzmin", "f_mzmax", "f_rtmed", "f_rtmin", "f_rtmax", "ms_level")
+
+  # Add CAMERA columns if present
   if (!is.null(xsAnnotate)) {
-    out <- out %>%
-      complete(nesting(feature_id, f_mzmed, f_mzmin, f_mzmax, f_rtmed, f_rtmin, f_rtmax,
-                       isotopes, adduct, pcgroup, ms_level),
-               nesting(filepath, filename, fromFile))
-  } else {
-    out <- out %>%
-      complete(nesting(feature_id, f_mzmed, f_mzmin, f_mzmax, f_rtmed, f_rtmin, f_rtmax, ms_level),
-               nesting(filepath, filename, fromFile))
+    feature_cols <- c(feature_cols, "isotopes", "adduct", "pcgroup")
   }
+
+  # Add feature_group if present
+  if (has_feature_group) {
+    feature_cols <- c(feature_cols, "feature_group")
+  }
+
+  # Filter to only columns that exist in out
+  feature_cols <- intersect(feature_cols, colnames(out))
+
+  out <- out %>%
+    complete(nesting(!!!syms(feature_cols)),
+             nesting(filepath, filename, fromFile))
 
   # Add sample metadata - handle both XCMSnExp and XcmsExperiment
   if (inherits(XCMSnExp, "XcmsExperiment")) {

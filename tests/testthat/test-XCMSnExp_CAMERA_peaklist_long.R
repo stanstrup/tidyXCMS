@@ -5,8 +5,8 @@ test_that(".chromPeaks_classic returns a tibble with expected structure", {
   library(xcms)
   library(BiocParallel)
 
-  # Test .chromPeaks_classic
-  peaks_tbl <- tidyXCMS:::.chromPeaks_classic(faahko_sub)
+  # Test .chromPeaks_classic with preloaded xdata (XCMSnExp with peaks and grouping)
+  peaks_tbl <- tidyXCMS:::.chromPeaks_classic(xdata)
 
   # Check it's a tibble
   expect_s3_class(peaks_tbl, "tbl_df")
@@ -21,29 +21,18 @@ test_that(".chromPeaks_classic returns a tibble with expected structure", {
   expect_true("sample" %in% colnames(peaks_tbl))
 
   # Check number of rows matches chromPeaks
-  expect_equal(nrow(peaks_tbl), nrow(chromPeaks(faahko_sub)))
+  expect_equal(nrow(peaks_tbl), nrow(chromPeaks(xdata)))
 })
 
 
 test_that(".chromPeaks_classic works with XcmsExperiment objects", {
 
-
   library(xcms)
   library(MsExperiment)
   library(BiocParallel)
 
-  # Load example files
-  fls <- dir(system.file("sciex", package = "msdata"), full.names = TRUE)
-
-  # Read as XcmsExperiment
-  xdata <- readMsExperiment(spectraFiles = fls[1:2], BPPARAM = SerialParam())
-
-  # Peak detection
-  cwp <- CentWaveParam(peakwidth = c(5, 20), noise = 100)
-  xdata <- findChromPeaks(xdata, param = cwp, BPPARAM = SerialParam())
-
-  # Test .chromPeaks_classic
-  peaks_tbl <- tidyXCMS:::.chromPeaks_classic(xdata)
+  # Test .chromPeaks_classic with preloaded xmse (XcmsExperiment with peaks and grouping)
+  peaks_tbl <- tidyXCMS:::.chromPeaks_classic(xmse)
 
   # Check it's a tibble
   expect_s3_class(peaks_tbl, "tbl_df")
@@ -63,16 +52,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
   library(CAMERA)
   library(BiocParallel)
 
-  # faahko_sub is loaded by helper-data.R
-
-  # Peak detection
-  cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
-  xdata <- findChromPeaks(faahko_sub, param = cwp, BPPARAM = SerialParam())
-
-  # Peak grouping
-  pdp <- PeakDensityParam(sampleGroups = rep(1, length(fileNames(xdata))),
-                          minFraction = 0.5)
-  xdata <- groupChromPeaks(xdata, param = pdp)
+  # Use preloaded xdata (XCMSnExp with peaks and grouping)
 
   # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
   xset <- as(xdata, "xcmsSet")
@@ -126,16 +106,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
   library(BiocParallel)
   library(dplyr)
 
-  # faahko_sub is loaded by helper-data.R
-
-  # Peak detection
-  cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
-  xdata <- findChromPeaks(faahko_sub, param = cwp, BPPARAM = SerialParam())
-
-  # Peak grouping
-  pdp <- PeakDensityParam(sampleGroups = rep(1, length(fileNames(xdata))),
-                          minFraction = 0.5)
-  xdata <- groupChromPeaks(xdata, param = pdp)
+  # Use preloaded xdata (XCMSnExp with peaks and grouping)
 
   # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
   xset <- as(xdata, "xcmsSet")
@@ -167,22 +138,13 @@ test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
 
 test_that("XCMSnExp_CAMERA_peaklist_long handles missing values correctly", {
 
-
   library(xcms)
   library(CAMERA)
   library(BiocParallel)
   library(dplyr)
 
-  # faahko_sub is loaded by helper-data.R
-
-  # Peak detection
-  cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
-  xdata <- findChromPeaks(faahko_sub, param = cwp, BPPARAM = SerialParam())
-
-  # Peak grouping with minFraction < 1 to ensure some missing values
-  pdp <- PeakDensityParam(sampleGroups = rep(1, length(fileNames(xdata))),
-                          minFraction = 0.3)
-  xdata <- groupChromPeaks(xdata, param = pdp)
+  # Use preloaded xdata (XCMSnExp with peaks and grouping)
+  # xdata already has grouping with minFraction that allows some missing values
 
   # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
   xset <- as(xdata, "xcmsSet")
@@ -216,34 +178,26 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
   library(BiocParallel)
   library(Biobase)
 
-  # faahko_sub is loaded by helper-data.R
+  # Use preloaded xdata and add sample metadata
+  xdata_copy <- xdata
 
   # Add sample metadata
   pd <- data.frame(
-    sample_name = basename(fileNames(faahko_sub)),
-    sample_group = c("WT", "KO", "WT")[1:length(fileNames(faahko_sub))],
-    row.names = basename(fileNames(faahko_sub))
+    sample_name = basename(fileNames(xdata_copy)),
+    sample_group = c("WT", "KO", "WT")[1:length(fileNames(xdata_copy))],
+    row.names = basename(fileNames(xdata_copy))
   )
-  pData(faahko_sub) <- pd
-
-  # Peak detection
-  cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
-  xdata <- findChromPeaks(faahko_sub, param = cwp, BPPARAM = SerialParam())
-
-  # Peak grouping
-  pdp <- PeakDensityParam(sampleGroups = rep(1, length(fileNames(xdata))),
-                          minFraction = 0.5)
-  xdata <- groupChromPeaks(xdata, param = pdp)
+  pData(xdata_copy) <- pd
 
   # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
-  xset <- as(xdata, "xcmsSet")
+  xset <- as(xdata_copy, "xcmsSet")
 
   # CAMERA annotation
   xs <- xsAnnotate(xset)
   xs <- groupFWHM(xs)
 
   # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
-  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
+  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata_copy, xs)
 
   # Check that pData columns are present
   expect_true("sample_name" %in% colnames(peak_table))
@@ -258,16 +212,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long CAMERA annotations are present", {
   library(BiocParallel)
   library(dplyr)
 
-  # faahko_sub is loaded by helper-data.R
-
-  # Peak detection
-  cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
-  xdata <- findChromPeaks(faahko_sub, param = cwp, BPPARAM = SerialParam())
-
-  # Peak grouping
-  pdp <- PeakDensityParam(sampleGroups = rep(1, length(fileNames(xdata))),
-                          minFraction = 0.5)
-  xdata <- groupChromPeaks(xdata, param = pdp)
+  # Use preloaded xdata (XCMSnExp with peaks and grouping)
 
   # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
   xset <- as(xdata, "xcmsSet")
@@ -307,16 +252,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long works without CAMERA annotations", {
   library(xcms)
   library(BiocParallel)
 
-  # faahko_sub is loaded by helper-data.R
-
-  # Peak detection
-  cwp <- CentWaveParam(peakwidth = c(20, 80), noise = 5000)
-  xdata <- findChromPeaks(faahko_sub, param = cwp, BPPARAM = SerialParam())
-
-  # Peak grouping
-  pdp <- PeakDensityParam(sampleGroups = rep(1, length(fileNames(xdata))),
-                          minFraction = 0.5)
-  xdata <- groupChromPeaks(xdata, param = pdp)
+  # Use preloaded xdata (XCMSnExp with peaks and grouping)
 
   # Create long-format peak table WITHOUT CAMERA
   peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata)
@@ -344,22 +280,10 @@ test_that("XCMSnExp_CAMERA_peaklist_long works with XcmsExperiment", {
   library(MsExperiment)
   library(BiocParallel)
 
-  # Load example files
-  fls <- dir(system.file("sciex", package = "msdata"), full.names = TRUE)
-
-  # Read as XcmsExperiment
-  xdata <- readMsExperiment(spectraFiles = fls[1:2], BPPARAM = SerialParam())
-
-  # Peak detection
-  cwp <- CentWaveParam(peakwidth = c(5, 20), noise = 100)
-  xdata <- findChromPeaks(xdata, param = cwp, BPPARAM = SerialParam())
-
-  # Peak grouping
-  pdp <- PeakDensityParam(sampleGroups = rep(1, 2), minFraction = 0.5)
-  xdata <- groupChromPeaks(xdata, param = pdp)
+  # Use preloaded xmse (XcmsExperiment with peaks and grouping)
 
   # Create long-format peak table
-  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata)
+  peak_table <- XCMSnExp_CAMERA_peaklist_long(xmse)
 
   # Check it's a tibble
   expect_s3_class(peak_table, "tbl_df")
@@ -378,4 +302,99 @@ test_that("XCMSnExp_CAMERA_peaklist_long works with XcmsExperiment", {
   expect_false("isotopes" %in% colnames(peak_table))
   expect_false("adduct" %in% colnames(peak_table))
   expect_false("pcgroup" %in% colnames(peak_table))
+})
+
+
+test_that("XCMSnExp_CAMERA_peaklist_long includes groupFeatures results", {
+
+  library(xcms)
+  library(MsFeatures)
+  library(BiocParallel)
+  library(dplyr)
+
+  # Use preloaded xdata (XCMSnExp with peaks and grouping)
+
+  # Apply groupFeatures with SimilarRtimeParam
+  xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
+
+  # Create long-format peak table
+  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped)
+
+  # Check that feature_group column is present
+  expect_true("feature_group" %in% colnames(peak_table))
+
+  # Check that feature_group values are present (should be like "FG.001", "FG.002", etc.)
+  expect_true(any(!is.na(peak_table$feature_group)))
+
+  # Check that feature_group is character
+  expect_true(is.character(peak_table$feature_group))
+
+  # Check that all features have a feature_group assignment
+  feature_groups <- peak_table %>%
+    distinct(feature_id, feature_group)
+
+  expect_equal(nrow(feature_groups), n_distinct(peak_table$feature_id))
+})
+
+
+test_that("XCMSnExp_CAMERA_peaklist_long works with both CAMERA and groupFeatures", {
+
+  library(xcms)
+  library(CAMERA)
+  library(MsFeatures)
+  library(BiocParallel)
+  library(dplyr)
+
+  # Use preloaded xdata (XCMSnExp with peaks and grouping)
+
+  # Apply groupFeatures
+  xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
+
+  # Convert to xcmsSet for CAMERA
+  xset <- as(xdata_grouped, "xcmsSet")
+
+  # CAMERA annotation
+  xs <- xsAnnotate(xset)
+  xs <- groupFWHM(xs)
+  xs <- findIsotopes(xs)
+
+  # Create long-format peak table
+  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped, xs)
+
+  # Check that both CAMERA and groupFeatures columns are present
+  expect_true("feature_group" %in% colnames(peak_table))
+  expect_true("isotopes" %in% colnames(peak_table))
+  expect_true("adduct" %in% colnames(peak_table))
+  expect_true("pcgroup" %in% colnames(peak_table))
+
+  # Check that feature_group values are present
+  expect_true(any(!is.na(peak_table$feature_group)))
+})
+
+
+test_that("XCMSnExp_CAMERA_peaklist_long works with XcmsExperiment and groupFeatures", {
+
+  library(xcms)
+  library(MsExperiment)
+  library(MsFeatures)
+  library(BiocParallel)
+  library(dplyr)
+
+  # Use preloaded xmse (XcmsExperiment with peaks and grouping)
+
+  # Apply groupFeatures with AbundanceSimilarityParam
+  xmse_grouped <- groupFeatures(xmse, param = AbundanceSimilarityParam(threshold = 0.7))
+
+  # Create long-format peak table
+  peak_table <- XCMSnExp_CAMERA_peaklist_long(xmse_grouped)
+
+  # Check that feature_group column is present
+  expect_true("feature_group" %in% colnames(peak_table))
+
+  # Check that feature_group values are present
+  expect_true(any(!is.na(peak_table$feature_group)))
+
+  # Check proper structure
+  expect_s3_class(peak_table, "tbl_df")
+  expect_gt(nrow(peak_table), 0)
 })
