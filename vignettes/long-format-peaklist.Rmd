@@ -1,8 +1,8 @@
 ---
-title: "Creating Long-Format Peak Tables with Optional CAMERA Annotations"
+title: "Creating Long-Format Peak Tables with Optional Annotations"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Creating Long-Format Peak Tables with Optional CAMERA Annotations}
+  %\VignetteIndexEntry{Creating Long-Format Peak Tables with Optional Annotations}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -24,13 +24,14 @@ that integrates:
 - Peak detection results from XCMS
 - Feature grouping (correspondence) information
 - CAMERA annotations (isotopes, adducts, pseudospectrum groups) - **optional**
+- MsFeatures grouping (retention time, abundance correlation, EIC similarity) - **optional**
 - Sample metadata
 
 The resulting long-format table has one row per feature per sample, making it
 ideal for downstream analysis with tidyverse tools like `dplyr` and `ggplot2`.
 
-**Note:** CAMERA annotations are optional. You can create a peak table without
-CAMERA annotations by simply omitting the `xsAnnotate` parameter.
+**Note:** Both CAMERA annotations and MsFeatures grouping are optional. You can create
+a peak table with either, both, or neither of these annotation types.
 
 # Setup
 
@@ -39,6 +40,7 @@ library(tidyXCMS)
 library(xcms)
 library(MSnbase)
 library(CAMERA)
+library(MsFeatures)
 library(commonMZ)
 library(BiocParallel)
 library(dplyr)
@@ -194,6 +196,100 @@ dim(peak_table)
 colnames(peak_table)
 ```
 
+## MsFeatures Grouping (Optional)
+
+In addition to CAMERA annotations, you can use the `MsFeatures` package to group features based on retention time similarity, abundance correlation, or EIC similarity. This provides an alternative or complementary approach to CAMERA's pseudospectrum grouping.
+
+### Why Use MsFeatures?
+
+- **Retention Time Grouping**: Group co-eluting features that likely come from the same compound
+- **Abundance Correlation**: Group features with correlated intensities across samples
+- **EIC Similarity**: Group features based on similar extracted ion chromatograms
+- **Stepwise Refinement**: Apply multiple grouping algorithms sequentially to refine groups
+
+### Applying Feature Grouping
+
+The `groupFeatures()` function adds a `feature_group` column to the feature definitions. Let's demonstrate with retention time-based grouping:
+
+```{r msfeatures_grouping, message=FALSE}
+library(MsFeatures)
+
+# Group features with similar retention times (within 10 seconds)
+xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
+
+# Check feature groups in featureDefinitions
+head(featureDefinitions(xdata_grouped)$feature_group)
+
+# Count how many feature groups were created
+table(featureDefinitions(xdata_grouped)$feature_group)
+```
+
+### Creating Peak Table with MsFeatures Grouping
+
+When you create a long-format peak table from an object with feature groups, the `feature_group` column is automatically included:
+
+```{r create_table_grouped}
+# Create peak table with feature grouping
+peak_table_grouped <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped)
+
+# Check that feature_group column is present
+"feature_group" %in% colnames(peak_table_grouped)
+
+# View some feature groups
+peak_table_grouped %>%
+  select(feature_id, feature_group, f_mzmed, f_rtmed) %>%
+  distinct() %>%
+  head(10)
+```
+
+### Combining CAMERA and MsFeatures
+
+You can use both CAMERA annotations and MsFeatures grouping together. Apply `groupFeatures()` first, then proceed with CAMERA annotation:
+
+```{r combined_annotation, message=FALSE}
+# Apply feature grouping
+xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
+
+# Convert to xcmsSet for CAMERA
+xset_grouped <- xdata_grouped %>%
+  as("xcmsSet")
+
+# Apply CAMERA annotation as before
+xs_grouped <- xsAnnotate(xset_grouped, polarity = "positive")
+xs_grouped <- groupFWHM(xs_grouped, perfwhm = 0.1, intval = "into", sigma = 6)
+xs_grouped <- groupCorr(xs_grouped, calcIso = FALSE, calcCiS = TRUE, calcCaS = FALSE,
+                        cor_eic_th = 0.7, pval = 1E-6)
+xs_grouped <- findIsotopes(xs_grouped, ppm = 10, mzabs = 0.01, intval = "into", maxcharge = 2)
+
+# Get adduct rules (reuse from earlier)
+rules_pos <- MZ_CAMERA(mode = "pos", warn_clash = TRUE, clash_ppm = 5) %>%
+  filter(name != "[M+NH4]+") %>%
+  as.data.frame()
+
+xs_grouped <- findAdducts(xs_grouped, ppm = 500, mzabs = 0.2, multiplier = 4,
+                          polarity = "positive", rules = rules_pos)
+
+# Create peak table with both CAMERA and MsFeatures annotations
+peak_table_combined <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped, xs_grouped)
+
+# Check that both types of annotations are present
+c("feature_group", "isotopes", "adduct", "pcgroup") %in% colnames(peak_table_combined)
+
+# View combined annotations
+peak_table_combined %>%
+  filter(adduct != "") %>%
+  select(feature_id, feature_group, f_mzmed, f_rtmed, isotopes, adduct, pcgroup) %>%
+  distinct(feature_id, .keep_all = TRUE) %>%
+  head()
+```
+
+Now you have both:
+- **`feature_group`**: Groups features based on retention time (from MsFeatures)
+- **`pcgroup`**: Groups features into pseudospectra (from CAMERA)
+- **`isotopes`** and **`adduct`**: Isotope and adduct annotations (from CAMERA)
+
+This combined approach gives you multiple perspectives on which features might originate from the same compound.
+
 # Understanding the Output
 
 The resulting tibble contains comprehensive information about each feature in each sample. Below is a complete description of all columns:
@@ -224,6 +320,8 @@ The table has been organized into logical groups for easier understanding:
 | `isotopes` | The isotope annotation from CAMERA (e.g., "[M]+", "[M+1]+", "[M+2]+") |
 | `adduct` | The adduct annotation from CAMERA (e.g., "[M+H]+", "[M+Na]+", "[M+NH4]+") |
 | `pcgroup` | The feature grouping index from CAMERA - features with same ID likely come from the same compound |
+| **MsFeatures annotations** |
+| `feature_group` | The feature group ID from MsFeatures (e.g., "FG.001", "FG.002") - features with same ID are grouped by retention time, abundance correlation, or EIC similarity |
 | **Peak-level m/z measurements (in that specific sample)** |
 | `mz` | The median m/z found for that feature in **that sample** |
 | `mzmin` | The minimum m/z found for that feature in that sample |
@@ -258,7 +356,9 @@ The table has been organized into logical groups for easier understanding:
 - **Each row represents one feature in one sample**
 - If a feature was not detected in a sample, peak-level columns (mz, rt, into, etc.) will be `NA`
 - Feature-level statistics (f_mzmed, f_rtmed, etc.) are always present and represent values across all samples
-- CAMERA annotations apply at the feature level and are the same across all samples for a given feature
+- CAMERA annotations (isotopes, adduct, pcgroup) are optional and only present when xsAnnotate is provided
+- MsFeatures annotations (feature_group) are optional and only present when groupFeatures() was applied
+- Both CAMERA and MsFeatures annotations apply at the feature level and are the same across all samples for a given feature
 - The distinction between "feature-level" and "peak-level" is important:
   - **Feature-level** (prefix `f_`): Statistics aggregated across all samples
   - **Peak-level** (no prefix): Values for the specific peak in that specific sample
