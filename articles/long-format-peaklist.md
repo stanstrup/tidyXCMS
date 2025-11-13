@@ -88,19 +88,15 @@ to update them to match the current system:
 cdf_path <- file.path(find.package("faahKO"), "cdf")
 
 # Create a mapping table with old and new paths
-path_mapping <- tibble(
-  old_path = unique(spectra(xdata)$dataOrigin)
-) %>%
-  mutate(
-    # Extract relative paths (e.g., "KO/ko15.CDF", "WT/wt15.CDF")
-    relative_path = sub(".*/faahKO/cdf/", "", old_path),
-    # Reconstruct full paths for this system
-    new_path = file.path(cdf_path, relative_path)
-  )
+path_mapping <- tibble(old_path = unique(spectra(xdata)$dataOrigin)) %>%
+                    mutate(
+                            relative_path = sub(".*/faahKO/cdf/", "", old_path),
+                            new_path = file.path(cdf_path, relative_path)
+                    )
 
 # Join with spectra dataOrigin and replace
 spectra_df <- tibble(dataOrigin = spectra(xdata)$dataOrigin) %>%
-  left_join(path_mapping, by = c("dataOrigin" = "old_path"))
+                left_join(path_mapping, by = c("dataOrigin" = "old_path"))
 
 spectra(xdata)$dataOrigin <- spectra_df$new_path
 ```
@@ -420,9 +416,10 @@ peak_table_combined %>%
 
 Now you have both:
 
-- **`feature_group`**: Groups features based on retention time (from
-  MsFeatures)
-- **`pcgroup`**: Groups features into pseudospectra (from CAMERA)
+- **`feature_group`**: Groups features based on retention time and
+  correlation across samples (from MsFeatures)
+- **`pcgroup`**: Groups features into pseudospectra based on EIC
+  similarity (from CAMERA)
 - **`isotopes`** and **`adduct`**: Isotope and adduct annotations (from
   CAMERA)
 
@@ -681,7 +678,7 @@ Features not detected in a sample have `NA` for peak-level columns:
 
 ``` r
 # Count for each feature how many samples the peak was found in
-peak_table %>%
+detection_rate <- peak_table %>%
   group_by(feature_id, f_mzmed, f_rtmed) %>%
   summarise(
     n_samples_detected = sum(!is.na(into)),
@@ -690,21 +687,11 @@ peak_table %>%
     .groups = "drop"
   ) %>%
   arrange(desc(detection_rate))
-#> # A tibble: 351 × 6
-#>    feature_id f_mzmed f_rtmed n_samples_detected n_samples_total detection_rate
-#>         <int>   <dbl>   <dbl>              <int>           <int>          <dbl>
-#>  1          1    200.   2903.                  8               8              1
-#>  2          2    205    2790.                  8               8              1
-#>  3          3    206    2789.                  8               8              1
-#>  4          4    207.   2719.                  8               8              1
-#>  5          5    233    3024.                  8               8              1
-#>  6          6    241.   3683.                  8               8              1
-#>  7          7    242.   3664.                  8               8              1
-#>  8          8    244.   2833.                  8               8              1
-#>  9          9    249.   3676.                  8               8              1
-#> 10         10    250.   3675.                  8               8              1
-#> # ℹ 341 more rows
+
+hist(detection_rate$detection_rate, breaks=10, main = "Histogram of feature detection rate")
 ```
+
+![](long-format-peaklist_files/figure-html/missing_values-1.png)
 
 ## Downstream Analysis Examples
 
@@ -783,113 +770,6 @@ adduct_counts %>%
 found by CAMERA across all
 features.](long-format-peaklist_files/figure-html/adduct_pie-1.png)
 
-### Filter Non-Informative Features with D-ratio
-
-The D-ratio helps identify features that are more variable in pooled
-samples (QC) than in biological samples, indicating they are likely
-measurement noise rather than biological signal.
-
-#### Calculate Standard Deviation per Sample Type
-
-First, we calculate the standard deviation for each feature in each
-sample type:
-
-``` r
-# Calculate SD for each feature by sample type
-# Note: Using sample_group as proxy for sample_type (WT/KO as biological samples)
-# In a real analysis with QC samples, you would filter for sample_type == "QC" or "PS"
-feature_sd <- peak_table %>%
-  filter(!is.na(into)) %>%
-  select(sample_group, feature_id, f_mzmed, f_rtmed, into) %>%
-  group_by(sample_group, feature_id, f_mzmed, f_rtmed) %>%
-  summarise(sd = sd(into, na.rm = TRUE), .groups = "drop")
-
-head(feature_sd)
-#> # A tibble: 6 × 5
-#>   sample_group feature_id f_mzmed f_rtmed      sd
-#>   <chr>             <int>   <dbl>   <dbl>   <dbl>
-#> 1 KO                    1    200.   2903. 185514.
-#> 2 KO                    2    205    2790. 340215.
-#> 3 KO                    3    206    2789.  56012.
-#> 4 KO                    4    207.   2719. 100033.
-#> 5 KO                    5    233    3024.  75007.
-#> 6 KO                    6    241.   3683. 383649.
-```
-
-#### Calculate D-ratio
-
-The D-ratio is the ratio of SD in pooled samples to SD in biological
-samples:
-
-``` r
-# Calculate D-ratio
-# In a real analysis, you would have "PS" (pooled samples) and "sample" groups
-# Here we'll calculate it between the two groups as an example
-feature_d <- feature_sd %>%
-  pivot_wider(names_from = "sample_group", values_from = sd) %>%
-  mutate(D_ratio = KO / WT)  # Example: comparing variability between groups
-
-head(feature_d)
-#> # A tibble: 6 × 6
-#>   feature_id f_mzmed f_rtmed      KO      WT D_ratio
-#>        <int>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
-#> 1          1    200.   2903. 185514.  45818.   4.05 
-#> 2          2    205    2790. 340215. 323428.   1.05 
-#> 3          3    206    2789.  56012.  30599.   1.83 
-#> 4          4    207.   2719. 100033.  80097.   1.25 
-#> 5          5    233    3024.  75007.  49441.   1.52 
-#> 6          6    241.   3683. 383649. 575285.   0.667
-```
-
-#### Visualize D-ratio Distribution
-
-``` r
-# Plot D-ratio distribution
-feature_d %>%
-  filter(!is.na(D_ratio) & is.finite(D_ratio)) %>%
-  ggplot(aes(x = D_ratio)) +
-  geom_density(alpha = 0.7, fill = "steelblue") +
-  geom_vline(xintercept = 0.5, linetype = "dashed", color = "red") +
-  labs(
-    title = "D-ratio Distribution",
-    x = "D-ratio",
-    y = "Density"
-  ) +
-  theme_bw()
-```
-
-![Density plot showing the distribution of D-ratio values across
-features](long-format-peaklist_files/figure-html/d_ratio_plot-1.png)
-
-#### Count Features by D-ratio Threshold
-
-``` r
-# Count features that would be kept with D_ratio < 0.5 threshold
-feature_d %>%
-  filter(!is.na(D_ratio) & is.finite(D_ratio)) %>%
-  summarise(
-    total_features = n(),
-    features_kept = sum(D_ratio < 0.5),
-    features_removed = sum(D_ratio >= 0.5),
-    percent_kept = round(features_kept / total_features * 100, 1)
-  )
-#> # A tibble: 1 × 4
-#>   total_features features_kept features_removed percent_kept
-#>            <int>         <int>            <int>        <dbl>
-#> 1            350            68              282         19.4
-```
-
-**Note:** In a real metabolomics study with QC pooled samples, you
-would:
-
-1.  Filter for `sample_type == "PS"` (pooled samples) and
-    `sample_type == "sample"` (biological samples)
-2.  Calculate SD for each group
-3.  Use D-ratio to filter out features with high variability in QC
-    relative to biological samples
-4.  A typical threshold is D-ratio \< 0.5 (features more stable in QC
-    than biological samples should be removed)
-
 ### Extract Specific Features for Further Analysis
 
 ``` r
@@ -942,7 +822,7 @@ sessionInfo()
 #> [10] CAMERA_1.66.0       MSnbase_2.36.0      ProtGenerics_1.42.0
 #> [13] S4Vectors_0.48.0    mzR_2.44.0          Rcpp_1.1.0         
 #> [16] Biobase_2.70.0      BiocGenerics_0.56.0 generics_0.1.4     
-#> [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.11   
+#> [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.12   
 #> 
 #> loaded via a namespace (and not attached):
 #>   [1] rstudioapi_0.17.1           jsonlite_2.0.0             

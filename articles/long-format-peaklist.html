@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyXCMS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -147,19 +147,15 @@ need to update them to match the current system:</p>
 <span><span class="va">cdf_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">"faahKO"</span><span class="op">)</span>, <span class="st">"cdf"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create a mapping table with old and new paths</span></span>
-<span><span class="va">path_mapping</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>  old_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">spectra</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">$</span><span class="va">dataOrigin</span><span class="op">)</span></span>
-<span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    <span class="co"># Extract relative paths (e.g., "KO/ko15.CDF", "WT/wt15.CDF")</span></span>
-<span>    relative_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">".*/faahKO/cdf/"</span>, <span class="st">""</span>, <span class="va">old_path</span><span class="op">)</span>,</span>
-<span>    <span class="co"># Reconstruct full paths for this system</span></span>
-<span>    new_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">cdf_path</span>, <span class="va">relative_path</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
+<span><span class="va">path_mapping</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>old_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">spectra</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">$</span><span class="va">dataOrigin</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>                    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>                            relative_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">".*/faahKO/cdf/"</span>, <span class="st">""</span>, <span class="va">old_path</span><span class="op">)</span>,</span>
+<span>                            new_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">cdf_path</span>, <span class="va">relative_path</span><span class="op">)</span></span>
+<span>                    <span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Join with spectra dataOrigin and replace</span></span>
 <span><span class="va">spectra_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>dataOrigin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">spectra</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">$</span><span class="va">dataOrigin</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">path_mapping</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dataOrigin"</span> <span class="op">=</span> <span class="st">"old_path"</span><span class="op">)</span><span class="op">)</span></span>
+<span>                <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">path_mapping</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dataOrigin"</span> <span class="op">=</span> <span class="st">"old_path"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">spectra</a></span><span class="op">(</span><span class="va">xdata</span><span class="op">)</span><span class="op">$</span><span class="va">dataOrigin</span> <span class="op">&lt;-</span> <span class="va">spectra_df</span><span class="op">$</span><span class="va">new_path</span></span></code></pre></div>
 </div>
@@ -475,10 +471,10 @@ annotation:</p>
 <ul>
 <li>
 <strong><code>feature_group</code></strong>: Groups features based
-on retention time (from MsFeatures)</li>
+on retention time and correlation across samples (from MsFeatures)</li>
 <li>
 <strong><code>pcgroup</code></strong>: Groups features into
-pseudospectra (from CAMERA)</li>
+pseudospectra based on EIC similarity (from CAMERA)</li>
 <li>
 <strong><code>isotopes</code></strong> and
 <strong><code>adduct</code></strong>: Isotope and adduct annotations
@@ -926,7 +922,7 @@ metadata)</li>
 columns:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Count for each feature how many samples the peak was found in</span></span>
-<span><span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">detection_rate</span> <span class="op">&lt;-</span> <span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
 <span>    n_samples_detected <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">into</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -935,20 +931,9 @@ columns:</p>
 <span>    .groups <span class="op">=</span> <span class="st">"drop"</span></span>
 <span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">detection_rate</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 351 × 6</span></span></span>
-<span><span class="co">#&gt;    feature_id f_mzmed f_rtmed n_samples_detected n_samples_total detection_rate</span></span>
-<span><span class="co">#&gt;         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>          1    200.   <span style="text-decoration: underline;">2</span>903.                  8               8              1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>          2    205    <span style="text-decoration: underline;">2</span>790.                  8               8              1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>          3    206    <span style="text-decoration: underline;">2</span>789.                  8               8              1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>          4    207.   <span style="text-decoration: underline;">2</span>719.                  8               8              1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>          5    233    <span style="text-decoration: underline;">3</span>024.                  8               8              1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>          6    241.   <span style="text-decoration: underline;">3</span>683.                  8               8              1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>          7    242.   <span style="text-decoration: underline;">3</span>664.                  8               8              1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>          8    244.   <span style="text-decoration: underline;">2</span>833.                  8               8              1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>          9    249.   <span style="text-decoration: underline;">3</span>676.                  8               8              1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>         10    250.   <span style="text-decoration: underline;">3</span>675.                  8               8              1</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 341 more rows</span></span></span></code></pre></div>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">detection_rate</span><span class="op">$</span><span class="va">detection_rate</span>, breaks<span class="op">=</span><span class="fl">10</span>, main <span class="op">=</span> <span class="st">"Histogram of feature detection rate"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="long-format-peaklist_files/figure-html/missing_values-1.png" class="r-plt" width="700"></p>
 </div>
 </div>
 <div class="section level2">
@@ -1022,113 +1007,9 @@ and fragments found by CAMERA:</p>
 </div>
 </div>
 <div class="section level3">
-<h3 id="filter-non-informative-features-with-d-ratio">Filter Non-Informative Features with D-ratio<a class="anchor" aria-label="anchor" href="#filter-non-informative-features-with-d-ratio"></a>
-</h3>
-<p>The D-ratio helps identify features that are more variable in pooled
-samples (QC) than in biological samples, indicating they are likely
-measurement noise rather than biological signal.</p>
-<div class="section level4">
-<h4 id="calculate-standard-deviation-per-sample-type">Calculate Standard Deviation per Sample Type<a class="anchor" aria-label="anchor" href="#calculate-standard-deviation-per-sample-type"></a>
-</h4>
-<p>First, we calculate the standard deviation for each feature in each
-sample type:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Calculate SD for each feature by sample type</span></span>
-<span><span class="co"># Note: Using sample_group as proxy for sample_type (WT/KO as biological samples)</span></span>
-<span><span class="co"># In a real analysis with QC samples, you would filter for sample_type == "QC" or "PS"</span></span>
-<span><span class="va">feature_sd</span> <span class="op">&lt;-</span> <span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">into</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">sample_group</span>, <span class="va">feature_id</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span>, <span class="va">into</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">sample_group</span>, <span class="va">feature_id</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>sd <span class="op">=</span> <span class="fu">sd</span><span class="op">(</span><span class="va">into</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">feature_sd</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
-<span><span class="co">#&gt;   sample_group feature_id f_mzmed f_rtmed      sd</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> KO                    1    200.   <span style="text-decoration: underline;">2</span>903. <span style="text-decoration: underline;">185</span>514.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> KO                    2    205    <span style="text-decoration: underline;">2</span>790. <span style="text-decoration: underline;">340</span>215.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> KO                    3    206    <span style="text-decoration: underline;">2</span>789.  <span style="text-decoration: underline;">56</span>012.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> KO                    4    207.   <span style="text-decoration: underline;">2</span>719. <span style="text-decoration: underline;">100</span>033.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> KO                    5    233    <span style="text-decoration: underline;">3</span>024.  <span style="text-decoration: underline;">75</span>007.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> KO                    6    241.   <span style="text-decoration: underline;">3</span>683. <span style="text-decoration: underline;">383</span>649.</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="calculate-d-ratio">Calculate D-ratio<a class="anchor" aria-label="anchor" href="#calculate-d-ratio"></a>
-</h4>
-<p>The D-ratio is the ratio of SD in pooled samples to SD in biological
-samples:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Calculate D-ratio</span></span>
-<span><span class="co"># In a real analysis, you would have "PS" (pooled samples) and "sample" groups</span></span>
-<span><span class="co"># Here we'll calculate it between the two groups as an example</span></span>
-<span><span class="va">feature_d</span> <span class="op">&lt;-</span> <span class="va">feature_sd</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="st">"sample_group"</span>, values_from <span class="op">=</span> <span class="va">sd</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>D_ratio <span class="op">=</span> <span class="va">KO</span> <span class="op">/</span> <span class="va">WT</span><span class="op">)</span>  <span class="co"># Example: comparing variability between groups</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">feature_d</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
-<span><span class="co">#&gt;   feature_id f_mzmed f_rtmed      KO      WT D_ratio</span></span>
-<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1    200.   <span style="text-decoration: underline;">2</span>903. <span style="text-decoration: underline;">185</span>514.  <span style="text-decoration: underline;">45</span>818.   4.05 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          2    205    <span style="text-decoration: underline;">2</span>790. <span style="text-decoration: underline;">340</span>215. <span style="text-decoration: underline;">323</span>428.   1.05 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          3    206    <span style="text-decoration: underline;">2</span>789.  <span style="text-decoration: underline;">56</span>012.  <span style="text-decoration: underline;">30</span>599.   1.83 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          4    207.   <span style="text-decoration: underline;">2</span>719. <span style="text-decoration: underline;">100</span>033.  <span style="text-decoration: underline;">80</span>097.   1.25 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          5    233    <span style="text-decoration: underline;">3</span>024.  <span style="text-decoration: underline;">75</span>007.  <span style="text-decoration: underline;">49</span>441.   1.52 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          6    241.   <span style="text-decoration: underline;">3</span>683. <span style="text-decoration: underline;">383</span>649. <span style="text-decoration: underline;">575</span>285.   0.667</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="visualize-d-ratio-distribution">Visualize D-ratio Distribution<a class="anchor" aria-label="anchor" href="#visualize-d-ratio-distribution"></a>
-</h4>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Plot D-ratio distribution</span></span>
-<span><span class="va">feature_d</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">D_ratio</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">D_ratio</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">D_ratio</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_density.html" class="external-link">geom_density</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.7</span>, fill <span class="op">=</span> <span class="st">"steelblue"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">0.5</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
-<span>    title <span class="op">=</span> <span class="st">"D-ratio Distribution"</span>,</span>
-<span>    x <span class="op">=</span> <span class="st">"D-ratio"</span>,</span>
-<span>    y <span class="op">=</span> <span class="st">"Density"</span></span>
-<span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="long-format-peaklist_files/figure-html/d_ratio_plot-1.png" class="r-plt" alt="Density plot showing the distribution of D-ratio values across features" width="672"></p>
-</div>
-<div class="section level4">
-<h4 id="count-features-by-d-ratio-threshold">Count Features by D-ratio Threshold<a class="anchor" aria-label="anchor" href="#count-features-by-d-ratio-threshold"></a>
-</h4>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Count features that would be kept with D_ratio &lt; 0.5 threshold</span></span>
-<span><span class="va">feature_d</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">D_ratio</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">D_ratio</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
-<span>    total_features <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    features_kept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">D_ratio</span> <span class="op">&lt;</span> <span class="fl">0.5</span><span class="op">)</span>,</span>
-<span>    features_removed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">D_ratio</span> <span class="op">&gt;=</span> <span class="fl">0.5</span><span class="op">)</span>,</span>
-<span>    percent_kept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">features_kept</span> <span class="op">/</span> <span class="va">total_features</span> <span class="op">*</span> <span class="fl">100</span>, <span class="fl">1</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
-<span><span class="co">#&gt;   total_features features_kept features_removed percent_kept</span></span>
-<span><span class="co">#&gt;            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>            350            68              282         19.4</span></span></code></pre></div>
-<p><strong>Note:</strong> In a real metabolomics study with QC pooled
-samples, you would:</p>
-<ol style="list-style-type: decimal">
-<li>Filter for <code>sample_type == "PS"</code> (pooled samples) and
-<code>sample_type == "sample"</code> (biological samples)</li>
-<li>Calculate SD for each group</li>
-<li>Use D-ratio to filter out features with high variability in QC
-relative to biological samples</li>
-<li>A typical threshold is D-ratio &lt; 0.5 (features more stable in QC
-than biological samples should be removed)</li>
-</ol>
-</div>
-</div>
-<div class="section level3">
 <h3 id="extract-specific-features-for-further-analysis">Extract Specific Features for Further Analysis<a class="anchor" aria-label="anchor" href="#extract-specific-features-for-further-analysis"></a>
 </h3>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get a specific feature across all samples</span></span>
 <span><span class="va">feature_123</span> <span class="op">&lt;-</span> <span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">feature_id</span> <span class="op">==</span> <span class="fl">123</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -1149,7 +1030,7 @@ than biological samples should be removed)</li>
 <div class="section level2">
 <h2 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.5.2 (2025-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1179,7 +1060,7 @@ than biological samples should be removed)</li>
 <span><span class="co">#&gt; [10] CAMERA_1.66.0       MSnbase_2.36.0      ProtGenerics_1.42.0</span></span>
 <span><span class="co">#&gt; [13] S4Vectors_0.48.0    mzR_2.44.0          Rcpp_1.1.0         </span></span>
 <span><span class="co">#&gt; [16] Biobase_2.70.0      BiocGenerics_0.56.0 generics_0.1.4     </span></span>
-<span><span class="co">#&gt; [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.11   </span></span>
+<span><span class="co">#&gt; [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.12   </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;   [1] rstudioapi_0.17.1           jsonlite_2.0.0             </span></span>

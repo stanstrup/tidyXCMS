@@ -1,5 +1,12 @@
 # Changelog
 
+## Changes in v0.99.12
+
+### Bug Fixes
+
+- add missing comma in Remotes and add S4Vectors to Suggests
+  ([974a3a8](https://github.com/stanstrup/tidyXCMS/commit/974a3a8344ebd6ce73de67cdf6c7c822fee9859a))
+
 ## Changes in v0.99.11
 
 ### Bug Fixes
