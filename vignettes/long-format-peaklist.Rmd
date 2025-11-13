@@ -90,12 +90,13 @@ path_mapping <- tibble(old_path = unique(spectra(xdata)$dataOrigin)) %>%
                     mutate(
                             basename_file = basename(old_path),
                             new_path = file.path(cdf_path, basename_file)
-                    )
+                    ) %>% 
+                    select(basename_file, new_path)
 
 # Join with spectra dataOrigin by basename and replace
 spectra_df <- tibble(dataOrigin = spectra(xdata)$dataOrigin) %>%
                 mutate(basename_file = basename(dataOrigin)) %>%
-                left_join(path_mapping %>% select(basename_file, new_path),
+                left_join(path_mapping,
                          by = "basename_file")
 
 spectra(xdata)$dataOrigin <- spectra_df$new_path
