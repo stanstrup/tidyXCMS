@@ -70,6 +70,11 @@ Let's check what sample information is available:
 
 ```{r check_sample_data, message=FALSE}
 sampleData(xdata)
+
+# Check results
+cat("Dataset contains", nrow(chromPeaks(xdata)), "peaks across",
+    length(unique(chromPeaks(xdata)[, "sample"])), "samples,",
+    "grouped into", nrow(featureDefinitions(xdata)), "features\n")
 ```
 
 ### Fix File Paths
@@ -97,11 +102,6 @@ path_map <- setNames(unique_new_paths, unique_old_paths)
 
 # Replace all dataOrigin values (vectorized replacement)
 spectra(xdata)$dataOrigin <- path_map[current_origins]
-
-# Check results
-cat("Dataset contains", nrow(chromPeaks(xdata)), "peaks across",
-    length(unique(chromPeaks(xdata)[, "sample"])), "samples,",
-    "grouped into", nrow(featureDefinitions(xdata)), "features\n")
 ```
 
 ## Creating a Basic Long-Format Peak Table
