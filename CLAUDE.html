@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">tidyXCMS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.17</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +32,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>CLAUDE.md</h1>
-      <small class="dont-index">Source: <a href="https://github.com/stanstrup/tidyXCMS/blob/main/CLAUDE.md" class="external-link"><code>CLAUDE.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/stanstrup/tidyXCMS/blob/0.99.1/CLAUDE.md" class="external-link"><code>CLAUDE.md</code></a></small>
     </div>
 
 <div id="claudemd" class="section level1">
@@ -204,42 +204,6 @@
 <li>Always commit with co-authorship footer when using Claude Code</li>
 </ul></div>
 <div class="section level2">
-<h2 id="semantic-release-configuration-for-bioconductor">Semantic Release Configuration for Bioconductor<a class="anchor" aria-label="anchor" href="#semantic-release-configuration-for-bioconductor"></a></h2>
-<p><strong>IMPORTANT</strong>: This package uses a customized semantic-release configuration tailored for Bioconductor submission requirements.</p>
-<div class="section level3">
-<h3 id="version-numbering-strategy">Version Numbering Strategy<a class="anchor" aria-label="anchor" href="#version-numbering-strategy"></a></h3>
-<ul><li>
-<strong>Current Status</strong>: Pre-release for Bioconductor submission (version 0.99.x)</li>
-<li>
-<strong>All commits trigger PATCH releases</strong>: Both <code>feat:</code> and <code>fix:</code> commits increment the patch version within the 0.99.x range</li>
-<li>
-<strong>Why 0.99.x?</strong>: Bioconductor requires packages to start at version &lt; 1.0.0 for initial submission</li>
-<li>
-<strong>Configuration Location</strong>: <code>.releaserc.json</code>
-</li>
-</ul></div>
-<div class="section level3">
-<h3 id="how-it-works">How It Works<a class="anchor" aria-label="anchor" href="#how-it-works"></a></h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="dt">"releaseRules"</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">"type"</span><span class="fu">:</span> <span class="st">"feat"</span><span class="fu">,</span> <span class="dt">"release"</span><span class="fu">:</span> <span class="st">"patch"</span><span class="fu">}</span><span class="ot">,</span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">"type"</span><span class="fu">:</span> <span class="st">"fix"</span><span class="fu">,</span> <span class="dt">"release"</span><span class="fu">:</span> <span class="st">"patch"</span><span class="fu">}</span><span class="ot">,</span></span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    <span class="fu">{</span><span class="dt">"type"</span><span class="fu">:</span> <span class="st">"perf"</span><span class="fu">,</span> <span class="dt">"release"</span><span class="fu">:</span> <span class="st">"patch"</span><span class="fu">}</span></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="ot">]</span></span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
-<p>This configuration is <strong>intentional</strong> and temporary: - Keeps version in 0.99.x range for Bioconductor compliance - After Bioconductor acceptance, this can be changed to follow standard semantic versioning - The <code>prepare-news.sh</code> script enforces 0.99.x versioning regardless of semantic-release output</p>
-</div>
-<div class="section level3">
-<h3 id="after-bioconductor-acceptance">After Bioconductor Acceptance<a class="anchor" aria-label="anchor" href="#after-bioconductor-acceptance"></a></h3>
-<p>Once accepted into Bioconductor, update <code>.releaserc.json</code> to use standard semantic versioning: - <code>feat:</code> → minor version bump (0.99.x → 1.0.0, then 1.0.0 → 1.1.0) - <code>fix:</code> → patch version bump (1.0.0 → 1.0.1) - <code>BREAKING CHANGE:</code> → major version bump (1.0.0 → 2.0.0)</p>
-</div>
-<div class="section level3">
-<h3 id="automated-release-process">Automated Release Process<a class="anchor" aria-label="anchor" href="#automated-release-process"></a></h3>
-<p>The release workflow automatically: 1. Analyzes commit messages 2. Determines version bump 3. Updates <code>DESCRIPTION</code>, <code>NEWS.md</code>, and <code>.bioc_version</code> 4. Creates GitHub release 5. Syncs Bioconductor-specific version tags</p>
-<p>See <code>.github/workflows/release.yaml</code> and <code>.github/prepare-news.sh</code> for implementation details.</p>
-</div>
-</div>
-<div class="section level2">
 <h2 id="pre-commit-checklist">Pre-Commit Checklist<a class="anchor" aria-label="anchor" href="#pre-commit-checklist"></a></h2>
 <p><strong>IMPORTANT</strong>: Before committing changes, ALWAYS run these checks in order:</p>
 <div class="section level3">
@@ -248,21 +212,21 @@
 </div>
 <div class="section level3">
 <h3 id="id_1-regenerate-documentation">1. Regenerate Documentation<a class="anchor" aria-label="anchor" href="#id_1-regenerate-documentation"></a></h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Update NAMESPACE and .Rd files from roxygen2 comments</span></span>
 <span><span class="fu">roxygen2</span><span class="fu">::</span><span class="fu">roxygenize</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This ensures all function documentation and imports are up to date.</p>
 </div>
 <div class="section level3">
 <h3 id="id_2-r-cmd-check">2. R CMD Check<a class="anchor" aria-label="anchor" href="#id_2-r-cmd-check"></a></h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check package for errors, warnings, and notes</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">check</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Fix all errors and warnings before committing. Address notes if relevant.</p>
 </div>
 <div class="section level3">
 <h3 id="id_3-build-pkgdown-site">3. Build pkgdown Site<a class="anchor" aria-label="anchor" href="#id_3-build-pkgdown-site"></a></h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load all package code</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
@@ -273,7 +237,7 @@
 </div>
 <div class="section level3">
 <h3 id="id_4-reinstall-package">4. Reinstall Package<a class="anchor" aria-label="anchor" href="#id_4-reinstall-package"></a></h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Reinstall the package to ensure all changes are properly loaded</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This ensures the package is fully functional after your changes.</p>
@@ -281,12 +245,12 @@
 <div class="section level3">
 <h3 id="id_5-commit-changes">5. Commit Changes<a class="anchor" aria-label="anchor" href="#id_5-commit-changes"></a></h3>
 <p>After all checks pass, commit your changes using semantic-release format: - Use conventional commit messages (feat:, fix:, docs:, etc.) - Always include co-authorship footer when using Claude Code - Example:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">git</span> add <span class="at">-A</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"feat: add new tidy interface function</span></span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="st">🤖 Generated with [Claude Code](https://claude.com/claude-code)</span></span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a></span>
-<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="st">Co-Authored-By: Claude &lt;noreply@anthropic.com&gt;"</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">git</span> add <span class="at">-A</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"feat: add new tidy interface function</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="st">🤖 Generated with [Claude Code](https://claude.com/claude-code)</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="st">Co-Authored-By: Claude &lt;noreply@anthropic.com&gt;"</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

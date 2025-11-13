@@ -2,5 +2,5 @@
 
 ## All functions
 
-- [`tidy_peaklist()`](https://stanstrup.github.io/tidyXCMS/reference/tidy_peaklist.md)
-  : Create Tidy Long-Format Peak Table with Optional Annotations
+- [`XCMSnExp_CAMERA_peaklist_long()`](https://stanstrup.github.io/tidyXCMS/reference/XCMSnExp_CAMERA_peaklist_long.md)
+  : Create Long-Format Peak Table with Optional CAMERA Annotations

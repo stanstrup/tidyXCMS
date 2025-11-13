@@ -41,12 +41,6 @@ in long format with one row per feature per sample. The tibble contains:
   isotopes, adduct, pcgroup (pseudospectrum group) - only present when
   xsAnnotate is provided
 
-- MsFeatures grouping:
-
-  feature_group - feature group ID from
-  [`MsFeatures::groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html),
-  only present if groupFeatures was applied
-
 - Peak-level columns:
 
   mz, rt, into, intb, maxo, sn - individual peak measurements
@@ -114,11 +108,6 @@ particular sample.
 - CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes,
   adduct, and pcgroup columns will not be present in the output.
 
-- MsFeatures grouping is automatically detected. If
-  [`MsFeatures::groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html)
-  was applied to the object, the feature_group column will be included
-  in the output.
-
 - For XcmsExperiment objects, sample metadata is accessed via
   sampleData() instead of pData().
 
@@ -147,25 +136,16 @@ head(peak_table_no_camera)
 
 # Example 2: With CAMERA annotations
 library(CAMERA)
-library(commonMZ)
 
 # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
 xset <- as(xdata, "xcmsSet")
 
 # CAMERA annotation
-xs <- xsAnnotate(xset, polarity = "positive")
-xs <- groupFWHM(xs, perfwhm = 0.1, intval = "into", sigma = 6)
-xs <- findIsotopes(xs, ppm = 10, mzabs = 0.01, intval = "into")
-xs <- groupCorr(xs, calcIso = FALSE, calcCiS = TRUE, calcCaS = FALSE,
-                cor_eic_th = 0.7, pval = 1E-6)
-
-# Get adduct/fragment rules from commonMZ
-rules_pos <- commonMZ::MZ_CAMERA(mode = "pos", warn_clash = TRUE, clash_ppm = 5)
-rules_pos <- as.data.frame(rules_pos)
-
-# Find adducts using the rules
-xs <- findAdducts(xs, ppm = 10, mzabs = 0.01, multiplier = 4,
-                  polarity = "positive", rules = rules_pos)
+xs <- xsAnnotate(xset)
+xs <- groupFWHM(xs)
+xs <- findIsotopes(xs)
+xs <- groupCorr(xs)
+xs <- findAdducts(xs)
 
 # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
 peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)

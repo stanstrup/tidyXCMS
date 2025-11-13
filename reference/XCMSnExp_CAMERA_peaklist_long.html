@@ -11,7 +11,7 @@ adducts, and pseudospectrum groups if provided."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">tidyXCMS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,7 +36,7 @@ adducts, and pseudospectrum groups if provided."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Create Long-Format Peak Table with Optional CAMERA Annotations</h1>
-      <small class="dont-index">Source: <a href="https://github.com/stanstrup/tidyXCMS/blob/main/R/XCMSnExp_CAMERA_peaklist_long.R" class="external-link"><code>R/XCMSnExp_CAMERA_peaklist_long.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/stanstrup/tidyXCMS/blob/0.99.1/R/XCMSnExp_CAMERA_peaklist_long.R" class="external-link"><code>R/XCMSnExp_CAMERA_peaklist_long.R</code></a></small>
       <div class="d-none name"><code>XCMSnExp_CAMERA_peaklist_long.Rd</code></div>
     </div>
 
@@ -76,10 +76,6 @@ f_rtmax - feature summary statistics</p></dd>
 <dt>CAMERA annotations</dt>
 <dd><p>isotopes, adduct, pcgroup (pseudospectrum group) -
 only present when xsAnnotate is provided</p></dd>
-
-<dt>MsFeatures grouping</dt>
-<dd><p>feature_group - feature group ID from
-<code><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">MsFeatures::groupFeatures()</a></code>, only present if groupFeatures was applied</p></dd>
 
 <dt>Peak-level columns</dt>
 <dd><p>mz, rt, into, intb, maxo, sn - individual peak
@@ -122,8 +118,6 @@ first occurrence.</p></li>
 takes the maximum intensity peak for each feature in each sample.</p></li>
 <li><p>CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes,
 adduct, and pcgroup columns will not be present in the output.</p></li>
-<li><p>MsFeatures grouping is automatically detected. If <code><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">MsFeatures::groupFeatures()</a></code>
-was applied to the object, the feature_group column will be included in the output.</p></li>
 <li><p>For XcmsExperiment objects, sample metadata is accessed via sampleData()
 instead of pData().</p></li>
 </ul></div>
@@ -152,25 +146,16 @@ instead of pData().</p></li>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Example 2: With CAMERA annotations</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://msbi.ipb-halle.de/msbi/CAMERA/" class="external-link">CAMERA</a></span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">commonMZ</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)</span></span></span>
 <span class="r-in"><span><span class="va">xset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/methods/as.html" class="external-link">as</a></span><span class="op">(</span><span class="va">xdata</span>, <span class="st">"xcmsSet"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># CAMERA annotation</span></span></span>
-<span class="r-in"><span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/xsAnnotate.html" class="external-link">xsAnnotate</a></span><span class="op">(</span><span class="va">xset</span>, polarity <span class="op">=</span> <span class="st">"positive"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/groupFWHM-methods.html" class="external-link">groupFWHM</a></span><span class="op">(</span><span class="va">xs</span>, perfwhm <span class="op">=</span> <span class="fl">0.1</span>, intval <span class="op">=</span> <span class="st">"into"</span>, sigma <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/findIsotopes-methods.html" class="external-link">findIsotopes</a></span><span class="op">(</span><span class="va">xs</span>, ppm <span class="op">=</span> <span class="fl">10</span>, mzabs <span class="op">=</span> <span class="fl">0.01</span>, intval <span class="op">=</span> <span class="st">"into"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/groupCorr-methods.html" class="external-link">groupCorr</a></span><span class="op">(</span><span class="va">xs</span>, calcIso <span class="op">=</span> <span class="cn">FALSE</span>, calcCiS <span class="op">=</span> <span class="cn">TRUE</span>, calcCaS <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
-<span class="r-in"><span>                cor_eic_th <span class="op">=</span> <span class="fl">0.7</span>, pval <span class="op">=</span> <span class="fl">1E-6</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Get adduct/fragment rules from commonMZ</span></span></span>
-<span class="r-in"><span><span class="va">rules_pos</span> <span class="op">&lt;-</span> <span class="fu">commonMZ</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/commonMZ/man/MZ_CAMERA.html" class="external-link">MZ_CAMERA</a></span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"pos"</span>, warn_clash <span class="op">=</span> <span class="cn">TRUE</span>, clash_ppm <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">rules_pos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">rules_pos</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Find adducts using the rules</span></span></span>
-<span class="r-in"><span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/findAdducts-methods.html" class="external-link">findAdducts</a></span><span class="op">(</span><span class="va">xs</span>, ppm <span class="op">=</span> <span class="fl">10</span>, mzabs <span class="op">=</span> <span class="fl">0.01</span>, multiplier <span class="op">=</span> <span class="fl">4</span>,</span></span>
-<span class="r-in"><span>                  polarity <span class="op">=</span> <span class="st">"positive"</span>, rules <span class="op">=</span> <span class="va">rules_pos</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/xsAnnotate.html" class="external-link">xsAnnotate</a></span><span class="op">(</span><span class="va">xset</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/groupFWHM-methods.html" class="external-link">groupFWHM</a></span><span class="op">(</span><span class="va">xs</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/findIsotopes-methods.html" class="external-link">findIsotopes</a></span><span class="op">(</span><span class="va">xs</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/groupCorr-methods.html" class="external-link">groupCorr</a></span><span class="op">(</span><span class="va">xs</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/findAdducts-methods.html" class="external-link">findAdducts</a></span><span class="op">(</span><span class="va">xs</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Create long-format peak table (pass XCMSnExp object, not xcmsSet)</span></span></span>
 <span class="r-in"><span><span class="va">peak_table</span> <span class="op">&lt;-</span> <span class="fu">XCMSnExp_CAMERA_peaklist_long</span><span class="op">(</span><span class="va">xdata</span>, <span class="va">xs</span><span class="op">)</span></span></span>
