@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 The `tidyXCMS` package provides functions to work with XCMS metabolomics data in
 a tidy, long-format structure. This vignette demonstrates how to use the
-`XCMSnExp_CAMERA_peaklist_long()` function to create peak tables from XCMS results.
+`tidy_peaklist()` function to create peak tables from XCMS results.
 
 The resulting long-format table has one row per feature per sample, integrating:
 
@@ -37,18 +37,21 @@ explore later in this vignette.
 ```{r setup, message=FALSE}
 library(tidyXCMS)
 library(xcms)
-library(MSnbase)
-library(CAMERA)
-library(MsFeatures)
-library(commonMZ)
 library(BiocParallel)
 library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(MsExperiment)
-library(ggalluvial)
-library(RColorBrewer)
-library(ggpie)
+
+# Optional packages for enhanced functionality
+# Install if needed: BiocManager::install("CAMERA") or install.packages("commonMZ")
+if (requireNamespace("MSnbase", quietly = TRUE)) library(MSnbase)
+if (requireNamespace("CAMERA", quietly = TRUE)) library(CAMERA)
+if (requireNamespace("MsFeatures", quietly = TRUE)) library(MsFeatures)
+if (requireNamespace("commonMZ", quietly = TRUE)) library(commonMZ)
+if (requireNamespace("ggalluvial", quietly = TRUE)) library(ggalluvial)
+if (requireNamespace("RColorBrewer", quietly = TRUE)) library(RColorBrewer)
+if (requireNamespace("ggpie", quietly = TRUE)) library(ggpie)
 ```
 
 # Example Workflow
@@ -108,7 +111,7 @@ Let's start by creating a long-format peak table directly from the XCMS results.
 
 ```{r create_table_no_camera}
 # Create basic peak table
-peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata)
+peak_table <- tidy_peaklist(xdata)
 
 # Check the structure
 dim(peak_table)
@@ -199,7 +202,7 @@ xs <- findAdducts(xs, ppm = 500, mzabs = 0.2, multiplier = 4, polarity = "positi
 Now we can create a peak table that includes all the CAMERA annotations. We pass both the original `xdata` object and the CAMERA annotations from `xs`:
 
 ```{r create_table}
-peak_table_camera <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
+peak_table_camera <- tidy_peaklist(xdata, xs)
 
 # Check the structure
 dim(peak_table_camera)
@@ -240,7 +243,7 @@ When you create a long-format peak table from an object with feature groups, the
 
 ```{r create_table_grouped}
 # Create peak table with feature grouping
-peak_table_grouped <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped)
+peak_table_grouped <- tidy_peaklist(xdata_grouped)
 
 # Check that feature_group column is present
 "feature_group" %in% colnames(peak_table_grouped)
@@ -262,7 +265,7 @@ xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
 
 # Create peak table with both CAMERA and MsFeatures annotations
 # Reuse the xs object created earlier (CAMERA annotations are the same)
-peak_table_combined <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped, xs)
+peak_table_combined <- tidy_peaklist(xdata_grouped, xs)
 
 # View combined annotations
 peak_table_combined %>%

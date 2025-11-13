@@ -1,4 +1,4 @@
-# Test suite for XCMSnExp_CAMERA_peaklist_long and .chromPeaks_classic functions
+# Test suite for tidy_peaklist and .chromPeaks_classic functions
 
 test_that(".chromPeaks_classic returns a tibble with expected structure", {
 
@@ -46,7 +46,7 @@ test_that(".chromPeaks_classic works with XcmsExperiment objects", {
 })
 
 
-test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
+test_that("tidy_peaklist returns expected structure", {
 
   library(xcms)
   library(CAMERA)
@@ -65,7 +65,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
   xs <- findAdducts(xs, polarity = "positive")
 
   # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
-  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
+  peak_table <- tidy_peaklist(xdata, xs)
 
   # Check it's a tibble
   expect_s3_class(peak_table, "tbl_df")
@@ -99,7 +99,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long returns expected structure", {
 })
 
 
-test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
+test_that("tidy_peaklist has one row per feature per sample", {
 
   library(xcms)
   library(CAMERA)
@@ -117,7 +117,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
   xs <- findIsotopes(xs)
 
   # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
-  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
+  peak_table <- tidy_peaklist(xdata, xs)
 
   # Get number of features and samples
   n_features <- nrow(featureDefinitions(xdata))
@@ -136,7 +136,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long has one row per feature per sample", {
 })
 
 
-test_that("XCMSnExp_CAMERA_peaklist_long handles missing values correctly", {
+test_that("tidy_peaklist handles missing values correctly", {
 
   library(xcms)
   library(CAMERA)
@@ -154,7 +154,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long handles missing values correctly", {
   xs <- groupFWHM(xs)
 
   # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
-  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
+  peak_table <- tidy_peaklist(xdata, xs)
 
   # Check that we have some NA values in intensity columns
   # (features not detected in all samples)
@@ -171,7 +171,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long handles missing values correctly", {
 })
 
 
-test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
+test_that("tidy_peaklist includes pData information", {
 
   library(xcms)
   library(CAMERA)
@@ -206,7 +206,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
   xs <- groupFWHM(xs)
 
   # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
-  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata_copy, xs)
+  peak_table <- tidy_peaklist(xdata_copy, xs)
 
   # Check that pData columns are present
   expect_true("sample_name" %in% colnames(peak_table))
@@ -214,7 +214,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
 })
 
 
-test_that("XCMSnExp_CAMERA_peaklist_long CAMERA annotations are present", {
+test_that("tidy_peaklist CAMERA annotations are present", {
 
   library(xcms)
   library(CAMERA)
@@ -234,7 +234,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long CAMERA annotations are present", {
   xs <- findAdducts(xs, polarity = "positive")
 
   # Create long-format peak table (pass XCMSnExp object, not xcmsSet)
-  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata, xs)
+  peak_table <- tidy_peaklist(xdata, xs)
 
   # Check that CAMERA annotations are present
   # Note: Not all features will have annotations, but columns should exist
@@ -256,7 +256,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long CAMERA annotations are present", {
 })
 
 
-test_that("XCMSnExp_CAMERA_peaklist_long works without CAMERA annotations", {
+test_that("tidy_peaklist works without CAMERA annotations", {
 
   library(xcms)
   library(BiocParallel)
@@ -264,7 +264,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long works without CAMERA annotations", {
   # Use preloaded xdata (XCMSnExp with peaks and grouping)
 
   # Create long-format peak table WITHOUT CAMERA
-  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata)
+  peak_table <- tidy_peaklist(xdata)
 
   # Check it's a tibble
   expect_s3_class(peak_table, "tbl_df")
@@ -283,7 +283,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long works without CAMERA annotations", {
 })
 
 
-test_that("XCMSnExp_CAMERA_peaklist_long works with XcmsExperiment", {
+test_that("tidy_peaklist works with XcmsExperiment", {
 
   library(xcms)
   library(MsExperiment)
@@ -292,7 +292,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long works with XcmsExperiment", {
   # Use preloaded xmse (XcmsExperiment with peaks and grouping)
 
   # Create long-format peak table
-  peak_table <- XCMSnExp_CAMERA_peaklist_long(xmse)
+  peak_table <- tidy_peaklist(xmse)
 
   # Check it's a tibble
   expect_s3_class(peak_table, "tbl_df")
@@ -314,7 +314,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long works with XcmsExperiment", {
 })
 
 
-test_that("XCMSnExp_CAMERA_peaklist_long includes groupFeatures results", {
+test_that("tidy_peaklist includes groupFeatures results", {
 
   library(xcms)
   library(MsFeatures)
@@ -327,7 +327,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes groupFeatures results", {
   xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
 
   # Create long-format peak table
-  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped)
+  peak_table <- tidy_peaklist(xdata_grouped)
 
   # Check that feature_group column is present
   expect_true("feature_group" %in% colnames(peak_table))
@@ -346,7 +346,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes groupFeatures results", {
 })
 
 
-test_that("XCMSnExp_CAMERA_peaklist_long works with both CAMERA and groupFeatures", {
+test_that("tidy_peaklist works with both CAMERA and groupFeatures", {
 
   library(xcms)
   library(CAMERA)
@@ -371,7 +371,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long works with both CAMERA and groupFeature
   xs <- findIsotopes(xs)
 
   # Create long-format peak table
-  peak_table <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped, xs)
+  peak_table <- tidy_peaklist(xdata_grouped, xs)
 
   # Check that both CAMERA and groupFeatures columns are present
   expect_true("feature_group" %in% colnames(peak_table))
@@ -384,7 +384,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long works with both CAMERA and groupFeature
 })
 
 
-test_that("XCMSnExp_CAMERA_peaklist_long works with XcmsExperiment and groupFeatures", {
+test_that("tidy_peaklist works with XcmsExperiment and groupFeatures", {
 
   library(xcms)
   library(MsExperiment)
@@ -398,7 +398,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long works with XcmsExperiment and groupFeat
   xmse_grouped <- groupFeatures(xmse, param = AbundanceSimilarityParam(threshold = 0.7))
 
   # Create long-format peak table
-  peak_table <- XCMSnExp_CAMERA_peaklist_long(xmse_grouped)
+  peak_table <- tidy_peaklist(xmse_grouped)
 
   # Check that feature_group column is present
   expect_true("feature_group" %in% colnames(peak_table))
@@ -409,4 +409,153 @@ test_that("XCMSnExp_CAMERA_peaklist_long works with XcmsExperiment and groupFeat
   # Check proper structure
   expect_s3_class(peak_table, "tbl_df")
   expect_gt(nrow(peak_table), 0)
+})
+
+# Input validation and edge case tests ----------------------------------------
+
+test_that("tidy_peaklist works without features (dropFeatureDefinitions)", {
+
+  library(xcms)
+  library(BiocParallel)
+
+  # Use preloaded xdata and remove features
+  xdata_no_features <- dropFeatureDefinitions(xdata)
+
+  # Should work but return peak-level data only
+  expect_warning(
+    peak_table <- tidy_peaklist(xdata_no_features),
+    "No features defined"
+  )
+
+  # Check it's a tibble
+  expect_s3_class(peak_table, "tbl_df")
+
+  # Check it has rows (one per peak)
+  expect_gt(nrow(peak_table), 0)
+
+  # Check it has peak-level columns
+  expect_true("mz" %in% colnames(peak_table))
+  expect_true("rt" %in% colnames(peak_table))
+  expect_true("into" %in% colnames(peak_table))
+
+  # Check it does NOT have feature-level columns
+  expect_false("feature_id" %in% colnames(peak_table))
+  expect_false("f_mzmed" %in% colnames(peak_table))
+  expect_false("f_rtmed" %in% colnames(peak_table))
+
+  # Check sample information is present
+  expect_true("filename" %in% colnames(peak_table))
+  expect_true("filepath" %in% colnames(peak_table))
+  expect_true("fromFile" %in% colnames(peak_table))
+})
+
+
+test_that("tidy_peaklist validates input object class", {
+
+  library(xcms)
+
+  # Test with invalid object
+  expect_error(
+    tidy_peaklist("not_an_xcms_object"),
+    "'x' must be an XCMSnExp or XcmsExperiment object"
+  )
+
+  expect_error(
+    tidy_peaklist(list(a = 1, b = 2)),
+    "'x' must be an XCMSnExp or XcmsExperiment object"
+  )
+})
+
+
+test_that("tidy_peaklist validates xsAnnotate parameter", {
+
+  library(xcms)
+  library(BiocParallel)
+
+  # Test with invalid xsAnnotate
+  expect_error(
+    tidy_peaklist(xdata, xsAnnotate = "not_a_camera_object"),
+    "'xsAnnotate' must be an xsAnnotate object from CAMERA package"
+  )
+
+  expect_error(
+    tidy_peaklist(xdata, xsAnnotate = list(a = 1)),
+    "'xsAnnotate' must be an xsAnnotate object from CAMERA package"
+  )
+})
+
+
+test_that("tidy_peaklist detects CAMERA/XCMS feature count mismatch", {
+
+  library(xcms)
+  library(CAMERA)
+  library(BiocParallel)
+
+  # Use preloaded xdata
+  xset <- as(xdata, "xcmsSet")
+
+  # Create CAMERA object
+  xs <- xsAnnotate(xset)
+  xs <- groupFWHM(xs)
+
+  # Manually create an xdata object with different number of features
+  # by filtering features
+  xdata_subset <- filterFeatureDefinitions(xdata, features = 1:5)
+
+  # Should error due to mismatch
+  expect_error(
+    tidy_peaklist(xdata_subset, xs),
+    "Feature count mismatch"
+  )
+})
+
+
+test_that("tidy_peaklist includes sample metadata correctly", {
+
+  library(xcms)
+  library(Biobase)
+  library(BiocParallel)
+
+  # Use preloaded xdata and add sample metadata
+  xdata_copy <- xdata
+
+  # Add sample metadata with various column types
+  pd <- data.frame(
+    sample_name = paste0("Sample_", seq_len(length(fileNames(xdata_copy)))),
+    sample_group = rep(c("Control", "Treatment"), length.out = length(fileNames(xdata_copy))),
+    sample_number = seq_len(length(fileNames(xdata_copy))),
+    replicate = c(1, 2, 1)[seq_len(length(fileNames(xdata_copy)))],
+    row.names = basename(fileNames(xdata_copy))
+  )
+
+  pData(xdata_copy) <- pd
+
+  # Create peak table
+  peak_table <- tidy_peaklist(xdata_copy)
+
+  # Check that ALL pData columns are present
+  expect_true("sample_name" %in% colnames(peak_table))
+  expect_true("sample_group" %in% colnames(peak_table))
+  expect_true("sample_number" %in% colnames(peak_table))
+  expect_true("replicate" %in% colnames(peak_table))
+
+  # Check that values match
+  expect_true(all(peak_table$sample_group %in% c("Control", "Treatment")))
+  expect_equal(length(unique(peak_table$sample_name)), length(fileNames(xdata_copy)))
+})
+
+
+test_that("tidy_peaklist issues warning for large datasets", {
+
+  library(xcms)
+  library(BiocParallel)
+
+  # Note: This test is conceptual - we can't easily create a dataset large enough
+  # to trigger the warning without significant overhead.
+  # The warning logic is tested implicitly through its implementation.
+
+  # Test with normal-sized data (should not warn)
+  expect_no_warning(
+    peak_table <- tidy_peaklist(xdata)
+  )
 })

@@ -167,6 +167,52 @@ xdata <- groupChromPeaks(xdata, param = pdp)
   - Create releases via semantic-release based on commit messages
 - Always commit with co-authorship footer when using Claude Code
 
+## Semantic Release Configuration for Bioconductor
+
+**IMPORTANT**: This package uses a customized semantic-release configuration tailored for Bioconductor submission requirements.
+
+### Version Numbering Strategy
+
+- **Current Status**: Pre-release for Bioconductor submission (version 0.99.x)
+- **All commits trigger PATCH releases**: Both `feat:` and `fix:` commits increment the patch version within the 0.99.x range
+- **Why 0.99.x?**: Bioconductor requires packages to start at version < 1.0.0 for initial submission
+- **Configuration Location**: `.releaserc.json`
+
+### How It Works
+
+```json
+{
+  "releaseRules": [
+    {"type": "feat", "release": "patch"},
+    {"type": "fix", "release": "patch"},
+    {"type": "perf", "release": "patch"}
+  ]
+}
+```
+
+This configuration is **intentional** and temporary:
+- Keeps version in 0.99.x range for Bioconductor compliance
+- After Bioconductor acceptance, this can be changed to follow standard semantic versioning
+- The `prepare-news.sh` script enforces 0.99.x versioning regardless of semantic-release output
+
+### After Bioconductor Acceptance
+
+Once accepted into Bioconductor, update `.releaserc.json` to use standard semantic versioning:
+- `feat:` → minor version bump (0.99.x → 1.0.0, then 1.0.0 → 1.1.0)
+- `fix:` → patch version bump (1.0.0 → 1.0.1)
+- `BREAKING CHANGE:` → major version bump (1.0.0 → 2.0.0)
+
+### Automated Release Process
+
+The release workflow automatically:
+1. Analyzes commit messages
+2. Determines version bump
+3. Updates `DESCRIPTION`, `NEWS.md`, and `.bioc_version`
+4. Creates GitHub release
+5. Syncs Bioconductor-specific version tags
+
+See `.github/workflows/release.yaml` and `.github/prepare-news.sh` for implementation details.
+
 ## Pre-Commit Checklist
 
 **IMPORTANT**: Before committing changes, ALWAYS run these checks in order:

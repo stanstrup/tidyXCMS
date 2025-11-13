@@ -14,6 +14,13 @@
 #' tidy format. It combines the peak matrix (mz, rt, intensity values, etc.)
 #' with additional peak annotations stored in chromPeakData.
 #'
+#' **Historical note**: In older versions of xcms, there was a single function
+#' that returned all peak information together. In modern xcms, peak data is
+#' split between chromPeaks() (the numeric matrix with m/z, RT, intensities)
+#' and chromPeakData() (a DataFrame with additional annotations). This helper
+#' function merges both sources to recreate the classic unified format as a
+#' tibble.
+#'
 #' @keywords internal
 #' @noRd
 #'
