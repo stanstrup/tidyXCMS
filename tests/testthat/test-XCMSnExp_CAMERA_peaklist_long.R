@@ -177,6 +177,7 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
   library(CAMERA)
   library(BiocParallel)
   library(Biobase)
+  library(MsExperiment)
 
   # Use preloaded xdata and add sample metadata
   xdata_copy <- xdata
@@ -187,7 +188,15 @@ test_that("XCMSnExp_CAMERA_peaklist_long includes pData information", {
     sample_group = c("WT", "KO", "WT")[1:length(fileNames(xdata_copy))],
     row.names = basename(fileNames(xdata_copy))
   )
-  pData(xdata_copy) <- pd
+
+  # Handle both XCMSnExp and XcmsExperiment objects
+  if (inherits(xdata_copy, "XcmsExperiment")) {
+    # For XcmsExperiment, use sampleData<-
+    sampleData(xdata_copy) <- pd
+  } else {
+    # For XCMSnExp, use pData<-
+    pData(xdata_copy) <- pd
+  }
 
   # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
   xset <- as(xdata_copy, "xcmsSet")
@@ -352,6 +361,9 @@ test_that("XCMSnExp_CAMERA_peaklist_long works with both CAMERA and groupFeature
 
   # Convert to xcmsSet for CAMERA
   xset <- as(xdata_grouped, "xcmsSet")
+
+  # featuregroups seem to corrupt the feature matrix. We fix before CAMERA
+  xset@groups <- apply(xset@groups[, !(colnames(xset@groups) %in% "feature_group")], 2, as.numeric)
 
   # CAMERA annotation
   xs <- xsAnnotate(xset)

@@ -155,6 +155,7 @@
 #' @importFrom tidyr unnest gather complete nesting
 #' @importFrom tibble as_tibble
 #' @importFrom Biobase pData
+#' @importFrom rlang syms
 XCMSnExp_CAMERA_peaklist_long <- function(XCMSnExp, xsAnnotate = NULL) {
   # Extract peaks with file information
   temp_peaks <- .chromPeaks_classic(XCMSnExp) %>%

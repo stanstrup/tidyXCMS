@@ -9,6 +9,7 @@
 ^instructions\.md$
 ^completed_tasks\.md$
 ^future_tasks\.md$
+^\.bioc_version$
 docs/*
 _pkgdown.yml
 package.json
