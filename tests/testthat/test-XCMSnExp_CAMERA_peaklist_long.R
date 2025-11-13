@@ -353,6 +353,9 @@ test_that("XCMSnExp_CAMERA_peaklist_long works with both CAMERA and groupFeature
   # Convert to xcmsSet for CAMERA
   xset <- as(xdata_grouped, "xcmsSet")
 
+  # featuregroups seem to corrupt the feature matrix. We fix before CAMERA
+  xset@groups <- apply(xset@groups[, !(colnames(xset@groups) %in% "feature_group")], 2, as.numeric)
+
   # CAMERA annotation
   xs <- xsAnnotate(xset)
   xs <- groupFWHM(xs)
