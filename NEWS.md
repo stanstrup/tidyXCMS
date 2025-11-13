@@ -1,3 +1,16 @@
+## Changes in v0.99.25 (commit: 34bfbf1)
+
+## [1.0.2](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.1...semantic-release-1.0.2) (2025-11-13)
+
+
+### Bug Fixes
+
+* prevent git push from pushing semantic-release tags ([0b660a6](https://github.com/stanstrup/tidyXCMS/commit/0b660a61f15cfd0a4e23dc5f1eb9f03523550de3))
+
+
+
+
+
 ## Changes in v0.99.24 (commit: f4cf5c4)
 
 ## [1.0.1](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.0...semantic-release-1.0.1) (2025-11-13)
