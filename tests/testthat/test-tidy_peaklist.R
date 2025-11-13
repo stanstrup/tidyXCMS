@@ -58,6 +58,15 @@ test_that("tidy_peaklist returns expected structure", {
   # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
   xset <- as(xdata, "xcmsSet")
 
+  # Fix file paths to match current system (needed for CAMERA groupCorr)
+  cdf_path <- file.path(find.package("faahKO"), "cdf")
+  real_paths <- list.files(cdf_path, recursive = TRUE, full.names = TRUE)
+
+  # Match files by basename and update xcmsSet file paths
+  old_files <- basename(xset@filepaths)
+  new_paths <- real_paths[match(old_files, basename(real_paths))]
+  xset@filepaths <- new_paths
+
   # CAMERA annotation
   xs <- xsAnnotate(xset)
   xs <- groupFWHM(xs)
@@ -226,6 +235,15 @@ test_that("tidy_peaklist CAMERA annotations are present", {
 
   # Convert to xcmsSet for CAMERA (CAMERA requires the old xcmsSet class)
   xset <- as(xdata, "xcmsSet")
+
+  # Fix file paths to match current system (needed for CAMERA groupCorr)
+  cdf_path <- file.path(find.package("faahKO"), "cdf")
+  real_paths <- list.files(cdf_path, recursive = TRUE, full.names = TRUE)
+
+  # Match files by basename and update xcmsSet file paths
+  old_files <- basename(xset@filepaths)
+  new_paths <- real_paths[match(old_files, basename(real_paths))]
+  xset@filepaths <- new_paths
 
   # CAMERA annotation with all steps
   xs <- xsAnnotate(xset)
@@ -624,6 +642,15 @@ test_that("tidy_peaklist returns correct column types with CAMERA", {
 
   # Convert to xcmsSet for CAMERA
   xset <- as(xdata, "xcmsSet")
+
+  # Fix file paths to match current system (needed for CAMERA groupCorr)
+  cdf_path <- file.path(find.package("faahKO"), "cdf")
+  real_paths <- list.files(cdf_path, recursive = TRUE, full.names = TRUE)
+
+  # Match files by basename and update xcmsSet file paths
+  old_files <- basename(xset@filepaths)
+  new_paths <- real_paths[match(old_files, basename(real_paths))]
+  xset@filepaths <- new_paths
 
   # CAMERA annotation
   xs <- xsAnnotate(xset)
