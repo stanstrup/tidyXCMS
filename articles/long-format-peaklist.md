@@ -87,16 +87,18 @@ to update them to match the current system:
 # Get the correct base path for faahKO package on this system
 cdf_path <- file.path(find.package("faahKO"), "cdf")
 
-# Create a mapping table with old and new paths
+# Create a mapping table using basenames for safe matching
 path_mapping <- tibble(old_path = unique(spectra(xdata)$dataOrigin)) %>%
                     mutate(
-                            relative_path = sub(".*/faahKO/cdf/", "", old_path),
-                            new_path = file.path(cdf_path, relative_path)
+                            basename_file = basename(old_path),
+                            new_path = file.path(cdf_path, basename_file)
                     )
 
-# Join with spectra dataOrigin and replace
+# Join with spectra dataOrigin by basename and replace
 spectra_df <- tibble(dataOrigin = spectra(xdata)$dataOrigin) %>%
-                left_join(path_mapping, by = c("dataOrigin" = "old_path"))
+                mutate(basename_file = basename(dataOrigin)) %>%
+                left_join(path_mapping %>% select(basename_file, new_path),
+                         by = "basename_file")
 
 spectra(xdata)$dataOrigin <- spectra_df$new_path
 ```
