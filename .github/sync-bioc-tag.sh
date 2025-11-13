@@ -8,10 +8,12 @@ if [ -f ".bioc_version" ]; then
   echo "Syncing Bioconductor version tag: $BIOC_VERSION"
 
   # Create lightweight tag for the Bioconductor version
-  # This will be picked up by the GitHub release
   git tag -f "$BIOC_VERSION"
 
-  echo "Created tag $BIOC_VERSION"
+  # Push the tag to remote (requires authentication via GITHUB_TOKEN)
+  git push origin "$BIOC_VERSION" --force
+
+  echo "Created and pushed tag $BIOC_VERSION"
 else
   echo "WARNING: .bioc_version file not found, skipping tag sync"
 fi
