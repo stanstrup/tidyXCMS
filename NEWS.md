@@ -1,3 +1,15 @@
+## Changes in v0.99.18 (commit: c3916f6)
+
+
+### Bug Fixes
+
+* ensure git tags are pushed to remote during release ([8c9014b](https://github.com/stanstrup/tidyXCMS/commit/8c9014b9d9370ae1a69577c774161fe4b5753bd8))
+
+
+### Features
+
+* add commit SHAs to NEWS.md for traceability ([07a41ce](https://github.com/stanstrup/tidyXCMS/commit/07a41cec272fb97b3ce3d0256f4173e269fdd590))
+
 ## Changes in v0.99.17 (commit: d9352af)
 
 
