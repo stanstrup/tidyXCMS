@@ -1,3 +1,16 @@
+## Changes in v0.99.27 (commit: 8db4302)
+
+## [1.0.4](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.3...semantic-release-1.0.4) (2025-11-13)
+
+
+### Bug Fixes
+
+* use gh CLI API to delete tags instead of git push ([9fe2793](https://github.com/stanstrup/tidyXCMS/commit/9fe279362a8348ed4c4e6f4da2a6aea537f506b0))
+
+
+
+
+
 ## Changes in v0.99.26 (commit: 4fdf1c1)
 
 ## [1.0.3](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.2...semantic-release-1.0.3) (2025-11-13)
