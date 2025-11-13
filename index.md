@@ -17,13 +17,40 @@ tidyverse ecosystem.
 
 ## Usage
 
-Coming soon…
+``` r
+library(tidyXCMS)
+library(xcms)
+
+# Load preprocessed XCMS data
+xdata <- loadXcmsData("xmse")
+
+# Create long-format peak table
+peak_table <- tidy_peaklist(xdata)
+
+# Result: one row per feature per sample
+# Includes peak intensities, m/z, RT, and sample metadata
+head(peak_table)
+```
+
+Optional annotations:
+
+- **CAMERA**: Group features by retention time, correlation across
+  samples or EIC similarity. Add isotope, adduct, and pseudo-spectra
+  annotations
+- **MsFeatures**: Group features by retention time and correlation
+  across samples.
+
+See the
+[vignette](https://stanstrup.github.io/tidyXCMS/articles/long-format-peaklist.html)
+for detailed examples.
 
 ## Development
 
-This package uses: - **Semantic versioning** via semantic-release -
-**Automated documentation** via pkgdown - **Continuous integration** via
-GitHub Actions
+This package uses:
+
+- **Semantic versioning** via semantic-release
+- **Automated documentation** via pkgdown
+- **Continuous integration** via GitHub Actions
 
 ## License
 
