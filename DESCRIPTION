@@ -20,7 +20,8 @@ Imports:
     tidyr,
     tibble,
     Biobase,
-    MsExperiment
+    MsExperiment,
+    rlang
 Suggests:
     CAMERA,
     commonMZ,
@@ -34,7 +35,9 @@ Suggests:
     covr,
     faahKO,
     ggpie,
-    ggalluvial
+    ggalluvial,
+    MSnbase,
+    RColorBrewer
 Remotes:
     stanstrup/commonMZ
     showteeth/ggpie
