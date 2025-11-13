@@ -63,8 +63,13 @@ grouping completed.
 ```{r load_data, message=FALSE}
 # Load example data from XCMS (already preprocessed)
 xdata <- loadXcmsData("xmse")
+```
 
-# Check the sample information
+### Examine Sample Metadata
+
+Let's check what sample information is available:
+
+```{r check_sample_data, message=FALSE}
 sampleData(xdata)
 ```
 
