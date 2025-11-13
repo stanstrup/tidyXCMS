@@ -52,7 +52,7 @@ detected (FALSE).}
 \item{filepath}{character: Full file path to the raw data file.}
 \item{filename}{character: Basename of the raw data file.}
 \item{fromFile}{numeric: Sample index (1-based) corresponding to the order
-in \code{\link[xcms:fileNames]{xcms::fileNames()}}.}
+in \link[xcms:XcmsExperiment]{xcms::fileNames,MsExperiment-method}.}
 \item{peakidx}{numeric: Internal peak index from \code{\link[xcms:XCMSnExp-class]{xcms::chromPeaks()}}.}
 \item{sample_index}{integer: Sample index from sample metadata.}
 \item{spectraOrigin}{character: Original spectra file path.}
