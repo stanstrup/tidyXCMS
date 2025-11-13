@@ -1,6 +1,5 @@
 ## Changes in v0.99.27 (commit: 8db4302)
 
-## [1.0.4](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.3...semantic-release-1.0.4) (2025-11-13)
 
 
 ### Bug Fixes
@@ -13,7 +12,6 @@
 
 ## Changes in v0.99.26 (commit: 4fdf1c1)
 
-## [1.0.3](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.2...semantic-release-1.0.3) (2025-11-13)
 
 
 ### Bug Fixes
@@ -26,7 +24,6 @@
 
 ## Changes in v0.99.25 (commit: 34bfbf1)
 
-## [1.0.2](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.1...semantic-release-1.0.2) (2025-11-13)
 
 
 ### Bug Fixes
@@ -39,7 +36,6 @@
 
 ## Changes in v0.99.24 (commit: f4cf5c4)
 
-## [1.0.1](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.0...semantic-release-1.0.1) (2025-11-13)
 
 
 ### Bug Fixes
@@ -52,7 +48,6 @@
 
 ## Changes in v0.99.23 (commit: bb3f423)
 
-## 1.0.0 (2025-11-13)
 
 
 ### Bug Fixes
