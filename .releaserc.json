@@ -1,6 +1,6 @@
 {
   "branches": ["main", "master"],
-  "tagFormat": false,
+  "tagFormat": "semantic-release-${version}",
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
