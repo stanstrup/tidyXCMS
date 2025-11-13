@@ -1,3 +1,10 @@
+## Changes in v0.99.11
+
+
+### Bug Fixes
+
+* correct sampleData assignment and add alt text to vignette plots ([aa576af](https://github.com/stanstrup/tidyXCMS/commit/aa576af90ea253439eef412393759bbc4660c5a9))
+
 ## Changes in v0.99.10
 
 
