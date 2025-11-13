@@ -1,5 +1,12 @@
 # Changelog
 
+## Changes in v0.99.21 (commit: 35572fd)
+
+### Bug Fixes
+
+- use gh CLI for git operations instead of password authentication
+  ([1caa30f](https://github.com/stanstrup/tidyXCMS/commit/1caa30f2dade1ee12b6aaf858f2d33ed3b75e159))
+
 ## Changes in v0.99.20 (commit: c7c96ef)
 
 ### Bug Fixes
