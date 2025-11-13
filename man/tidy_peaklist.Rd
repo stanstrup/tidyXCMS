@@ -54,8 +54,6 @@ detected (FALSE).}
 \item{fromFile}{numeric: Sample index (1-based) corresponding to the order
 in \link[xcms:XcmsExperiment]{xcms::fileNames,MsExperiment-method}.}
 \item{peakidx}{numeric: Internal peak index from \code{\link[xcms:XCMSnExp-class]{xcms::chromPeaks()}}.}
-\item{sample_index}{integer: Sample index from sample metadata.}
-\item{spectraOrigin}{character: Original spectra file path.}
 \item{Additional columns}{Variable types: Any columns from \code{\link[Biobase:phenoData]{Biobase::pData()}}
 or \code{\link[MsExperiment:MsExperiment]{MsExperiment::sampleData()}} are included with their original data types.}
 }

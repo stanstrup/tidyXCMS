@@ -49,8 +49,6 @@
 #'     \item{fromFile}{numeric: Sample index (1-based) corresponding to the order
 #'       in [xcms::fileNames,MsExperiment-method].}
 #'     \item{peakidx}{numeric: Internal peak index from [xcms::chromPeaks()].}
-#'     \item{sample_index}{integer: Sample index from sample metadata.}
-#'     \item{spectraOrigin}{character: Original spectra file path.}
 #'     \item{Additional columns}{Variable types: Any columns from [Biobase::pData()]
 #'       or [MsExperiment::sampleData()] are included with their original data types.}
 #'   }
