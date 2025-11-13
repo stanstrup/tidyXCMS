@@ -92,12 +92,13 @@ path_mapping <- tibble(old_path = unique(spectra(xdata)$dataOrigin)) %>%
                     mutate(
                             basename_file = basename(old_path),
                             new_path = file.path(cdf_path, basename_file)
-                    )
+                    ) %>% 
+                    select(basename_file, new_path)
 
 # Join with spectra dataOrigin by basename and replace
 spectra_df <- tibble(dataOrigin = spectra(xdata)$dataOrigin) %>%
                 mutate(basename_file = basename(dataOrigin)) %>%
-                left_join(path_mapping %>% select(basename_file, new_path),
+                left_join(path_mapping,
                          by = "basename_file")
 
 spectra(xdata)$dataOrigin <- spectra_df$new_path
@@ -824,7 +825,7 @@ sessionInfo()
 #> [10] CAMERA_1.66.0       MSnbase_2.36.0      ProtGenerics_1.42.0
 #> [13] S4Vectors_0.48.0    mzR_2.44.0          Rcpp_1.1.0         
 #> [16] Biobase_2.70.0      BiocGenerics_0.56.0 generics_0.1.4     
-#> [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.12   
+#> [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.13   
 #> 
 #> loaded via a namespace (and not attached):
 #>   [1] rstudioapi_0.17.1           jsonlite_2.0.0             
