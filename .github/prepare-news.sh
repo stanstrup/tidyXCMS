@@ -45,6 +45,10 @@ RELEASE_DATE=$(date +%Y-%m-%d)
 # Get current commit SHA for traceability
 COMMIT_SHA=$(git rev-parse --short HEAD)
 
+# Clean up release notes - remove the version header that semantic-release adds
+# It typically starts with "# X.X.X (YYYY-MM-DD)" which we don't want
+CLEANED_NOTES=$(echo "$RELEASE_NOTES" | sed '/^# [0-9]\+\.[0-9]\+\.[0-9]\+ ([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\})$/d')
+
 # Create new NEWS.md entry at the top
 # First, save existing NEWS.md content
 if [ -f NEWS.md ]; then
@@ -57,7 +61,7 @@ fi
 {
   echo "## Changes in v$BIOC_VERSION (commit: $COMMIT_SHA)"
   echo ""
-  echo "$RELEASE_NOTES"
+  echo "$CLEANED_NOTES"
   echo ""
   # Add existing content below
   cat NEWS.md.bak
