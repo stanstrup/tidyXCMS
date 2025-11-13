@@ -1,3 +1,16 @@
+## Changes in v0.99.26 (commit: 4fdf1c1)
+
+## [1.0.3](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.2...semantic-release-1.0.3) (2025-11-13)
+
+
+### Bug Fixes
+
+* explicitly delete tags from GitHub using git push ([273786e](https://github.com/stanstrup/tidyXCMS/commit/273786ebd9ed8fee5bef6e0221ac840f31165d1f))
+
+
+
+
+
 ## Changes in v0.99.25 (commit: 34bfbf1)
 
 ## [1.0.2](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.1...semantic-release-1.0.2) (2025-11-13)
