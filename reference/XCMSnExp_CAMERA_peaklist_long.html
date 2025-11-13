@@ -11,7 +11,7 @@ adducts, and pseudospectrum groups if provided."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">tidyXCMS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -77,6 +77,10 @@ f_rtmax - feature summary statistics</p></dd>
 <dd><p>isotopes, adduct, pcgroup (pseudospectrum group) -
 only present when xsAnnotate is provided</p></dd>
 
+<dt>MsFeatures grouping</dt>
+<dd><p>feature_group - feature group ID from
+<code><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">MsFeatures::groupFeatures()</a></code>, only present if groupFeatures was applied</p></dd>
+
 <dt>Peak-level columns</dt>
 <dd><p>mz, rt, into, intb, maxo, sn - individual peak
 measurements</p></dd>
@@ -118,6 +122,8 @@ first occurrence.</p></li>
 takes the maximum intensity peak for each feature in each sample.</p></li>
 <li><p>CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes,
 adduct, and pcgroup columns will not be present in the output.</p></li>
+<li><p>MsFeatures grouping is automatically detected. If <code><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">MsFeatures::groupFeatures()</a></code>
+was applied to the object, the feature_group column will be included in the output.</p></li>
 <li><p>For XcmsExperiment objects, sample metadata is accessed via sampleData()
 instead of pData().</p></li>
 </ul></div>

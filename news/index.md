@@ -1,5 +1,32 @@
 # Changelog
 
+## Changes in v0.99.11
+
+### Bug Fixes
+
+- correct sampleData assignment and add alt text to vignette plots
+  ([aa576af](https://github.com/stanstrup/tidyXCMS/commit/aa576af90ea253439eef412393759bbc4660c5a9))
+
+## Changes in v0.99.10
+
+### Bug Fixes
+
+- add missing rlang import for syms function
+  ([b0c0a58](https://github.com/stanstrup/tidyXCMS/commit/b0c0a58bebb497af837c63340163f97fb0c9d65f))
+- apply feature_group fix before CAMERA annotation in test
+  ([c6a09e3](https://github.com/stanstrup/tidyXCMS/commit/c6a09e302c95b4f0a904a004e7ca51c88a2ed6c0))
+- exclude .bioc_version file from package build
+  ([38da0f1](https://github.com/stanstrup/tidyXCMS/commit/38da0f1ba19b5249bd9df05e6844d2c90e0c7189))
+- handle both XCMSnExp and XcmsExperiment in pData test
+  ([6251bc9](https://github.com/stanstrup/tidyXCMS/commit/6251bc9ce415af0640346c09519ba85020072c55))
+
+## Changes in v0.99.9
+
+### Features
+
+- add groupFeatures integration from MsFeatures package
+  ([bea8117](https://github.com/stanstrup/tidyXCMS/commit/bea81177149f638e608c2b21411621fa13e0b776))
+
 ## Changes in v0.99.8
 
 ### Bug Fixes

@@ -41,6 +41,12 @@ in long format with one row per feature per sample. The tibble contains:
   isotopes, adduct, pcgroup (pseudospectrum group) - only present when
   xsAnnotate is provided
 
+- MsFeatures grouping:
+
+  feature_group - feature group ID from
+  [`MsFeatures::groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html),
+  only present if groupFeatures was applied
+
 - Peak-level columns:
 
   mz, rt, into, intb, maxo, sn - individual peak measurements
@@ -107,6 +113,11 @@ particular sample.
 
 - CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes,
   adduct, and pcgroup columns will not be present in the output.
+
+- MsFeatures grouping is automatically detected. If
+  [`MsFeatures::groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html)
+  was applied to the object, the feature_group column will be included
+  in the output.
 
 - For XcmsExperiment objects, sample metadata is accessed via
   sampleData() instead of pData().
