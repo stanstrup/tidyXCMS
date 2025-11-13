@@ -65,7 +65,7 @@ test_that("tidy_peaklist returns expected structure", {
     basename_file = basename(real_paths)
   )
 
-  spectra_df <- tibble(dataOrigin = spectra(xdata)$dataOrigin) %>%
+  spectra_df <- tibble(dataOrigin = as.character(spectra(xdata)$dataOrigin)) %>%
     mutate(basename_file = basename(dataOrigin)) %>%
     left_join(path_mapping, by = "basename_file")
 
@@ -250,7 +250,7 @@ test_that("tidy_peaklist CAMERA annotations are present", {
     basename_file = basename(real_paths)
   )
 
-  spectra_df <- tibble(dataOrigin = spectra(xdata)$dataOrigin) %>%
+  spectra_df <- tibble(dataOrigin = as.character(spectra(xdata)$dataOrigin)) %>%
     mutate(basename_file = basename(dataOrigin)) %>%
     left_join(path_mapping, by = "basename_file")
 
@@ -455,9 +455,10 @@ test_that("tidy_peaklist works without features (dropFeatureDefinitions)", {
   xdata_no_features <- dropFeatureDefinitions(xdata)
 
   # Should work but return peak-level data only
+  # Note: expect_warning only checks for our warning, xcms may also warn
   expect_warning(
     peak_table <- tidy_peaklist(xdata_no_features),
-    "No features defined"
+    "No features defined.*groupChromPeaks not run"
   )
 
   # Check it's a tibble
@@ -662,7 +663,7 @@ test_that("tidy_peaklist returns correct column types with CAMERA", {
     basename_file = basename(real_paths)
   )
 
-  spectra_df <- tibble(dataOrigin = spectra(xdata)$dataOrigin) %>%
+  spectra_df <- tibble(dataOrigin = as.character(spectra(xdata)$dataOrigin)) %>%
     mutate(basename_file = basename(dataOrigin)) %>%
     left_join(path_mapping, by = "basename_file")
 
