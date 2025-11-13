@@ -82,26 +82,25 @@ cat("Dataset contains", nrow(chromPeaks(xdata)), "peaks across",
 The example data contains file paths from the original system. We need to update them to match the current system:
 
 ```{r fix_paths, message=FALSE}
-# Get current dataOrigin values (these are repeated for each spectrum)
-current_origins <- spectra(xdata)$dataOrigin
-
-# Get unique file paths
-unique_old_paths <- unique(current_origins)
-
-# Extract relative paths (e.g., "KO/ko15.CDF", "WT/wt15.CDF")
-relative_paths <- sub(".*/faahKO/cdf/", "", unique_old_paths)
-
 # Get the correct base path for faahKO package on this system
 cdf_path <- file.path(find.package("faahKO"), "cdf")
 
-# Reconstruct full paths
-unique_new_paths <- file.path(cdf_path, relative_paths)
+# Create a mapping table with old and new paths
+path_mapping <- tibble(
+  old_path = unique(spectra(xdata)$dataOrigin)
+) %>%
+  mutate(
+    # Extract relative paths (e.g., "KO/ko15.CDF", "WT/wt15.CDF")
+    relative_path = sub(".*/faahKO/cdf/", "", old_path),
+    # Reconstruct full paths for this system
+    new_path = file.path(cdf_path, relative_path)
+  )
 
-# Create a named vector for path mapping
-path_map <- setNames(unique_new_paths, unique_old_paths)
+# Join with spectra dataOrigin and replace
+spectra_df <- tibble(dataOrigin = spectra(xdata)$dataOrigin) %>%
+  left_join(path_mapping, by = c("dataOrigin" = "old_path"))
 
-# Replace all dataOrigin values (vectorized replacement)
-spectra(xdata)$dataOrigin <- path_map[current_origins]
+spectra(xdata)$dataOrigin <- spectra_df$new_path
 ```
 
 ## Creating a Basic Long-Format Peak Table
@@ -262,31 +261,9 @@ You can also combine both approaches. Apply `groupFeatures()` first, then procee
 # Apply feature grouping
 xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
 
-# Convert to xcmsSet for CAMERA
-xset_grouped <- xdata_grouped %>%
-  as("xcmsSet")
-
-# featuregroups seem to corrupt the feature matrix. We fix before CAMERA
-xset_grouped@groups <- apply(xset_grouped@groups[, !(colnames(xset_grouped@groups) %in% "feature_group")], 2, as.numeric)
-
-
-# Apply CAMERA annotation as before
-xs_grouped <- xsAnnotate(xset_grouped, polarity = "positive")
-xs_grouped <- groupFWHM(xs_grouped, perfwhm = 0.1, intval = "into", sigma = 6)
-xs_grouped <- groupCorr(xs_grouped, calcIso = FALSE, calcCiS = TRUE, calcCaS = FALSE,
-                        cor_eic_th = 0.7, pval = 1E-6)
-xs_grouped <- findIsotopes(xs_grouped, ppm = 10, mzabs = 0.01, intval = "into", maxcharge = 2)
-
-# Get adduct rules (reuse from earlier)
-rules_pos <- MZ_CAMERA(mode = "pos", warn_clash = TRUE, clash_ppm = 5) %>%
-  filter(name != "[M+NH4]+") %>%
-  as.data.frame()
-
-xs_grouped <- findAdducts(xs_grouped, ppm = 500, mzabs = 0.2, multiplier = 4,
-                          polarity = "positive", rules = rules_pos)
-
 # Create peak table with both CAMERA and MsFeatures annotations
-peak_table_combined <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped, xs_grouped)
+# Reuse the xs object created earlier (CAMERA annotations are the same)
+peak_table_combined <- XCMSnExp_CAMERA_peaklist_long(xdata_grouped, xs)
 
 # View combined annotations
 peak_table_combined %>%
@@ -502,13 +479,16 @@ peak_table %>%
 Features not detected in a sample have `NA` for peak-level columns:
 
 ```{r missing_values}
-# Count detected features per sample
+# Count for each feature how many samples the peak was found in
 peak_table %>%
-  group_by(filename) %>%
+  group_by(feature_id, f_mzmed, f_rtmed) %>%
   summarise(
-    n_features_detected = sum(!is.na(into)),
-    n_features_total = n()
-  )
+    n_samples_detected = sum(!is.na(into)),
+    n_samples_total = n(),
+    detection_rate = n_samples_detected / n_samples_total,
+    .groups = "drop"
+  ) %>%
+  arrange(desc(detection_rate))
 ```
 
 # Downstream Analysis Examples
@@ -568,24 +548,79 @@ adduct_counts %>%
 ```
 
 
-## Coefficient of Variation Analysis
+## Filter Non-Informative Features with D-ratio
 
-```{r cv_analysis}
-# Calculate CV for each feature
-feature_cv <- peak_table %>%
+The D-ratio helps identify features that are more variable in pooled samples (QC) than in biological samples, indicating they are likely measurement noise rather than biological signal.
+
+### Calculate Standard Deviation per Sample Type
+
+First, we calculate the standard deviation for each feature in each sample type:
+
+```{r d_ratio_sd}
+# Calculate SD for each feature by sample type
+# Note: Using sample_group as proxy for sample_type (WT/KO as biological samples)
+# In a real analysis with QC samples, you would filter for sample_type == "QC" or "PS"
+feature_sd <- peak_table %>%
   filter(!is.na(into)) %>%
-  group_by(feature_id, f_mzmed, f_rtmed) %>%
-  summarise(
-    mean_intensity = mean(into),
-    sd_intensity = sd(into),
-    cv = sd_intensity / mean_intensity * 100,
-    .groups = "drop"
-  ) %>%
-  arrange(cv)
+  select(sample_group, feature_id, f_mzmed, f_rtmed, into) %>%
+  group_by(sample_group, feature_id, f_mzmed, f_rtmed) %>%
+  summarise(sd = sd(into, na.rm = TRUE), .groups = "drop")
 
-# Show most stable features
-head(feature_cv)
+head(feature_sd)
 ```
+
+### Calculate D-ratio
+
+The D-ratio is the ratio of SD in pooled samples to SD in biological samples:
+
+```{r d_ratio_calc}
+# Calculate D-ratio
+# In a real analysis, you would have "PS" (pooled samples) and "sample" groups
+# Here we'll calculate it between the two groups as an example
+feature_d <- feature_sd %>%
+  pivot_wider(names_from = "sample_group", values_from = sd) %>%
+  mutate(D_ratio = KO / WT)  # Example: comparing variability between groups
+
+head(feature_d)
+```
+
+### Visualize D-ratio Distribution
+
+```{r d_ratio_plot, fig.width=7, fig.height=4, fig.alt="Density plot showing the distribution of D-ratio values across features"}
+# Plot D-ratio distribution
+feature_d %>%
+  filter(!is.na(D_ratio) & is.finite(D_ratio)) %>%
+  ggplot(aes(x = D_ratio)) +
+  geom_density(alpha = 0.7, fill = "steelblue") +
+  geom_vline(xintercept = 0.5, linetype = "dashed", color = "red") +
+  labs(
+    title = "D-ratio Distribution",
+    x = "D-ratio",
+    y = "Density"
+  ) +
+  theme_bw()
+```
+
+### Count Features by D-ratio Threshold
+
+```{r d_ratio_count}
+# Count features that would be kept with D_ratio < 0.5 threshold
+feature_d %>%
+  filter(!is.na(D_ratio) & is.finite(D_ratio)) %>%
+  summarise(
+    total_features = n(),
+    features_kept = sum(D_ratio < 0.5),
+    features_removed = sum(D_ratio >= 0.5),
+    percent_kept = round(features_kept / total_features * 100, 1)
+  )
+```
+
+**Note:** In a real metabolomics study with QC pooled samples, you would:
+
+1. Filter for `sample_type == "PS"` (pooled samples) and `sample_type == "sample"` (biological samples)
+2. Calculate SD for each group
+3. Use D-ratio to filter out features with high variability in QC relative to biological samples
+4. A typical threshold is D-ratio < 0.5 (features more stable in QC than biological samples should be removed)
 
 ## Extract Specific Features for Further Analysis
 
