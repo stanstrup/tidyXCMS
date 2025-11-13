@@ -1,5 +1,6 @@
 {
   "branches": ["main", "master"],
+  "tagFormat": "${version}",
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
@@ -34,9 +35,8 @@
     [
       "@semantic-release/exec",
       {
-        "successCmd": "./.github/sync-bioc-tag.sh"
+        "successCmd": "./.github/sync-bioc-tag.sh ${nextRelease.version} '${nextRelease.notes}'"
       }
-    ],
-    "@semantic-release/github"
+    ]
   ]
 }
