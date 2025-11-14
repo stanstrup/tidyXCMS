@@ -831,7 +831,7 @@ sessionInfo()
 #> [10] Rcpp_1.1.0          Biobase_2.70.0      BiocGenerics_0.56.0
 #> [13] generics_0.1.4      MsExperiment_1.12.0 ProtGenerics_1.42.0
 #> [16] tidyr_1.3.1         ggplot2_4.0.0       dplyr_1.1.4        
-#> [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.31   
+#> [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.32   
 #> 
 #> loaded via a namespace (and not attached):
 #>   [1] rstudioapi_0.17.1           jsonlite_2.0.0             
