@@ -1,3 +1,13 @@
+## Changes in v0.99.32 (commit: cbe2694)
+
+
+
+### Bug Fixes
+
+* replace dynamic release badge with static version badge ([cd6814c](https://github.com/stanstrup/tidyXCMS/commit/cd6814c52cf1cc815579af1c0f98e6708f9056d2))
+* revert release badge changes and update R-CMD-check badge ([f5c03f3](https://github.com/stanstrup/tidyXCMS/commit/f5c03f30760cf36c4455e84a184caa215e59c5ac))
+* update codecov badge to use modern shields.io format ([da2f085](https://github.com/stanstrup/tidyXCMS/commit/da2f085c90abac0e453635437d2424537bae9b43))
+
 ## Changes in v0.99.31 (commit: 9d4b184)
 
 
