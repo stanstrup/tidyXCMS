@@ -1,5 +1,13 @@
 # Changelog
 
+## Changes in v0.99.34 (commit: c975ea2)
+
+### Bug Fixes
+
+- exclude gh-pages branch from cleanup script
+  ([d537e92](https://github.com/stanstrup/tidyXCMS/commit/d537e923bdfa8c2ae548eeb5661ae39afdcb850c)),
+  closes [\#pages](https://github.com/stanstrup/tidyXCMS/issues/pages)
+
 ## Changes in v0.99.33 (commit: 418c139)
 
 ### Bug Fixes
