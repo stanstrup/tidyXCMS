@@ -1,3 +1,11 @@
+## Changes in v0.99.37 (commit: 66c8275)
+
+
+
+### Bug Fixes
+
+* format feature and sample counts with commas in memory warning ([510cf4c](https://github.com/stanstrup/tidyXCMS/commit/510cf4c98619d83d1261a700ba27054062be94db))
+
 ## Changes in v0.99.36 (commit: d1e4acb)
 
 
