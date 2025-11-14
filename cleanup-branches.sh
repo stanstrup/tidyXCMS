@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to delete all git branches except 'main' (both local and remote)
+# Script to delete all git branches except 'main' and 'gh-pages' (both local and remote)
 # Usage: ./cleanup-branches.sh [--dry-run]
 
 set -e
@@ -45,9 +45,9 @@ else
 fi
 echo ""
 
-# Get list of local branches (excluding main)
+# Get list of local branches (excluding main and gh-pages)
 echo "🔍 Finding local branches to delete..."
-LOCAL_BRANCHES=$(git branch | grep -v "main" | sed 's/^[ *]*//' || true)
+LOCAL_BRANCHES=$(git branch | grep -v "main" | grep -v "gh-pages" | sed 's/^[ *]*//' || true)
 
 if [[ -z "$LOCAL_BRANCHES" ]]; then
   echo -e "${GREEN}✓ No local branches to delete${NC}"
@@ -66,9 +66,9 @@ else
 fi
 echo ""
 
-# Get list of remote branches (excluding main)
+# Get list of remote branches (excluding main and gh-pages)
 echo "🔍 Finding remote branches to delete..."
-REMOTE_BRANCHES=$(git branch -r | grep -v "main" | grep -v "HEAD" | sed 's|origin/||' | sed 's/^[ ]*//' || true)
+REMOTE_BRANCHES=$(git branch -r | grep -v "main" | grep -v "gh-pages" | grep -v "HEAD" | sed 's|origin/||' | sed 's/^[ ]*//' || true)
 
 if [[ -z "$REMOTE_BRANCHES" ]]; then
   echo -e "${GREEN}✓ No remote branches to delete${NC}"
@@ -98,4 +98,4 @@ echo ""
 echo -e "${GREEN}✅ Cleanup complete!${NC}"
 echo ""
 echo "📊 Remaining branches:"
-git branch -a | grep -E "(^\*|main)"
+git branch -a | grep -E "(^\*|main|gh-pages)"
