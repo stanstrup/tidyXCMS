@@ -84,13 +84,21 @@ else
 
     if [[ "$CONFIRM" == "yes" ]]; then
       echo "Deleting remote branches..."
-      echo "$REMOTE_BRANCHES" | xargs -r -I {} git push origin --delete {}
+      # Use GitHub CLI for authentication (works with modern GitHub auth)
+      while IFS= read -r branch; do
+        if [[ -n "$branch" ]]; then
+          echo "  Deleting origin/$branch..."
+          gh api -X DELETE "repos/:owner/:repo/git/refs/heads/$branch" 2>/dev/null || \
+            git push origin --delete "$branch" 2>/dev/null || \
+            echo "    Failed to delete $branch (may not exist or no permissions)"
+        fi
+      done <<< "$REMOTE_BRANCHES"
       echo -e "${GREEN}✓ Remote branches deleted${NC}"
     else
       echo "Cancelled. Remote branches were not deleted."
     fi
   else
-    echo "  Would run: git push origin --delete <branches>"
+    echo "  Would run: gh api -X DELETE repos/:owner/:repo/git/refs/heads/<branch>"
   fi
 fi
 
