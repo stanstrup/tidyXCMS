@@ -1,3 +1,11 @@
+## Changes in v0.99.33 (commit: 418c139)
+
+
+
+### Bug Fixes
+
+* use native Codecov badge format instead of shields.io proxy ([8edacf0](https://github.com/stanstrup/tidyXCMS/commit/8edacf0e4531c85de5bbb6139cd580e152d1c773))
+
 ## Changes in v0.99.32 (commit: cbe2694)
 
 
