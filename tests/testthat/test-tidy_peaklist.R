@@ -487,6 +487,25 @@ test_that("tidy_peaklist validates input object class", {
 })
 
 
+test_that("tidy_peaklist errors when no peaks are found", {
+
+  library(xcms)
+  library(MsExperiment)
+  library(BiocParallel)
+  library(msdata)
+
+  # Create an XcmsExperiment object without running findChromPeaks
+  fls <- dir(system.file("sciex", package = "msdata"), full.names = TRUE)
+  xdata_no_peaks <- readMsExperiment(spectraFiles = fls[1], BPPARAM = SerialParam())
+
+  # Should error because no peaks have been detected
+  expect_error(
+    tidy_peaklist(xdata_no_peaks),
+    "No chromatographic peaks found.*Run findChromPeaks"
+  )
+})
+
+
 test_that("tidy_peaklist validates xsAnnotate parameter", {
 
   library(xcms)
@@ -716,4 +735,97 @@ test_that("tidy_peaklist returns correct column types with XcmsExperiment", {
   # These depend on how the object was created, so just check some common ones exist
   expect_true("spectraOrigin" %in% colnames(peak_table))
   expect_true(is.character(peak_table$spectraOrigin))
+})
+
+
+# Additional edge case tests for improved coverage ---------------------------
+
+test_that("tidy_peaklist validates xsAnnotate is not allowed without features", {
+
+  library(xcms)
+  library(CAMERA)
+  library(BiocParallel)
+
+  # Use preloaded xdata and remove features
+  xdata_no_features <- dropFeatureDefinitions(xdata)
+
+  # Create a CAMERA object from the original data
+  xset <- as(xdata, "xcmsSet")
+  xs <- xsAnnotate(xset)
+  xs <- groupFWHM(xs)
+
+  # Try to use xsAnnotate with object that has no features
+  # The function should warn about no features and return peak-level data
+  # xsAnnotate is simply ignored when features aren't defined
+  expect_warning(
+    peak_table <- tidy_peaklist(xdata_no_features, xs),
+    "No features defined.*groupChromPeaks not run"
+  )
+
+  # Should return peak-level data only (CAMERA is not used)
+  expect_false("feature_id" %in% colnames(peak_table))
+})
+
+
+test_that("tidy_peaklist handles CAMERA object with minimal annotations", {
+
+  library(xcms)
+  library(CAMERA)
+  library(BiocParallel)
+
+  # Use preloaded xdata
+  xset <- as(xdata, "xcmsSet")
+
+  # Create CAMERA object with minimal processing (no isotopes or adducts)
+  xs <- xsAnnotate(xset)
+  # Skip findIsotopes and findAdducts to have minimal annotations
+
+  # This should still work, just without those annotation columns
+  peak_table <- tidy_peaklist(xdata, xs)
+
+  # Check it's a tibble
+  expect_s3_class(peak_table, "tbl_df")
+
+  # Should have basic columns but CAMERA annotation columns behavior depends
+  # on what CAMERA returns - it may have pcgroup even without groupCorr
+  expect_true("feature_id" %in% colnames(peak_table))
+})
+
+
+test_that(".check_memory_usage warns for large datasets", {
+
+  library(dplyr)
+
+  # Create mock data with many features and samples to trigger warning
+  # Need > 10 million rows (features * samples > 1e7)
+  # Use 10,000 features and 1,001 samples = 10,010,000 rows
+  mock_data <- tibble::tibble(
+    feature_id = rep(1:10000, each = 1001),
+    filename = rep(paste0("file_", 1:1001), times = 10000)
+  )
+
+  # Test that the warning is triggered
+  # The number will be formatted with commas: "10,010,000"
+  expect_warning(
+    tidyXCMS:::.check_memory_usage(mock_data),
+    "Creating large data frame.*10,000 features.*1,001 samples"
+  )
+})
+
+
+test_that(".check_memory_usage does not warn for normal datasets", {
+
+  library(dplyr)
+
+  # Create small mock data that won't trigger warning
+  # 100 features * 10 samples = 1,000 rows (well below 10M threshold)
+  mock_data <- tibble::tibble(
+    feature_id = rep(1:100, each = 10),
+    filename = rep(paste0("file_", 1:10), times = 100)
+  )
+
+  # Should not produce any warnings
+  expect_no_warning(
+    tidyXCMS:::.check_memory_usage(mock_data)
+  )
 })
