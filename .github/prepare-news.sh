@@ -75,6 +75,12 @@ rm NEWS.md.bak
 # Update DESCRIPTION version
 sed -i "s/^Version: .*/Version: $BIOC_VERSION/" DESCRIPTION
 
+# Update README version badge
+if [ -f README.md ]; then
+  sed -i "s/version-[0-9]\+\.[0-9]\+\.[0-9]\+-blue/version-$BIOC_VERSION-blue/" README.md
+  echo "Updated README.md version badge to $BIOC_VERSION"
+fi
+
 # Create git commit with Bioconductor version
 echo "Creating git commit for version $BIOC_VERSION..."
 
@@ -93,7 +99,7 @@ if [ -n "$SEMANTIC_TAGS" ]; then
 fi
 
 # Add modified files
-git add NEWS.md DESCRIPTION .bioc_version
+git add NEWS.md DESCRIPTION .bioc_version README.md
 
 # Create commit with Bioconductor version (not semantic version)
 git commit -m "chore(release): $BIOC_VERSION [skip ci]
