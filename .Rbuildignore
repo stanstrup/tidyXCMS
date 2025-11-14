@@ -18,3 +18,4 @@ VERSION_EXPLANATION.md
 add-shas-to-news.sh
 cleanup-releases.sh
 sync-historical-tags.sh
+cleanup-branches.sh
