@@ -494,9 +494,15 @@ test_that("tidy_peaklist errors when no peaks are found", {
   library(BiocParallel)
   library(msdata)
 
-  # Create an XcmsExperiment object without running findChromPeaks
+  # Create an XcmsExperiment object with findChromPeaks but no peaks detected
+  # Use extremely restrictive parameters to ensure no peaks are found
   fls <- dir(system.file("sciex", package = "msdata"), full.names = TRUE)
   xdata_no_peaks <- readMsExperiment(spectraFiles = fls[1], BPPARAM = SerialParam())
+
+  # Run findChromPeaks with parameters that won't find any peaks
+  # (very high noise threshold ensures no peaks are detected)
+  cwp <- CentWaveParam(peakwidth = c(5, 20), noise = 1e10)
+  xdata_no_peaks <- findChromPeaks(xdata_no_peaks, param = cwp, BPPARAM = SerialParam())
 
   # Should error because no peaks have been detected
   expect_error(
