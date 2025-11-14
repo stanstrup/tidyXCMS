@@ -379,10 +379,10 @@ tidy_peaklist <- function(x, xsAnnotate = NULL) {
   # Warn if expected output will be very large (> 10 million rows)
   if (expected_rows > 1e7) {
     warning(sprintf(
-      "Creating large data frame with %s rows (%d features x %d samples). Consider filtering features first.",
+      "Creating large data frame with %s rows (%s features x %s samples). Consider filtering features first.",
       format(expected_rows, big.mark = ","),
-      n_features,
-      n_samples
+      format(n_features, big.mark = ","),
+      format(n_samples, big.mark = ",")
     ))
   }
 }
