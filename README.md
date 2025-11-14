@@ -1,8 +1,8 @@
 # tidyXCMS
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/stanstrup/tidyXCMS/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/stanstrup/tidyXCMS/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/stanstrup/tidyXCMS/branch/main/graph/badge.svg)](https://codecov.io/gh/stanstrup/tidyXCMS?branch=main)
+[![R-CMD-check](https://img.shields.io/github/actions/workflow/status/stanstrup/tidyXCMS/R-CMD-check.yaml?label=R-CMD-check)](https://github.com/stanstrup/tidyXCMS/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://img.shields.io/codecov/c/github/stanstrup/tidyXCMS/main)](https://codecov.io/gh/stanstrup/tidyXCMS)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![GitHub release](https://img.shields.io/github/release/stanstrup/tidyXCMS.svg)](https://github.com/stanstrup/tidyXCMS/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
