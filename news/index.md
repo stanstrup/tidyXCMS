@@ -1,5 +1,12 @@
 # Changelog
 
+## Changes in v0.99.35 (commit: df27dba)
+
+### Bug Fixes
+
+- use GitHub CLI for remote branch deletion
+  ([bbebf0b](https://github.com/stanstrup/tidyXCMS/commit/bbebf0bf55ca5d732eed610fbf927dee9393a9ee))
+
 ## Changes in v0.99.34 (commit: c975ea2)
 
 ### Bug Fixes
