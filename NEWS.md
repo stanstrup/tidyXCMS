@@ -1,8 +1,5 @@
 ## Changes in v0.99.30 (commit: 0b694e3)
 
-## [1.0.2](https://github.com/stanstrup/tidyXCMS/compare/semantic-release-1.0.1...semantic-release-1.0.2) (2025-11-13)
-
-
 ### Bug Fixes
 
 * test release automation ([0b694e3](https://github.com/stanstrup/tidyXCMS/commit/0b694e3188672ff5d6c14cc8693990586eaf9795))

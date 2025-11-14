@@ -46,8 +46,10 @@ RELEASE_DATE=$(date +%Y-%m-%d)
 COMMIT_SHA=$(git rev-parse --short HEAD)
 
 # Clean up release notes - remove the version header that semantic-release adds
-# It typically starts with "# X.X.X (YYYY-MM-DD)" which we don't want
-CLEANED_NOTES=$(echo "$RELEASE_NOTES" | sed '/^# [0-9]\+\.[0-9]\+\.[0-9]\+ ([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\})$/d')
+# It can be in formats like:
+# "## [1.0.2](url) (2025-11-13)" or "# 1.0.2 (2025-11-13)"
+# We want to keep section headers like "### Bug Fixes"
+CLEANED_NOTES=$(echo "$RELEASE_NOTES" | sed -E '/^#{1,2} (\[)?[0-9]+\.[0-9]+\.[0-9]+/d')
 
 # Create new NEWS.md entry at the top
 # First, save existing NEWS.md content
