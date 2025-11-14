@@ -1,5 +1,12 @@
 # Changelog
 
+## Changes in v0.99.31 (commit: 9d4b184)
+
+### Bug Fixes
+
+- remove duplicate semantic-release version headers from NEWS.md
+  ([5324197](https://github.com/stanstrup/tidyXCMS/commit/5324197f39f92999d8be590716affe1b410eeb70))
+
 ## Changes in v0.99.30 (commit: 0b694e3)
 
 ### Bug Fixes
