@@ -1,3 +1,11 @@
+## Changes in v0.99.38 (commit: 9277373)
+
+
+
+### Bug Fixes
+
+* correct tidy_peaklist() when samples share a basename ([498e4ac](https://github.com/stanstrup/tidyXCMS/commit/498e4acd2ff83b8a10dd720e4be72e470b64fa54))
+
 ## Changes in v0.99.37 (commit: 66c8275)
 
 
