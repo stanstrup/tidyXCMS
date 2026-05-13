@@ -205,7 +205,7 @@ particular sample.
 library(xcms)
 #> Loading required package: BiocParallel
 #> 
-#> This is xcms version 4.8.0 
+#> This is xcms version 4.10.0 
 library(BiocParallel)
 
 # Load example data
@@ -384,6 +384,11 @@ peak_table %>%
 # Example 3: With XcmsExperiment object
 library(MsExperiment)
 library(msdata)
+#> 
+#>  IMPORTANT: msdata will be deprecated and replaced by the new
+#>  MsDataHub package -- see https://bioconductor.org/packages/MsDataHub.
+#>  Please open an issue at https://github.com/rformassspectrometry/MsDataHub/issues
+#>  to inform us of any data from msdata that would need to be moved to MsDataHub.
 #> 
 #> Attaching package: 'msdata'
 #> The following object is masked from 'package:dplyr':

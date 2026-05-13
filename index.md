@@ -11,6 +11,7 @@ tidyverse ecosystem.
 ## Installation
 
 ``` r
+
 # Install from GitHub
 # devtools::install_github("stanstrup/tidyXCMS")
 ```
@@ -18,6 +19,7 @@ tidyverse ecosystem.
 ## Usage
 
 ``` r
+
 library(tidyXCMS)
 library(xcms)
 

@@ -30,6 +30,7 @@ files for context rather than duplicating information
 ### Package Setup and Building
 
 ``` r
+
 # Install development dependencies
 install.packages(c("devtools", "roxygen2", "testthat", "usethis"))
 
@@ -49,6 +50,7 @@ devtools::check()
 ### Testing
 
 ``` r
+
 # Run all tests (can be slow)
 devtools::test()
 
@@ -67,6 +69,7 @@ to run only the relevant test file. Running all tests with
 ### Development Workflow
 
 ``` r
+
 # Load package for interactive development
 devtools::load_all()
 
@@ -118,6 +121,7 @@ to run individual test files - Ensure all major code paths are covered
 for example code and tests:
 
 ``` r
+
 library(BiocParallel)
 
 # Always include BPPARAM = SerialParam() for functions that support it:
@@ -246,6 +250,7 @@ imported packages are listed
 ### 1. Regenerate Documentation
 
 ``` r
+
 # Update NAMESPACE and .Rd files from roxygen2 comments
 roxygen2::roxygenize()
 ```
@@ -255,6 +260,7 @@ This ensures all function documentation and imports are up to date.
 ### 2. R CMD Check
 
 ``` r
+
 # Check package for errors, warnings, and notes
 devtools::check()
 ```
@@ -265,6 +271,7 @@ relevant.
 ### 3. Build pkgdown Site
 
 ``` r
+
 # Load all package code
 devtools::load_all()
 
@@ -281,6 +288,7 @@ Only commit after all three checks pass successfully.
 ### 4. Reinstall Package
 
 ``` r
+
 # Reinstall the package to ensure all changes are properly loaded
 devtools::install()
 ```

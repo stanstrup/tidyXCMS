@@ -24,6 +24,7 @@ which we’ll explore later in this vignette.
 ## Setup
 
 ``` r
+
 library(tidyXCMS)
 library(xcms)
 library(BiocParallel)
@@ -52,6 +53,7 @@ LC-MS data from wild-type and knockout samples. This dataset already has
 peak detection and feature grouping completed.
 
 ``` r
+
 # Load example data from XCMS (already preprocessed)
 xdata <- loadXcmsData("xmse")
 ```
@@ -61,6 +63,7 @@ xdata <- loadXcmsData("xmse")
 Let’s check what sample information is available:
 
 ``` r
+
 sampleData(xdata)
 #> DataFrame with 8 rows and 4 columns
 #>   sample_name sample_group spectraOrigin sample_type
@@ -87,6 +90,7 @@ The example data contains file paths from the original system. We need
 to update them to match the current system:
 
 ``` r
+
 # Get the correct base path for faahKO package on this system
 cdf_path <- file.path(find.package("faahKO"), "cdf")
 
@@ -114,6 +118,7 @@ results. This gives us all the essential peak information in a tidy
 format.
 
 ``` r
+
 # Create basic peak table
 peak_table <- tidy_peaklist(xdata)
 
@@ -168,6 +173,7 @@ specify the polarity to help CAMERA determine appropriate adducts and
 fragments.
 
 ``` r
+
 # Convert XcmsExperiment to xcmsSet for CAMERA (required for compatibility)
 # Two-step conversion: XcmsExperiment -> XCMSnExp -> xcmsSet
 xset <- xdata %>%
@@ -184,6 +190,7 @@ The first step to grouping features is to group co-eluting peaks. This
 is a naïve approach that we will refine later.
 
 ``` r
+
 # Group peaks by retention time
 xs <- groupFWHM(xs, perfwhm = 0.1, intval = "into", sigma = 6)
 #> Start grouping after retention time.
@@ -200,6 +207,7 @@ peaks that correlate with each other.
 samples as it is unreliable with this few samples.
 
 ``` r
+
 # Group by correlation
 xs <- groupCorr(xs, calcIso = FALSE, calcCiS = TRUE, calcCaS = FALSE, cor_eic_th = 0.7, pval = 1E-6)
 #> Start grouping after correlation.
@@ -220,6 +228,7 @@ This annotates peaks that are possible isotopes based on m/z difference
 and intensity patterns.
 
 ``` r
+
 # Find isotopes
 xs <- findIsotopes(xs, ppm = 10, mzabs = 0.01, intval = "into", maxcharge = 2)
 #> Generating peak matrix!
@@ -237,6 +246,7 @@ comprehensive list of adduct and fragment rules for CAMERA.
 First, we get the adduct/fragment rules for positive mode:
 
 ``` r
+
 # warn_clash=TRUE will warn about indistinguishable annotations (e.g., [M+NH4]+ vs -NH3)
 # Remove [M+NH4]+ if it's less common in your data
 
@@ -258,6 +268,7 @@ rules_pos <- MZ_CAMERA(mode = "pos", warn_clash = TRUE, clash_ppm = 5) %>%
 Now we can annotate adducts using these rules:
 
 ``` r
+
 # Find adducts using the rules from commonMZ
 xs <- findAdducts(xs, ppm = 500, mzabs = 0.2, multiplier = 4, polarity = "positive", rules = rules_pos)
 #> Generating peak matrix for peak annotation!
@@ -274,6 +285,7 @@ We pass both the original `xdata` object and the CAMERA annotations from
 `xs`:
 
 ``` r
+
 peak_table_camera <- tidy_peaklist(xdata, xs)
 
 # Check the structure
@@ -318,6 +330,7 @@ function adds a `feature_group` column to the feature definitions. Let’s
 demonstrate with retention time-based grouping:
 
 ``` r
+
 # Group features with similar retention times (within 10 seconds)
 xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
 
@@ -362,6 +375,7 @@ When you create a long-format peak table from an object with feature
 groups, the `feature_group` column is automatically included:
 
 ``` r
+
 # Create peak table with feature grouping
 peak_table_grouped <- tidy_peaklist(xdata_grouped)
 
@@ -396,6 +410,7 @@ You can also combine both approaches. Apply
 first, then proceed with CAMERA annotation:
 
 ``` r
+
 # Apply feature grouping
 xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
 
@@ -437,6 +452,7 @@ might originate from the same compound.
 We can also visually compare the mapping.
 
 ``` r
+
 group_mapping <- peak_table_combined %>%
   filter(adduct != "") %>%
   select(feature_id, feature_group, f_mzmed, f_rtmed, isotopes, adduct, pcgroup) %>%
@@ -475,6 +491,7 @@ Or just look at those that are not mapped the same by CAMERA and
 groupFeatures.
 
 ``` r
+
 group_mapping_different <- group_mapping %>%
   group_by(feature_group) %>%
   mutate(n_pc = n_distinct(pcgroup)) %>%
@@ -509,58 +526,58 @@ feature in each sample. Below is a complete description of all columns:
 The table has been organized into logical groups for easier
 understanding:
 
-| Column                                                                                           | Content                                                                                                                                                         |
-|--------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Sample information**                                                                           |                                                                                                                                                                 |
-| `filepath`                                                                                       | Path to the raw data file                                                                                                                                       |
-| `filename`                                                                                       | The filename without path                                                                                                                                       |
-| `fromFile`                                                                                       | The file number (the order files were supplied in)                                                                                                              |
-| *Plus any columns from [`sampleData()`](https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html)* | Sample metadata columns (e.g., sample_name, sample_group, sample_type)                                                                                          |
-| **Feature identifiers**                                                                          |                                                                                                                                                                 |
-| `feature_id`                                                                                     | The index of the feature after grouping across samples                                                                                                          |
-| `peakidx`                                                                                        | The index of the peak before grouping across samples                                                                                                            |
-| **Feature-level m/z statistics (across all samples)**                                            |                                                                                                                                                                 |
-| `f_mzmed`                                                                                        | The median m/z found for that feature **across samples**                                                                                                        |
-| `f_mzmin`                                                                                        | The minimum m/z found for that feature across samples                                                                                                           |
-| `f_mzmax`                                                                                        | The maximum m/z found for that feature across samples                                                                                                           |
-| **Feature-level retention time statistics (across all samples)**                                 |                                                                                                                                                                 |
-| `f_rtmed`                                                                                        | The median retention time found for that feature across samples                                                                                                 |
-| `f_rtmin`                                                                                        | The minimum retention time found for that feature across samples                                                                                                |
-| `f_rtmax`                                                                                        | The maximum retention time found for that feature across samples                                                                                                |
-| **CAMERA annotations**                                                                           |                                                                                                                                                                 |
-| `isotopes`                                                                                       | The isotope annotation from CAMERA (e.g., “\[M\]+”, “\[M+1\]+”, “\[M+2\]+”)                                                                                     |
-| `adduct`                                                                                         | The adduct annotation from CAMERA (e.g., “\[M+H\]+”, “\[M+Na\]+”, “\[M+NH4\]+”)                                                                                 |
-| `pcgroup`                                                                                        | The feature grouping index from CAMERA - features with same ID likely come from the same compound                                                               |
-| **MsFeatures annotations**                                                                       |                                                                                                                                                                 |
-| `feature_group`                                                                                  | The feature group ID from MsFeatures (e.g., “FG.001”, “FG.002”) - features with same ID are grouped by retention time, abundance correlation, or EIC similarity |
-| **Peak-level m/z measurements (in that specific sample)**                                        |                                                                                                                                                                 |
-| `mz`                                                                                             | The median m/z found for that feature in **that sample**                                                                                                        |
-| `mzmin`                                                                                          | The minimum m/z found for that feature in that sample                                                                                                           |
-| `mzmax`                                                                                          | The maximum m/z found for that feature in that sample                                                                                                           |
-| **Peak-level retention time measurements (in that specific sample)**                             |                                                                                                                                                                 |
-| `rt`                                                                                             | The retention time found for that feature in that sample                                                                                                        |
-| `rtmin`                                                                                          | The minimum retention time found for that feature in that sample                                                                                                |
-| `rtmax`                                                                                          | The maximum retention time found for that feature in that sample                                                                                                |
-| **Peak intensity measurements**                                                                  |                                                                                                                                                                 |
-| `into`                                                                                           | The area under the peak                                                                                                                                         |
-| `intb`                                                                                           | The area under the peak after baseline removal                                                                                                                  |
-| `maxo`                                                                                           | The maximum intensity (i.e., height) of the peak                                                                                                                |
-| `sn`                                                                                             | The signal to noise ratio of that peak                                                                                                                          |
-| **Gaussian peak fitting parameters**                                                             |                                                                                                                                                                 |
-| `egauss`                                                                                         | RMSE of Gaussian fit                                                                                                                                            |
-| `mu`                                                                                             | Gaussian parameter mu (center of the Gaussian; unit is scan number)                                                                                             |
-| `sigma`                                                                                          | Gaussian parameter sigma                                                                                                                                        |
-| `h`                                                                                              | Gaussian parameter h (height of the Gaussian peak)                                                                                                              |
-| **CentWave algorithm parameters**                                                                |                                                                                                                                                                 |
-| `f`                                                                                              | Region number of m/z ROI where the peak was localized                                                                                                           |
-| `dppm`                                                                                           | m/z deviation of mass trace across scans in ppm                                                                                                                 |
-| `scale`                                                                                          | Scale on which the peak was localized                                                                                                                           |
-| `scpos`                                                                                          | Center of peak position found by wavelet analysis                                                                                                               |
-| `scmin`                                                                                          | Left peak limit found by wavelet analysis (scan number)                                                                                                         |
-| `scmax`                                                                                          | Right peak limit found by wavelet analysis (scan number)                                                                                                        |
-| **Additional columns**                                                                           |                                                                                                                                                                 |
-| `ms_level`                                                                                       | MS level (e.g., MS1, MS2)                                                                                                                                       |
-| `is_filled`                                                                                      | Was the intensity found by gap filling (TRUE) or peak picking (FALSE)                                                                                           |
+| Column | Content |
+|----|----|
+| **Sample information** |  |
+| `filepath` | Path to the raw data file |
+| `filename` | The filename without path |
+| `fromFile` | The file number (the order files were supplied in) |
+| *Plus any columns from [`sampleData()`](https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html)* | Sample metadata columns (e.g., sample_name, sample_group, sample_type) |
+| **Feature identifiers** |  |
+| `feature_id` | The index of the feature after grouping across samples |
+| `peakidx` | The index of the peak before grouping across samples |
+| **Feature-level m/z statistics (across all samples)** |  |
+| `f_mzmed` | The median m/z found for that feature **across samples** |
+| `f_mzmin` | The minimum m/z found for that feature across samples |
+| `f_mzmax` | The maximum m/z found for that feature across samples |
+| **Feature-level retention time statistics (across all samples)** |  |
+| `f_rtmed` | The median retention time found for that feature across samples |
+| `f_rtmin` | The minimum retention time found for that feature across samples |
+| `f_rtmax` | The maximum retention time found for that feature across samples |
+| **CAMERA annotations** |  |
+| `isotopes` | The isotope annotation from CAMERA (e.g., “\[M\]+”, “\[M+1\]+”, “\[M+2\]+”) |
+| `adduct` | The adduct annotation from CAMERA (e.g., “\[M+H\]+”, “\[M+Na\]+”, “\[M+NH4\]+”) |
+| `pcgroup` | The feature grouping index from CAMERA - features with same ID likely come from the same compound |
+| **MsFeatures annotations** |  |
+| `feature_group` | The feature group ID from MsFeatures (e.g., “FG.001”, “FG.002”) - features with same ID are grouped by retention time, abundance correlation, or EIC similarity |
+| **Peak-level m/z measurements (in that specific sample)** |  |
+| `mz` | The median m/z found for that feature in **that sample** |
+| `mzmin` | The minimum m/z found for that feature in that sample |
+| `mzmax` | The maximum m/z found for that feature in that sample |
+| **Peak-level retention time measurements (in that specific sample)** |  |
+| `rt` | The retention time found for that feature in that sample |
+| `rtmin` | The minimum retention time found for that feature in that sample |
+| `rtmax` | The maximum retention time found for that feature in that sample |
+| **Peak intensity measurements** |  |
+| `into` | The area under the peak |
+| `intb` | The area under the peak after baseline removal |
+| `maxo` | The maximum intensity (i.e., height) of the peak |
+| `sn` | The signal to noise ratio of that peak |
+| **Gaussian peak fitting parameters** |  |
+| `egauss` | RMSE of Gaussian fit |
+| `mu` | Gaussian parameter mu (center of the Gaussian; unit is scan number) |
+| `sigma` | Gaussian parameter sigma |
+| `h` | Gaussian parameter h (height of the Gaussian peak) |
+| **CentWave algorithm parameters** |  |
+| `f` | Region number of m/z ROI where the peak was localized |
+| `dppm` | m/z deviation of mass trace across scans in ppm |
+| `scale` | Scale on which the peak was localized |
+| `scpos` | Center of peak position found by wavelet analysis |
+| `scmin` | Left peak limit found by wavelet analysis (scan number) |
+| `scmax` | Right peak limit found by wavelet analysis (scan number) |
+| **Additional columns** |  |
+| `ms_level` | MS level (e.g., MS1, MS2) |
+| `is_filled` | Was the intensity found by gap filling (TRUE) or peak picking (FALSE) |
 
 **Important notes:**
 
@@ -586,6 +603,7 @@ understanding:
 These columns describe each feature (grouped peak):
 
 ``` r
+
 peak_table %>%
   select(feature_id, f_mzmed, f_rtmed) %>%
   distinct() %>%
@@ -611,6 +629,7 @@ available:
 - `pcgroup`: Pseudospectrum correlation group ID
 
 ``` r
+
 # View features with adduct annotations (using the CAMERA-annotated table)
 peak_table_camera %>%
   filter(adduct!="") %>%
@@ -639,6 +658,7 @@ For each feature in each sample:
 - `sn`: Signal-to-noise ratio
 
 ``` r
+
 # View detected peaks (non-NA intensities)
 peak_table %>%
   filter(!is.na(into)) %>%
@@ -664,6 +684,7 @@ peak_table %>%
   (sample metadata)
 
 ``` r
+
 peak_table %>%
   select(feature_id, filename, sample_name, sample_group, sample_type) %>%
   head()
@@ -683,6 +704,7 @@ peak_table %>%
 Features not detected in a sample have `NA` for peak-level columns:
 
 ``` r
+
 # Count for each feature how many samples the peak was found in
 detection_rate <- peak_table %>%
   group_by(feature_id, f_mzmed, f_rtmed) %>%
@@ -707,6 +729,7 @@ rate.](long-format-peaklist_files/figure-html/missing_values-1.png)
 ### Visualize Feature Intensities
 
 ``` r
+
 # Plot intensity distribution by sample group
 peak_table %>%
   filter(feature_id == 10) %>%
@@ -728,6 +751,7 @@ group.](long-format-peaklist_files/figure-html/plot_intensities-1.png)
 ### Identify Features with Adduct Annotations
 
 ``` r
+
 # Count features by adduct type (using the CAMERA-annotated table)
 adduct_counts <- peak_table_camera %>%
   filter(adduct!="") %>%
@@ -760,6 +784,7 @@ We can create a pie chart showing the frequency of different adducts and
 fragments found by CAMERA:
 
 ``` r
+
 # Create pie chart of adduct frequencies
 adduct_counts %>% 
   mutate(count = n) %>% 
@@ -782,6 +807,7 @@ features.](long-format-peaklist_files/figure-html/adduct_pie-1.png)
 ### Extract Specific Features for Further Analysis
 
 ``` r
+
 # Get a specific feature across all samples
 feature_123 <- peak_table %>%
   filter(feature_id == 123) %>%
@@ -802,10 +828,11 @@ head(feature_123)
 ## Session Info
 
 ``` r
+
 sessionInfo()
-#> R version 4.5.2 (2025-10-31)
+#> R version 4.6.0 (2026-04-24)
 #> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.3 LTS
+#> Running under: Ubuntu 24.04.4 LTS
 #> 
 #> Matrix products: default
 #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
@@ -825,73 +852,74 @@ sessionInfo()
 #> [8] base     
 #> 
 #> other attached packages:
-#>  [1] ggpie_0.2.5         RColorBrewer_1.1-3  ggalluvial_0.12.5  
-#>  [4] commonMZ_0.0.2      MsFeatures_1.18.0   CAMERA_1.66.0      
-#>  [7] MSnbase_2.36.0      S4Vectors_0.48.0    mzR_2.44.0         
-#> [10] Rcpp_1.1.0          Biobase_2.70.0      BiocGenerics_0.56.0
-#> [13] generics_0.1.4      MsExperiment_1.12.0 ProtGenerics_1.42.0
-#> [16] tidyr_1.3.1         ggplot2_4.0.0       dplyr_1.1.4        
-#> [19] xcms_4.8.0          BiocParallel_1.44.0 tidyXCMS_0.99.37   
+#>  [1] ggpie_0.2.5         RColorBrewer_1.1-3  ggalluvial_0.12.6  
+#>  [4] commonMZ_0.0.2      MsFeatures_1.20.0   CAMERA_1.68.0      
+#>  [7] MSnbase_2.37.0      S4Vectors_0.50.0    mzR_2.46.0         
+#> [10] Rcpp_1.1.1-1.1      Biobase_2.72.0      BiocGenerics_0.58.0
+#> [13] generics_0.1.4      MsExperiment_1.14.0 ProtGenerics_1.44.0
+#> [16] tidyr_1.3.2         ggplot2_4.0.3       dplyr_1.2.1        
+#> [19] xcms_4.10.0         BiocParallel_1.46.0 tidyXCMS_0.99.37   
 #> 
 #> loaded via a namespace (and not attached):
-#>   [1] rstudioapi_0.17.1           jsonlite_2.0.0             
-#>   [3] MultiAssayExperiment_1.36.0 magrittr_2.0.4             
+#>   [1] rstudioapi_0.18.0           jsonlite_2.0.0             
+#>   [3] MultiAssayExperiment_1.38.0 magrittr_2.0.5             
 #>   [5] farver_2.1.2                MALDIquant_1.22.3          
-#>   [7] rmarkdown_2.30              fs_1.6.6                   
-#>   [9] ragg_1.5.0                  vctrs_0.6.5                
-#>  [11] base64enc_0.1-3             htmltools_0.5.8.1          
-#>  [13] S4Arrays_1.10.0             BiocBaseUtils_1.12.0       
-#>  [15] progress_1.2.3              cellranger_1.1.0           
-#>  [17] SparseArray_1.10.1          Formula_1.2-5              
-#>  [19] mzID_1.48.0                 sass_0.4.10                
-#>  [21] bslib_0.9.0                 htmlwidgets_1.6.4          
-#>  [23] desc_1.4.3                  plyr_1.8.9                 
-#>  [25] impute_1.84.0               cachem_1.1.0               
-#>  [27] igraph_2.2.1                lifecycle_1.0.4            
-#>  [29] iterators_1.0.14            pkgconfig_2.0.3            
-#>  [31] Matrix_1.7-4                R6_2.6.1                   
-#>  [33] fastmap_1.2.0               MatrixGenerics_1.22.0      
-#>  [35] clue_0.3-66                 digest_0.6.38              
-#>  [37] ggnewscale_0.5.2            pcaMethods_2.2.0           
-#>  [39] colorspace_2.1-2            textshaping_1.0.4          
-#>  [41] Hmisc_5.2-4                 GenomicRanges_1.62.0       
-#>  [43] labeling_0.4.3              Spectra_1.20.0             
-#>  [45] abind_1.4-8                 compiler_4.5.2             
-#>  [47] bit64_4.6.0-1               withr_3.0.2                
-#>  [49] doParallel_1.0.17           htmlTable_2.4.3            
-#>  [51] S7_0.2.0                    backports_1.5.0            
-#>  [53] DBI_1.2.3                   MASS_7.3-65                
-#>  [55] DelayedArray_0.36.0         tools_4.5.2                
-#>  [57] PSMatch_1.14.0              foreign_0.8-90             
-#>  [59] nnet_7.3-20                 glue_1.8.0                 
-#>  [61] QFeatures_1.20.0            grid_4.5.2                 
-#>  [63] checkmate_2.3.3             cluster_2.1.8.1            
-#>  [65] reshape2_1.4.5              gtable_0.3.6               
-#>  [67] tzdb_0.5.0                  preprocessCore_1.72.0      
-#>  [69] data.table_1.17.8           hms_1.1.4                  
-#>  [71] MetaboCoreUtils_1.18.0      utf8_1.2.6                 
-#>  [73] XVector_0.50.0              ggrepel_0.9.6              
-#>  [75] foreach_1.5.2               pillar_1.11.1              
-#>  [77] stringr_1.6.0               vroom_1.6.6                
-#>  [79] limma_3.66.0                lattice_0.22-7             
-#>  [81] bit_4.6.0                   tidyselect_1.2.1           
-#>  [83] RBGL_1.86.0                 knitr_1.50                 
-#>  [85] gridExtra_2.3               IRanges_2.44.0             
-#>  [87] Seqinfo_1.0.0               SummarizedExperiment_1.40.0
-#>  [89] xfun_0.54                   statmod_1.5.1              
-#>  [91] matrixStats_1.5.0           stringi_1.8.7              
-#>  [93] lazyeval_0.2.2              yaml_2.3.10                
-#>  [95] evaluate_1.0.5              codetools_0.2-20           
-#>  [97] MsCoreUtils_1.21.0          tibble_3.3.0               
-#>  [99] BiocManager_1.30.26         graph_1.88.0               
-#> [101] cli_3.6.5                   affyio_1.80.0              
-#> [103] rpart_4.1.24                systemfonts_1.3.1          
-#> [105] jquerylib_0.1.4             MassSpecWavelet_1.76.0     
-#> [107] readxl_1.4.5                XML_3.99-0.20              
-#> [109] parallel_4.5.2              pkgdown_2.2.0              
-#> [111] readr_2.1.5                 prettyunits_1.2.0          
-#> [113] AnnotationFilter_1.34.0     scales_1.4.0               
-#> [115] affy_1.88.0                 ncdf4_1.24                 
-#> [117] purrr_1.2.0                 crayon_1.5.3               
-#> [119] rlang_1.1.6                 vsn_3.78.0
+#>   [7] rmarkdown_2.31              fs_2.1.0                   
+#>   [9] ragg_1.5.2                  vctrs_0.7.3                
+#>  [11] base64enc_0.1-6             htmltools_0.5.9            
+#>  [13] S4Arrays_1.12.0             progress_1.2.3             
+#>  [15] cellranger_1.1.0            SparseArray_1.12.2         
+#>  [17] Formula_1.2-5               mzID_1.50.0                
+#>  [19] sass_0.4.10                 bslib_0.10.0               
+#>  [21] htmlwidgets_1.6.4           desc_1.4.3                 
+#>  [23] plyr_1.8.9                  impute_1.86.0              
+#>  [25] cachem_1.1.0                igraph_2.3.1               
+#>  [27] lifecycle_1.0.5             iterators_1.0.14           
+#>  [29] pkgconfig_2.0.3             Matrix_1.7-5               
+#>  [31] R6_2.6.1                    fastmap_1.2.0              
+#>  [33] MatrixGenerics_1.24.0       clue_0.3-68                
+#>  [35] digest_0.6.39               ggnewscale_0.5.2           
+#>  [37] pcaMethods_2.4.0            colorspace_2.1-2           
+#>  [39] textshaping_1.0.5           Hmisc_5.2-5                
+#>  [41] GenomicRanges_1.64.0        labeling_0.4.3             
+#>  [43] Spectra_1.22.0              abind_1.4-8                
+#>  [45] compiler_4.6.0              bit64_4.8.0                
+#>  [47] withr_3.0.2                 doParallel_1.0.17          
+#>  [49] htmlTable_2.5.0             S7_0.2.2                   
+#>  [51] backports_1.5.1             PTMods_1.0.0               
+#>  [53] DBI_1.3.0                   MASS_7.3-65                
+#>  [55] DelayedArray_0.38.1         tools_4.6.0                
+#>  [57] PSMatch_1.16.0              foreign_0.8-91             
+#>  [59] otel_0.2.0                  nnet_7.3-20                
+#>  [61] glue_1.8.1                  QFeatures_1.22.0           
+#>  [63] grid_4.6.0                  checkmate_2.3.4            
+#>  [65] cluster_2.1.8.2             reshape2_1.4.5             
+#>  [67] gtable_0.3.6                tzdb_0.5.0                 
+#>  [69] preprocessCore_1.74.0       data.table_1.18.4          
+#>  [71] hms_1.1.4                   MetaboCoreUtils_1.20.1     
+#>  [73] utf8_1.2.6                  XVector_0.52.0             
+#>  [75] ggrepel_0.9.8               foreach_1.5.2              
+#>  [77] pillar_1.11.1               stringr_1.6.0              
+#>  [79] vroom_1.7.1                 limma_3.68.2               
+#>  [81] lattice_0.22-9              bit_4.6.0                  
+#>  [83] tidyselect_1.2.1            RBGL_1.88.0                
+#>  [85] knitr_1.51                  gridExtra_2.3              
+#>  [87] IRanges_2.46.0              Seqinfo_1.2.0              
+#>  [89] SummarizedExperiment_1.42.0 xfun_0.57                  
+#>  [91] statmod_1.5.1               matrixStats_1.5.0          
+#>  [93] stringi_1.8.7               lazyeval_0.2.3             
+#>  [95] yaml_2.3.12                 evaluate_1.0.5             
+#>  [97] codetools_0.2-20            MsCoreUtils_1.24.0         
+#>  [99] tibble_3.3.1                BiocManager_1.30.27        
+#> [101] graph_1.90.0                cli_3.6.6                  
+#> [103] affyio_1.82.0               rpart_4.1.27               
+#> [105] systemfonts_1.3.2           jquerylib_0.1.4            
+#> [107] readxl_1.4.5                MassSpecWavelet_1.78.0     
+#> [109] XML_3.99-0.23               parallel_4.6.0             
+#> [111] pkgdown_2.2.0               readr_2.2.0                
+#> [113] prettyunits_1.2.0           AnnotationFilter_1.36.0    
+#> [115] scales_1.4.0                affy_1.90.0                
+#> [117] ncdf4_1.24                  purrr_1.2.2                
+#> [119] crayon_1.5.3                rlang_1.2.0                
+#> [121] vsn_3.80.0
 ```
