@@ -311,14 +311,24 @@ tidy_peaklist <- function(x, xsAnnotate = NULL) {
 
 
 #' Extract feature intensity values
+#'
+#' Columns of `featureValues()` correspond positionally to `fileNames(x)`. We
+#' key on the 1-based file index (`fromFile`) rather than column names because
+#' multiple files in the same experiment can share a basename (different paths,
+#' same filename), which would otherwise cause an ambiguous join.
 #' @noRd
 .extract_feature_intensities <- function(x) {
   n_features <- nrow(featureDefinitions(x))
 
-  featureValues(x, value = "into", method = "maxint") %>%
-    as_tibble() %>%
+  fv <- featureValues(x, value = "into", method = "maxint")
+  fv_df <- as.data.frame(fv, check.names = FALSE)
+  colnames(fv_df) <- as.character(seq_len(ncol(fv_df)))
+
+  fv_df %>%
+    as_tibble(.name_repair = "minimal") %>%
     mutate(feature_id = seq_len(n_features)) %>%
-    gather("filename", "into_f", -feature_id)
+    gather("fromFile", "into_f", -feature_id) %>%
+    mutate(fromFile = as.integer(fromFile))
 }
 
 
@@ -330,7 +340,7 @@ tidy_peaklist <- function(x, xsAnnotate = NULL) {
            any_of(c("isotopes", "adduct", "pcgroup", "feature_group"))) %>%
     rename_with(~paste0("f_", .), .cols = any_of(c("mzmed", "mzmin", "mzmax", "rtmed", "rtmin", "rtmax"))) %>%
     left_join(temp_peaks, by = "peakidx") %>%
-    left_join(temp_peaks_tab, by = c("feature_id", "filename"))
+    left_join(temp_peaks_tab, by = c("feature_id", "fromFile"))
 
   # Filter to match peak intensities with feature intensities
   # This ensures we use the same peaks that XCMS selected when method="maxint"
@@ -339,7 +349,7 @@ tidy_peaklist <- function(x, xsAnnotate = NULL) {
   out <- out %>%
     filter(abs(into - into_f) < .Machine$double.eps^0.5) %>%
     select(-into_f) %>%
-    group_by(feature_id, filename) %>%
+    group_by(feature_id, fromFile) %>%
     slice(1) %>%  # Take first if duplicates exist
     ungroup()
 
@@ -421,6 +431,24 @@ tidy_peaklist <- function(x, xsAnnotate = NULL) {
     sample_metadata <- pData(x) %>%
       mutate(fromFile = seq_len(n())) %>%
       as_tibble()
+  }
+
+  # Warn if user metadata shadows the filepath/filename columns this function
+  # derives from fileNames(x). Both sets are kept (suffixed .x / .y by the
+  # join), so the user can decide, but the documented schema is the derived
+  # one and the suffixes are surprising.
+  shadowed <- intersect(c("filepath", "filename"), colnames(sample_metadata))
+  if (length(shadowed) > 0) {
+    warning(sprintf(
+      paste0("Sample metadata (pData/sampleData) contains column(s) %s, ",
+             "which collide with the same-named columns derived from ",
+             "fileNames(x). The join will keep both sets with .x (from sample ",
+             "metadata) and .y (derived from fileNames(x)) suffixes instead ",
+             "of the documented '%s' column(s). Rename or drop the metadata ",
+             "column(s) to restore the documented output schema."),
+      paste(sprintf("'%s'", shadowed), collapse = ", "),
+      paste(shadowed, collapse = "', '")
+    ), call. = FALSE)
   }
 
   # Join sample metadata
