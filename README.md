@@ -2,10 +2,13 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://img.shields.io/github/actions/workflow/status/stanstrup/tidyXCMS/R-CMD-check.yaml?label=R-CMD-check)](https://github.com/stanstrup/tidyXCMS/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://img.shields.io/github/actions/workflow/status/stanstrup/tidyXCMS/pkgdown.yaml?label=pkgdown)](https://github.com/stanstrup/tidyXCMS/actions/workflows/pkgdown.yaml)
 [![Codecov test coverage](https://codecov.io/gh/stanstrup/tidyXCMS/branch/main/graph/badge.svg)](https://codecov.io/gh/stanstrup/tidyXCMS)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![GitHub release](https://img.shields.io/github/release/stanstrup/tidyXCMS.svg)](https://github.com/stanstrup/tidyXCMS/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Last commit](https://img.shields.io/github/last-commit/stanstrup/tidyXCMS)](https://github.com/stanstrup/tidyXCMS/commits/main)
+[![GitHub issues](https://img.shields.io/github/issues/stanstrup/tidyXCMS)](https://github.com/stanstrup/tidyXCMS/issues)
 <!-- badges: end -->
 
 Tidy interface for XCMS metabolomics data processing
