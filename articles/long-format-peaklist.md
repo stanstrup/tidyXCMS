@@ -644,7 +644,7 @@ peak_table_camera %>%
 #> 3         11    255.   3682. ""        [M+H-H2O]+ 272.112                     87
 #> 4         13    266.   3669. ""        [M+H-C2H4-CO2]+ 337.215 [M+H-C4H…      44
 #> 5         19    279    2788. ""        [M+H-C3H4O]+ 334.047 [M+H-C4H8]+…      11
-#> 6         21    281.   3669. "[1][M]+" [M+H-NH3-C3H4]+ 337.215                44
+#> 6         21    281.   3669. "[1][M]+" [M+H-NH3-C3H4]+ 337.215 [M+H - O…      44
 ```
 
 ### Peak-Level Information
@@ -762,7 +762,7 @@ adduct_counts <- peak_table_camera %>%
   count(adduct, sort = TRUE)
 
 adduct_counts
-#> # A tibble: 33 × 2
+#> # A tibble: 34 × 2
 #>    adduct                  n
 #>    <chr>               <int>
 #>  1 [M+H]+                 12
@@ -775,7 +775,7 @@ adduct_counts
 #>  8 [M+H-NH3]+              4
 #>  9 [M+H-CH3OH]+            3
 #> 10 [M+H-S]+                3
-#> # ℹ 23 more rows
+#> # ℹ 24 more rows
 ```
 
 #### Visualize Adduct Distribution
@@ -830,13 +830,13 @@ head(feature_123)
 ``` r
 
 sessionInfo()
-#> R version 4.6.0 (2026-04-24)
+#> R version 4.6.2 (2026-10-29)
 #> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.4 LTS
+#> Running under: Ubuntu 26.04.1 LTS
 #> 
 #> Matrix products: default
 #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
-#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.32.so;  LAPACK version 3.12.0
 #> 
 #> locale:
 #>  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
@@ -853,73 +853,74 @@ sessionInfo()
 #> 
 #> other attached packages:
 #>  [1] ggpie_0.2.5         RColorBrewer_1.1-3  ggalluvial_0.12.6  
-#>  [4] commonMZ_0.0.2      MsFeatures_1.20.0   CAMERA_1.68.0      
-#>  [7] MSnbase_2.37.0      S4Vectors_0.50.0    mzR_2.46.0         
-#> [10] Rcpp_1.1.1-1.1      Biobase_2.72.0      BiocGenerics_0.58.0
+#>  [4] commonMZ_1.0.0      MsFeatures_1.20.0   CAMERA_1.68.0      
+#>  [7] MSnbase_2.38.1      S4Vectors_0.50.3    mzR_2.46.0         
+#> [10] Rcpp_1.1.2          Biobase_2.72.0      BiocGenerics_0.58.1
 #> [13] generics_0.1.4      MsExperiment_1.14.0 ProtGenerics_1.44.0
 #> [16] tidyr_1.3.2         ggplot2_4.0.3       dplyr_1.2.1        
-#> [19] xcms_4.10.0         BiocParallel_1.46.0 tidyXCMS_0.99.37   
+#> [19] xcms_4.10.1         BiocParallel_1.46.0 tidyXCMS_0.99.38   
 #> 
 #> loaded via a namespace (and not attached):
-#>   [1] rstudioapi_0.18.0           jsonlite_2.0.0             
+#>   [1] rstudioapi_0.19.0           jsonlite_2.0.0             
 #>   [3] MultiAssayExperiment_1.38.0 magrittr_2.0.5             
 #>   [5] farver_2.1.2                MALDIquant_1.22.3          
-#>   [7] rmarkdown_2.31              fs_2.1.0                   
+#>   [7] rmarkdown_2.32              fs_2.1.0                   
 #>   [9] ragg_1.5.2                  vctrs_0.7.3                
 #>  [11] base64enc_0.1-6             htmltools_0.5.9            
-#>  [13] S4Arrays_1.12.0             progress_1.2.3             
-#>  [15] cellranger_1.1.0            SparseArray_1.12.2         
-#>  [17] Formula_1.2-5               mzID_1.50.0                
-#>  [19] sass_0.4.10                 bslib_0.10.0               
+#>  [13] S4Arrays_1.12.1             progress_1.2.3             
+#>  [15] cellranger_1.1.0            SparseArray_1.12.3         
+#>  [17] Formula_1.2-6               mzID_1.50.0                
+#>  [19] sass_0.4.10                 bslib_0.12.0               
 #>  [21] htmlwidgets_1.6.4           desc_1.4.3                 
 #>  [23] plyr_1.8.9                  impute_1.86.0              
-#>  [25] cachem_1.1.0                igraph_2.3.1               
-#>  [27] lifecycle_1.0.5             iterators_1.0.14           
-#>  [29] pkgconfig_2.0.3             Matrix_1.7-5               
-#>  [31] R6_2.6.1                    fastmap_1.2.0              
-#>  [33] MatrixGenerics_1.24.0       clue_0.3-68                
-#>  [35] digest_0.6.39               ggnewscale_0.5.2           
-#>  [37] pcaMethods_2.4.0            colorspace_2.1-2           
-#>  [39] textshaping_1.0.5           Hmisc_5.2-5                
-#>  [41] GenomicRanges_1.64.0        labeling_0.4.3             
-#>  [43] Spectra_1.22.0              abind_1.4-8                
-#>  [45] compiler_4.6.0              bit64_4.8.0                
-#>  [47] withr_3.0.2                 doParallel_1.0.17          
-#>  [49] htmlTable_2.5.0             S7_0.2.2                   
-#>  [51] backports_1.5.1             PTMods_1.0.0               
-#>  [53] DBI_1.3.0                   MASS_7.3-65                
-#>  [55] DelayedArray_0.38.1         tools_4.6.0                
-#>  [57] PSMatch_1.16.0              foreign_0.8-91             
-#>  [59] otel_0.2.0                  nnet_7.3-20                
-#>  [61] glue_1.8.1                  QFeatures_1.22.0           
-#>  [63] grid_4.6.0                  checkmate_2.3.4            
-#>  [65] cluster_2.1.8.2             reshape2_1.4.5             
-#>  [67] gtable_0.3.6                tzdb_0.5.0                 
-#>  [69] preprocessCore_1.74.0       data.table_1.18.4          
-#>  [71] hms_1.1.4                   MetaboCoreUtils_1.20.1     
-#>  [73] utf8_1.2.6                  XVector_0.52.0             
-#>  [75] ggrepel_0.9.8               foreach_1.5.2              
-#>  [77] pillar_1.11.1               stringr_1.6.0              
-#>  [79] vroom_1.7.1                 limma_3.68.2               
-#>  [81] lattice_0.22-9              bit_4.6.0                  
-#>  [83] tidyselect_1.2.1            RBGL_1.88.0                
-#>  [85] knitr_1.51                  gridExtra_2.3              
-#>  [87] IRanges_2.46.0              Seqinfo_1.2.0              
-#>  [89] SummarizedExperiment_1.42.0 xfun_0.57                  
-#>  [91] statmod_1.5.1               matrixStats_1.5.0          
-#>  [93] stringi_1.8.7               lazyeval_0.2.3             
-#>  [95] yaml_2.3.12                 evaluate_1.0.5             
-#>  [97] codetools_0.2-20            MsCoreUtils_1.24.0         
-#>  [99] tibble_3.3.1                BiocManager_1.30.27        
-#> [101] graph_1.90.0                cli_3.6.6                  
-#> [103] affyio_1.82.0               rpart_4.1.27               
-#> [105] systemfonts_1.3.2           jquerylib_0.1.4            
-#> [107] readxl_1.4.5                MassSpecWavelet_1.78.0     
-#> [109] XML_3.99-0.23               parallel_4.6.0             
-#> [111] pkgdown_2.2.0               readr_2.2.0                
-#> [113] prettyunits_1.2.0           AnnotationFilter_1.36.0    
-#> [115] scales_1.4.0                affy_1.90.0                
-#> [117] ncdf4_1.24                  purrr_1.2.2                
-#> [119] crayon_1.5.3                rlang_1.2.0                
-#> [121] vsn_3.80.0
+#>  [25] plotly_4.12.1               cachem_1.1.0               
+#>  [27] igraph_2.3.4                lifecycle_1.0.5            
+#>  [29] iterators_1.0.14            pkgconfig_2.0.3            
+#>  [31] Matrix_1.7-6                R6_2.6.1                   
+#>  [33] fastmap_1.2.0               MatrixGenerics_1.24.0      
+#>  [35] clue_0.3-68                 digest_0.6.39              
+#>  [37] ggnewscale_0.5.2            pcaMethods_2.4.0           
+#>  [39] colorspace_2.1-4            textshaping_1.0.5          
+#>  [41] Hmisc_5.3-0                 GenomicRanges_1.64.0       
+#>  [43] labeling_0.4.3              Spectra_1.22.2             
+#>  [45] httr_1.4.9                  abind_1.4-8                
+#>  [47] compiler_4.6.2              bit64_4.8.6                
+#>  [49] withr_3.0.3                 doParallel_1.0.17          
+#>  [51] htmlTable_2.5.0             S7_0.2.2                   
+#>  [53] backports_1.5.1             PTMods_1.0.0               
+#>  [55] DBI_1.3.0                   MASS_7.3-66                
+#>  [57] DelayedArray_0.38.2         tools_4.6.2                
+#>  [59] PSMatch_1.16.0              foreign_0.8-92             
+#>  [61] otel_0.3.0                  nnet_7.3-21                
+#>  [63] glue_1.8.1                  QFeatures_1.22.0           
+#>  [65] grid_4.6.2                  checkmate_2.3.4            
+#>  [67] cluster_2.1.8.3             reshape2_1.4.5             
+#>  [69] gtable_0.3.6                tzdb_0.5.0                 
+#>  [71] preprocessCore_1.74.0       data.table_1.18.6.1        
+#>  [73] hms_1.1.4                   MetaboCoreUtils_1.20.1     
+#>  [75] utf8_1.2.6                  XVector_0.52.0             
+#>  [77] ggrepel_0.9.8               foreach_1.5.2              
+#>  [79] pillar_1.11.1               stringr_1.6.0              
+#>  [81] vroom_1.7.1                 limma_3.68.5               
+#>  [83] lattice_0.23-1              bit_4.6.0                  
+#>  [85] tidyselect_1.2.1            RBGL_1.88.0                
+#>  [87] knitr_1.52                  gridExtra_2.3.1            
+#>  [89] IRanges_2.46.0              Seqinfo_1.2.0              
+#>  [91] SummarizedExperiment_1.42.0 xfun_0.62                  
+#>  [93] statmod_1.5.2               matrixStats_1.5.0          
+#>  [95] stringi_1.8.9               lazyeval_0.2.3             
+#>  [97] yaml_2.3.12                 evaluate_1.0.5             
+#>  [99] codetools_0.2-20            MsCoreUtils_1.24.0         
+#> [101] tibble_3.3.1                BiocManager_1.30.27        
+#> [103] graph_1.90.0                cli_3.6.6                  
+#> [105] affyio_1.82.0               rpart_4.1.27               
+#> [107] systemfonts_1.3.2           jquerylib_0.1.4            
+#> [109] readxl_1.6.0                MassSpecWavelet_1.78.2     
+#> [111] XML_3.99-0.25               parallel_4.6.2             
+#> [113] readr_2.2.0                 pkgdown_2.2.1              
+#> [115] prettyunits_1.2.0           AnnotationFilter_1.36.0    
+#> [117] viridisLite_0.4.3           scales_1.4.0               
+#> [119] affy_1.90.0                 ncdf4_1.24                 
+#> [121] purrr_1.2.2                 crayon_1.5.3               
+#> [123] rlang_1.3.0                 vsn_3.80.0
 ```

@@ -1,9 +1,13 @@
 # Create Tidy Long-Format Peak Table with Optional Annotations
 
 Generates a comprehensive long-format peak table where each row
-represents one feature for one sample. Optionally includes CAMERA
-annotations for isotopes, adducts, and pseudospectrum groups if
-provided.
+represents one feature for one sample. Annotations of isotopes, adducts
+and compound groups are included when available, either from a CAMERA
+`xsAnnotate` object or from columns already stored in
+[`xcms::featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html)
+(for example by
+[`MsFeatures::groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html)
+and the IonFamilies package).
 
 ## Usage
 
@@ -26,7 +30,11 @@ tidy_peaklist(x, xsAnnotate = NULL)
 
   Optional. An `xsAnnotate` object from the CAMERA package containing
   peak annotations (isotopes, adducts, pseudospectrum groups). If NULL
-  (default), annotation columns will not be included in the output.
+  (default), only annotation columns present in
+  [`xcms::featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html)
+  are included in the output. If given, its `isotopes`, `adduct` and
+  `pcgroup` columns take precedence over same-named columns in
+  [`xcms::featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html).
 
 ## Value
 
@@ -58,13 +66,18 @@ following columns with their data types:
 
 - isotopes:
 
-  character: Isotope annotations from CAMERA (e.g., "`"[M]+"`",
-  "`"[M+1]+"`"). Only present when xsAnnotate is provided.
+  character: Isotope annotations in CAMERA syntax (e.g., "`"[1][M]+"`",
+  "`"[1][M+1]+"`"). Present when xsAnnotate is provided or
+  [`xcms::featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html)
+  has an `isotopes` column (e.g. from
+  `IonFamilies::annotateIsotopes()`).
 
 - adduct:
 
-  character: Adduct annotations from CAMERA (e.g., "`"[M+H]+"`",
-  "`"[M+Na]+"`"). Only present when xsAnnotate is provided.
+  character: Adduct annotations in CAMERA syntax (e.g.,
+  "`"[M+H]+ 169.037"`"). Present when xsAnnotate is provided or
+  [`xcms::featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html)
+  has an `adduct` column (e.g. from `IonFamilies::annotateAdducts()`).
 
 - pcgroup:
 
@@ -76,7 +89,9 @@ following columns with their data types:
 
   character: Feature group identifier from
   [`MsFeatures::groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html)
-  (e.g., "FG.001", "FG.002"). Only present if groupFeatures was applied.
+  (e.g., "FG.001", "FG.002"). Features with the same feature_group are
+  believed to originate from the same compound. Only present if
+  groupFeatures was applied.
 
 - mz, mzmin, mzmax:
 
@@ -183,8 +198,10 @@ particular sample.
 - The function uses "maxint" method for feature values, meaning it takes
   the maximum intensity peak for each feature in each sample.
 
-- CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes,
-  adduct, and pcgroup columns will not be present in the output.
+- CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes
+  and adduct columns are only present if they are already in
+  [`xcms::featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html),
+  and pcgroup is not present.
 
 - MsFeatures grouping is automatically detected. If
   [`MsFeatures::groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html)
@@ -205,7 +222,7 @@ particular sample.
 library(xcms)
 #> Loading required package: BiocParallel
 #> 
-#> This is xcms version 4.10.0 
+#> This is xcms version 4.10.1 
 library(BiocParallel)
 
 # Load example data
