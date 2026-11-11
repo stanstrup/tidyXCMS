@@ -1,3 +1,11 @@
+## Changes in v0.99.39 (commit: d424771)
+
+
+
+### Bug Fixes
+
+* keep annotation columns from featureDefinitions() in tidy_peaklist() ([d424771](https://github.com/stanstrup/tidyXCMS/commit/d424771d1e04d0327ca80c5000c262fff4dd6151))
+
 ## Changes in v0.99.38 (commit: 9277373)
 
 
