@@ -36,9 +36,6 @@ Suggests:
     covr,
     faahKO,
     ggpie,
-    ggalluvial,
-    MSnbase,
-    RColorBrewer,
     S4Vectors
 Remotes:
     stanstrup/commonMZ,

@@ -44,15 +44,10 @@ library(tidyr)
 library(MsExperiment)
 
 # Optional packages for enhanced functionality
-# Install if needed: BiocManager::install(c("MsFeatures", "CAMERA")),
-# remotes::install_github(c("stanstrup/IonFamilies", "stanstrup/commonMZ"))
-if (requireNamespace("MSnbase", quietly = TRUE)) library(MSnbase)
-if (requireNamespace("CAMERA", quietly = TRUE)) library(CAMERA)
+# Install if needed: BiocManager::install("MsFeatures"),
+# remotes::install_github(c("stanstrup/IonFamilies", "showteeth/ggpie"))
 if (requireNamespace("MsFeatures", quietly = TRUE)) library(MsFeatures)
 if (requireNamespace("IonFamilies", quietly = TRUE)) library(IonFamilies)
-if (requireNamespace("commonMZ", quietly = TRUE)) library(commonMZ)
-if (requireNamespace("ggalluvial", quietly = TRUE)) library(ggalluvial)
-if (requireNamespace("RColorBrewer", quietly = TRUE)) library(RColorBrewer)
 if (requireNamespace("ggpie", quietly = TRUE)) library(ggpie)
 ```
 
@@ -108,20 +103,15 @@ spectra(xdata)$dataOrigin <- spectra_df$real_path
 ```
 
 ```{r availability, include=FALSE}
-# Optional parts of this vignette are only run when they can be
+# The IonFamilies parts of this vignette are only run when it is installed
 has_ionfamilies <- requireNamespace("IonFamilies", quietly = TRUE)
-camera_works <- requireNamespace("CAMERA", quietly = TRUE) &&
-  tryCatch({
-    as(as(xdata, "XCMSnExp"), "xcmsSet")
-    TRUE
-  }, error = function(e) FALSE)
 ```
 
 ## Creating a Basic Long-Format Peak Table
 
 Let's start by creating a long-format peak table directly from the XCMS results. This gives us all the essential peak information in a tidy format.
 
-```{r create_table_no_camera}
+```{r create_table}
 # Create basic peak table
 peak_table <- tidy_peaklist(xdata)
 
@@ -195,74 +185,6 @@ peak_table_annotated %>%
 The `adduct` column shows the best suggestions for each feature as text. All
 suggestions, ranked, are available from `IonFamilies::adductHints()`.
 
-## Using CAMERA Annotations
-
-`tidy_peaklist()` also accepts annotations from the older CAMERA package, passed
-as an `xsAnnotate` object. CAMERA adds `isotopes`, `adduct` and `pcgroup`
-(pseudospectrum group) columns. If the object also has `isotopes` or `adduct`
-columns in `featureDefinitions()`, CAMERA's take precedence.
-
-CAMERA requires the legacy `xcmsSet` object, so an `XcmsExperiment` has to be
-converted to `XCMSnExp` and then to `xcmsSet`.
-
-```{r camera_note, echo=FALSE, results="asis", eval=!camera_works}
-cat("**The CAMERA examples are not run in this build, because CAMERA or the",
-    "conversion to `xcmsSet` is not available.**\n")
-```
-
-```{r camera_annotation, message=FALSE, eval=camera_works}
-xset <- xdata %>%
-  as("XCMSnExp") %>%
-  as("xcmsSet")
-
-rules_pos <- MZ_CAMERA(mode = "pos", warn_clash = TRUE, clash_ppm = 5) %>%
-  filter(name != "[M+NH4]+") %>%
-  as.data.frame()
-
-xs <- xsAnnotate(xset, polarity = "positive")
-xs <- groupFWHM(xs, perfwhm = 0.1, intval = "into", sigma = 6)
-xs <- groupCorr(xs, calcIso = FALSE, calcCiS = TRUE, calcCaS = FALSE,
-                cor_eic_th = 0.7, pval = 1E-6)
-xs <- findIsotopes(xs, ppm = 10, mzabs = 0.01, intval = "into", maxcharge = 2)
-xs <- findAdducts(xs, ppm = 500, mzabs = 0.2, multiplier = 4,
-                  polarity = "positive", rules = rules_pos)
-
-peak_table_camera <- tidy_peaklist(xdata_grouped, xs)
-
-peak_table_camera %>%
-  filter(adduct != "") %>%
-  distinct(feature_id, feature_group, pcgroup, f_mzmed, f_rtmed, isotopes, adduct) %>%
-  head()
-```
-
-CAMERA's `pcgroup` and MsFeatures' `feature_group` are two different groupings
-of the same features. We can compare them:
-
-```{r camera_vs_msfeatures, fig.width=7, fig.height=10, eval=camera_works, fig.alt="Alluvium diagram showing the mapping between MsFeatures groups (left) and CAMERA pseudospectrum groups (right) for features with an adduct annotation."}
-group_mapping <- peak_table_camera %>%
-  filter(adduct != "") %>%
-  distinct(feature_id, feature_group, pcgroup)
-
-order_group_mapping <- group_mapping %>%
-  count(feature_group, pcgroup, sort = TRUE)
-
-group_mapping <- group_mapping %>%
-  mutate(
-    feature_group = factor(feature_group, levels = unique(order_group_mapping$feature_group)),
-    pcgroup       = factor(pcgroup,       levels = unique(order_group_mapping$pcgroup))
-  )
-
-ggplot(group_mapping, aes(axis1 = feature_group, axis2 = pcgroup, fill = feature_group)) +
-  geom_alluvium(alpha = 0.7) +
-  geom_stratum() +
-  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
-  theme_minimal() +
-  labs(x = "", y = "Count", title = "feature_group (left) vs. pcgroup (right)") +
-  guides(fill = "none") +
-  scale_fill_manual(values = rep(brewer.pal(12, "Set3"),
-                                 length.out = n_distinct(group_mapping$feature_group)))
-```
-
 # Understanding the Output
 
 The resulting tibble contains comprehensive information about each feature in each sample. Below is a complete description of all columns:
@@ -291,9 +213,8 @@ The table has been organized into logical groups for easier understanding:
 | `f_rtmax` | The maximum retention time found for that feature across samples |
 | **Feature grouping and annotation** |
 | `feature_group` | The feature group ID from MsFeatures (e.g., "FG.001.001") - features with the same ID probably come from the same compound |
-| `isotopes` | Isotope annotation (e.g., "[1][M]+", "[1][M+1]+"), from `featureDefinitions()` (e.g. IonFamilies) or from CAMERA |
-| `adduct` | Adduct/fragment annotation (e.g., "[M+H]+ 169.037"), from `featureDefinitions()` (e.g. IonFamilies) or from CAMERA |
-| `pcgroup` | The pseudospectrum group from CAMERA - features with same ID likely come from the same compound |
+| `isotopes` | Isotope annotation (e.g., "[1][M]+", "[1][M+1]+"), from `featureDefinitions()` (e.g. IonFamilies) |
+| `adduct` | Adduct/fragment annotation (e.g., "[M+H]+ 169.037"), from `featureDefinitions()` (e.g. IonFamilies) |
 | **Peak-level m/z measurements (in that specific sample)** |
 | `mz` | The median m/z found for that feature in **that sample** |
 | `mzmin` | The minimum m/z found for that feature in that sample |
@@ -329,8 +250,7 @@ The table has been organized into logical groups for easier understanding:
 - If a feature was not detected in a sample, peak-level columns (mz, rt, into, etc.) will be `NA`
 - Feature-level statistics (f_mzmed, f_rtmed, etc.) are always present and represent values across all samples
 - `feature_group` is only present when `groupFeatures()` was applied
-- `isotopes` and `adduct` are only present when they are in `featureDefinitions()` (e.g. from IonFamilies) or when an xsAnnotate object is provided
-- `pcgroup` is only present when an xsAnnotate object (CAMERA) is provided
+- `isotopes` and `adduct` are only present when they are in `featureDefinitions()` (e.g. from IonFamilies)
 - All of these apply at the feature level and are the same across all samples for a given feature
 - The distinction between "feature-level" and "peak-level" is important:
   - **Feature-level** (prefix `f_`): Statistics aggregated across all samples
