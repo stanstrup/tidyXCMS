@@ -430,6 +430,38 @@ test_that("tidy_peaklist works with XcmsExperiment and groupFeatures", {
   expect_gt(nrow(peak_table), 0)
 })
 
+
+test_that("tidy_peaklist uses annotation columns from featureDefinitions", {
+
+  library(xcms)
+  library(MsFeatures)
+  library(dplyr)
+
+  # Annotation stored in featureDefinitions() as IonFamilies does it
+  xmse_annot <- groupFeatures(xmse, param = SimilarRtimeParam(diffRt = 10))
+  fd <- featureDefinitions(xmse_annot)
+  fd$isotopes <- ifelse(seq_len(nrow(fd)) %% 5 == 0, "[1][M]+", "")
+  fd$adduct <- ifelse(seq_len(nrow(fd)) %% 3 == 0, "[M+H]+ 100.000", "")
+  featureDefinitions(xmse_annot) <- fd
+
+  peak_table <- tidy_peaklist(xmse_annot)
+
+  expect_true(all(c("isotopes", "adduct", "feature_group") %in%
+                    colnames(peak_table)))
+  expect_false("pcgroup" %in% colnames(peak_table))
+
+  # Per-feature values also on the feature-sample combinations added for
+  # samples without a peak
+  expect_false(anyNA(peak_table$isotopes))
+  expect_false(anyNA(peak_table$adduct))
+  expect_false(anyNA(peak_table$feature_group))
+  per_feature <- peak_table %>%
+    distinct(feature_id, isotopes, adduct, feature_group)
+  expect_equal(nrow(per_feature), nrow(fd))
+  expect_identical(per_feature$adduct[order(per_feature$feature_id)],
+                   fd$adduct)
+})
+
 # Input validation and edge case tests ----------------------------------------
 
 test_that("tidy_peaklist works without features (dropFeatureDefinitions)", {

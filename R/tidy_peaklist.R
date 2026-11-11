@@ -1,15 +1,20 @@
 #' Create Tidy Long-Format Peak Table with Optional Annotations
 #'
 #' Generates a comprehensive long-format peak table where each row represents
-#' one feature for one sample. Optionally includes CAMERA annotations for isotopes,
-#' adducts, and pseudospectrum groups if provided.
+#' one feature for one sample. Annotations of isotopes, adducts and compound
+#' groups are included when available, either from a CAMERA `xsAnnotate` object
+#' or from columns already stored in [xcms::featureDefinitions()] (for example
+#' by [MsFeatures::groupFeatures()] and the IonFamilies package).
 #'
 #' @param x An [xcms::XCMSnExp-class] or [xcms::XcmsExperiment-class]
 #'   object containing peak detection results. Feature grouping (via
 #'   [xcms::groupChromPeaks()]) is optional but recommended.
 #' @param xsAnnotate Optional. An `xsAnnotate` object from the CAMERA package
 #'   containing peak annotations (isotopes, adducts, pseudospectrum groups).
-#'   If NULL (default), annotation columns will not be included in the output.
+#'   If NULL (default), only annotation columns present in
+#'   [xcms::featureDefinitions()] are included in the output. If given, its
+#'   `isotopes`, `adduct` and `pcgroup` columns take precedence over
+#'   same-named columns in [xcms::featureDefinitions()].
 #'
 #' @return A [tibble::tibble] in long format with one row per feature per sample
 #'   (or one row per peak per sample if features are not defined).
@@ -24,16 +29,21 @@
 #'       features are defined.}
 #'     \item{ms_level}{integer: MS level (typically 1 for MS1 features). Only
 #'       present when features are defined.}
-#'     \item{isotopes}{character: Isotope annotations from CAMERA (e.g., "\code{"[M]+"}",
-#'       "\code{"[M+1]+"}"). Only present when xsAnnotate is provided.}
-#'     \item{adduct}{character: Adduct annotations from CAMERA (e.g., "\code{"[M+H]+"}",
-#'       "\code{"[M+Na]+"}"). Only present when xsAnnotate is provided.}
+#'     \item{isotopes}{character: Isotope annotations in CAMERA syntax (e.g.,
+#'       "\code{"[1][M]+"}", "\code{"[1][M+1]+"}"). Present when xsAnnotate is
+#'       provided or [xcms::featureDefinitions()] has an `isotopes` column
+#'       (e.g. from `IonFamilies::annotateIsotopes()`).}
+#'     \item{adduct}{character: Adduct annotations in CAMERA syntax (e.g.,
+#'       "\code{"[M+H]+ 169.037"}"). Present when xsAnnotate is provided or
+#'       [xcms::featureDefinitions()] has an `adduct` column (e.g. from
+#'       `IonFamilies::annotateAdducts()`).}
 #'     \item{pcgroup}{integer: Pseudospectrum group ID from CAMERA. Features with
 #'       the same pcgroup are believed to originate from the same compound. Only
 #'       present when xsAnnotate is provided.}
 #'     \item{feature_group}{character: Feature group identifier from
-#'       [MsFeatures::groupFeatures()] (e.g., "FG.001", "FG.002"). Only present
-#'       if groupFeatures was applied.}
+#'       [MsFeatures::groupFeatures()] (e.g., "FG.001", "FG.002"). Features
+#'       with the same feature_group are believed to originate from the same
+#'       compound. Only present if groupFeatures was applied.}
 #'     \item{mz, mzmin, mzmax}{numeric: Peak m/z values (centroid, minimum, maximum).}
 #'     \item{rt, rtmin, rtmax}{numeric: Peak retention time in seconds (apex, minimum,
 #'       maximum).}
@@ -83,8 +93,9 @@
 #'     first occurrence.
 #'   \item The function uses "maxint" method for feature values, meaning it
 #'     takes the maximum intensity peak for each feature in each sample.
-#'   \item CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes,
-#'     adduct, and pcgroup columns will not be present in the output.
+#'   \item CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes
+#'     and adduct columns are only present if they are already in
+#'     [xcms::featureDefinitions()], and pcgroup is not present.
 #'   \item MsFeatures grouping is automatically detected. If [MsFeatures::groupFeatures()]
 #'     was applied to the object, the feature_group column will be included in the output.
 #'   \item For XcmsExperiment objects, sample metadata is accessed via sampleData()
@@ -211,7 +222,7 @@ tidy_peaklist <- function(x, xsAnnotate = NULL) {
   .check_memory_usage(out)
 
   # Complete to include all feature-sample combinations
-  out <- .complete_feature_sample_combinations(out, temp_features, xsAnnotate, x)
+  out <- .complete_feature_sample_combinations(out)
 
   # Add sample metadata
   out <- .add_sample_metadata(out, x)
@@ -301,7 +312,9 @@ tidy_peaklist <- function(x, xsAnnotate = NULL) {
   camera_cols <- intersect(c("isotopes", "adduct", "pcgroup"), colnames(camera_annot))
 
   if (length(camera_cols) > 0) {
+    # CAMERA's annotation replaces same-named columns from featureDefinitions()
     features <- features %>%
+      select(-any_of(camera_cols)) %>%
       bind_cols(camera_annot[, camera_cols]) %>%
       mutate(across(any_of("pcgroup"), as.integer))
   }
@@ -359,23 +372,18 @@ tidy_peaklist <- function(x, xsAnnotate = NULL) {
 
 #' Get feature columns for nesting based on what's available
 #' @noRd
-.get_feature_columns <- function(data, has_camera, has_features_group) {
-  # Base feature columns (should always exist if features are defined)
-  base_cols <- c("feature_id", "f_mzmed", "f_mzmin", "f_mzmax",
-                 "f_rtmed", "f_rtmin", "f_rtmax", "ms_level")
-
-  # Add CAMERA columns if present
-  if (has_camera) {
-    base_cols <- c(base_cols, "isotopes", "adduct", "pcgroup")
-  }
-
-  # Add feature_group if present
-  if (has_features_group) {
-    base_cols <- c(base_cols, "feature_group")
-  }
+.get_feature_columns <- function(data) {
+  # Base feature columns (should always exist if features are defined) and
+  # the optional annotation columns, whether they came from CAMERA or from
+  # featureDefinitions() (MsFeatures/IonFamilies). All are per-feature values
+  # and must be carried over to the feature-sample combinations that
+  # complete() adds.
+  feature_cols <- c("feature_id", "f_mzmed", "f_mzmin", "f_mzmax",
+                    "f_rtmed", "f_rtmin", "f_rtmax", "ms_level",
+                    "isotopes", "adduct", "pcgroup", "feature_group")
 
   # Return only columns that actually exist in the data
-  intersect(base_cols, colnames(data))
+  intersect(feature_cols, colnames(data))
 }
 
 
@@ -400,13 +408,9 @@ tidy_peaklist <- function(x, xsAnnotate = NULL) {
 
 #' Complete data to include all feature-sample combinations
 #' @noRd
-.complete_feature_sample_combinations <- function(out, temp_features, xsAnnotate, x) {
-  # Determine which optional columns are present
-  has_camera <- !is.null(xsAnnotate)
-  has_feature_group <- "feature_group" %in% colnames(temp_features)
-
+.complete_feature_sample_combinations <- function(out) {
   # Get the columns to use for nesting
-  feature_cols <- .get_feature_columns(out, has_camera, has_feature_group)
+  feature_cols <- .get_feature_columns(out)
 
   # Complete the data frame
   out <- out %>%

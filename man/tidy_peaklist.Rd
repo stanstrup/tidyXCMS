@@ -7,13 +7,16 @@
 tidy_peaklist(x, xsAnnotate = NULL)
 }
 \arguments{
-\item{x}{An \link[xcms:XCMSnExp-class]{xcms::XCMSnExp} or \link[xcms:XcmsExperiment]{xcms::XcmsExperiment}
+\item{x}{An \link[xcms:XCMSnExp-class]{xcms::XCMSnExp} or \link[xcms:XcmsExperiment-class]{xcms::XcmsExperiment}
 object containing peak detection results. Feature grouping (via
 \code{\link[xcms:groupChromPeaks]{xcms::groupChromPeaks()}}) is optional but recommended.}
 
 \item{xsAnnotate}{Optional. An \code{xsAnnotate} object from the CAMERA package
 containing peak annotations (isotopes, adducts, pseudospectrum groups).
-If NULL (default), annotation columns will not be included in the output.}
+If NULL (default), only annotation columns present in
+\code{\link[xcms:featureDefinitions]{xcms::featureDefinitions()}} are included in the output. If given, its
+\code{isotopes}, \code{adduct} and \code{pcgroup} columns take precedence over
+same-named columns in \code{\link[xcms:featureDefinitions]{xcms::featureDefinitions()}}.}
 }
 \value{
 A \link[tibble:tibble]{tibble::tibble} in long format with one row per feature per sample
@@ -29,16 +32,21 @@ statistics in seconds (median, minimum, maximum). Only present when
 features are defined.}
 \item{ms_level}{integer: MS level (typically 1 for MS1 features). Only
 present when features are defined.}
-\item{isotopes}{character: Isotope annotations from CAMERA (e.g., "\code{"[M]+"}",
-"\code{"[M+1]+"}"). Only present when xsAnnotate is provided.}
-\item{adduct}{character: Adduct annotations from CAMERA (e.g., "\code{"[M+H]+"}",
-"\code{"[M+Na]+"}"). Only present when xsAnnotate is provided.}
+\item{isotopes}{character: Isotope annotations in CAMERA syntax (e.g.,
+"\code{"[1][M]+"}", "\code{"[1][M+1]+"}"). Present when xsAnnotate is
+provided or \code{\link[xcms:featureDefinitions]{xcms::featureDefinitions()}} has an \code{isotopes} column
+(e.g. from \code{IonFamilies::annotateIsotopes()}).}
+\item{adduct}{character: Adduct annotations in CAMERA syntax (e.g.,
+"\code{"[M+H]+ 169.037"}"). Present when xsAnnotate is provided or
+\code{\link[xcms:featureDefinitions]{xcms::featureDefinitions()}} has an \code{adduct} column (e.g. from
+\code{IonFamilies::annotateAdducts()}).}
 \item{pcgroup}{integer: Pseudospectrum group ID from CAMERA. Features with
 the same pcgroup are believed to originate from the same compound. Only
 present when xsAnnotate is provided.}
 \item{feature_group}{character: Feature group identifier from
-\code{\link[MsFeatures:groupFeatures]{MsFeatures::groupFeatures()}} (e.g., "FG.001", "FG.002"). Only present
-if groupFeatures was applied.}
+\code{\link[MsFeatures:groupFeatures]{MsFeatures::groupFeatures()}} (e.g., "FG.001", "FG.002"). Features
+with the same feature_group are believed to originate from the same
+compound. Only present if groupFeatures was applied.}
 \item{mz, mzmin, mzmax}{numeric: Peak m/z values (centroid, minimum, maximum).}
 \item{rt, rtmin, rtmax}{numeric: Peak retention time in seconds (apex, minimum,
 maximum).}
@@ -52,28 +60,30 @@ detected (FALSE).}
 \item{filepath}{character: Full file path to the raw data file.}
 \item{filename}{character: Basename of the raw data file.}
 \item{fromFile}{numeric: Sample index (1-based) corresponding to the order
-in \link[xcms:XcmsExperiment]{xcms::fileNames,MsExperiment-method}.}
-\item{peakidx}{numeric: Internal peak index from \code{\link[xcms:XCMSnExp-class]{xcms::chromPeaks()}}.}
-\item{Additional columns}{Variable types: Any columns from \code{\link[Biobase:phenoData]{Biobase::pData()}}
-or \code{\link[MsExperiment:MsExperiment]{MsExperiment::sampleData()}} are included with their original data types.}
+in \link[xcms:fileNames,MsExperiment-method]{xcms::fileNames,MsExperiment-method}.}
+\item{peakidx}{numeric: Internal peak index from \code{\link[xcms:chromPeaks]{xcms::chromPeaks()}}.}
+\item{Additional columns}{Variable types: Any columns from \code{\link[Biobase:pData]{Biobase::pData()}}
+or \code{\link[MsExperiment:sampleData]{MsExperiment::sampleData()}} are included with their original data types.}
 }
 }
 \description{
 Generates a comprehensive long-format peak table where each row represents
-one feature for one sample. Optionally includes CAMERA annotations for isotopes,
-adducts, and pseudospectrum groups if provided.
+one feature for one sample. Annotations of isotopes, adducts and compound
+groups are included when available, either from a CAMERA \code{xsAnnotate} object
+or from columns already stored in \code{\link[xcms:featureDefinitions]{xcms::featureDefinitions()}} (for example
+by \code{\link[MsFeatures:groupFeatures]{MsFeatures::groupFeatures()}} and the IonFamilies package).
 }
 \details{
 This function integrates data from multiple sources:
 \itemize{
-\item Chromatographic peaks from \code{\link[xcms:XCMSnExp-class]{xcms::chromPeaks()}}
-\item Feature definitions from \code{\link[xcms:XCMSnExp-class]{xcms::featureDefinitions()}} (if available)
-\item Feature intensities from \code{\link[xcms:XCMSnExp-peak-grouping-results]{xcms::featureValues()}} (if features defined)
+\item Chromatographic peaks from \code{\link[xcms:chromPeaks]{xcms::chromPeaks()}}
+\item Feature definitions from \code{\link[xcms:featureDefinitions]{xcms::featureDefinitions()}} (if available)
+\item Feature intensities from \code{\link[xcms:featureValues]{xcms::featureValues()}} (if features defined)
 \item CAMERA annotations from the xsAnnotate object (if provided)
-\item Sample metadata from \code{\link[Biobase:phenoData]{Biobase::pData()}} or \code{\link[MsExperiment:MsExperiment]{MsExperiment::sampleData()}}
+\item Sample metadata from \code{\link[Biobase:pData]{Biobase::pData()}} or \code{\link[MsExperiment:sampleData]{MsExperiment::sampleData()}}
 }
 
-The function supports both \link[xcms:XCMSnExp-class]{xcms::XCMSnExp} and \link[xcms:XcmsExperiment]{xcms::XcmsExperiment}
+The function supports both \link[xcms:XCMSnExp-class]{xcms::XCMSnExp} and \link[xcms:XcmsExperiment-class]{xcms::XcmsExperiment}
 objects, providing flexibility for modern XCMS workflows.
 
 \strong{Feature grouping is optional}: If \code{\link[xcms:groupChromPeaks]{xcms::groupChromPeaks()}} has not been run,
@@ -93,8 +103,9 @@ sample.
 first occurrence.
 \item The function uses "maxint" method for feature values, meaning it
 takes the maximum intensity peak for each feature in each sample.
-\item CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes,
-adduct, and pcgroup columns will not be present in the output.
+\item CAMERA annotations are optional. If xsAnnotate is NULL, the isotopes
+and adduct columns are only present if they are already in
+\code{\link[xcms:featureDefinitions]{xcms::featureDefinitions()}}, and pcgroup is not present.
 \item MsFeatures grouping is automatically detected. If \code{\link[MsFeatures:groupFeatures]{MsFeatures::groupFeatures()}}
 was applied to the object, the feature_group column will be included in the output.
 \item For XcmsExperiment objects, sample metadata is accessed via sampleData()
