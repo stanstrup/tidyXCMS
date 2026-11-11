@@ -25,6 +25,7 @@ Imports:
 Suggests:
     CAMERA,
     commonMZ,
+    IonFamilies,
     MsFeatures,
     testthat (>= 3.0.0),
     knitr,
@@ -41,6 +42,7 @@ Suggests:
     S4Vectors
 Remotes:
     stanstrup/commonMZ,
+    stanstrup/IonFamilies,
     showteeth/ggpie
 Config/testthat/edition: 3
 VignetteBuilder: knitr

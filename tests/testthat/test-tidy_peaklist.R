@@ -49,6 +49,7 @@ test_that(".chromPeaks_classic works with XcmsExperiment objects", {
 test_that("tidy_peaklist returns expected structure", {
 
   library(xcms)
+  skip_if_no_camera()
   library(CAMERA)
   library(BiocParallel)
   library(dplyr)
@@ -112,6 +113,7 @@ test_that("tidy_peaklist returns expected structure", {
 test_that("tidy_peaklist has one row per feature per sample", {
 
   library(xcms)
+  skip_if_no_camera()
   library(CAMERA)
   library(BiocParallel)
   library(dplyr)
@@ -149,6 +151,7 @@ test_that("tidy_peaklist has one row per feature per sample", {
 test_that("tidy_peaklist handles missing values correctly", {
 
   library(xcms)
+  skip_if_no_camera()
   library(CAMERA)
   library(BiocParallel)
   library(dplyr)
@@ -184,6 +187,7 @@ test_that("tidy_peaklist handles missing values correctly", {
 test_that("tidy_peaklist includes pData information", {
 
   library(xcms)
+  skip_if_no_camera()
   library(CAMERA)
   library(BiocParallel)
   library(Biobase)
@@ -227,6 +231,7 @@ test_that("tidy_peaklist includes pData information", {
 test_that("tidy_peaklist CAMERA annotations are present", {
 
   library(xcms)
+  skip_if_no_camera()
   library(CAMERA)
   library(BiocParallel)
   library(dplyr)
@@ -368,6 +373,7 @@ test_that("tidy_peaklist includes groupFeatures results", {
 test_that("tidy_peaklist works with both CAMERA and groupFeatures", {
 
   library(xcms)
+  skip_if_no_camera()
   library(CAMERA)
   library(MsFeatures)
   library(BiocParallel)
@@ -562,6 +568,7 @@ test_that("tidy_peaklist validates xsAnnotate parameter", {
 test_that("tidy_peaklist detects CAMERA/XCMS feature count mismatch", {
 
   library(xcms)
+  skip_if_no_camera()
   library(CAMERA)
   library(BiocParallel)
 
@@ -688,6 +695,7 @@ test_that("tidy_peaklist returns correct column types (basic)", {
 test_that("tidy_peaklist returns correct column types with CAMERA", {
 
   library(xcms)
+  skip_if_no_camera()
   library(CAMERA)
   library(BiocParallel)
   library(dplyr)
@@ -778,6 +786,7 @@ test_that("tidy_peaklist returns correct column types with XcmsExperiment", {
 test_that("tidy_peaklist validates xsAnnotate is not allowed without features", {
 
   library(xcms)
+  skip_if_no_camera()
   library(CAMERA)
   library(BiocParallel)
 
@@ -805,6 +814,7 @@ test_that("tidy_peaklist validates xsAnnotate is not allowed without features", 
 test_that("tidy_peaklist handles CAMERA object with minimal annotations", {
 
   library(xcms)
+  skip_if_no_camera()
   library(CAMERA)
   library(BiocParallel)
 
