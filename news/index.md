@@ -1,5 +1,12 @@
 # Changelog
 
+## Changes in v0.99.40 (commit: 77544a1)
+
+### Bug Fixes
+
+- do not require CAMERA to build the vignette and run the tests
+  ([77544a1](https://github.com/stanstrup/tidyXCMS/commit/77544a1a78d8827b9e1ff28273bd1f76b209d65a))
+
 ## Changes in v0.99.39 (commit: d424771)
 
 ### Bug Fixes

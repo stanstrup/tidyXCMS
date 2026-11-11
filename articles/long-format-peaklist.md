@@ -36,15 +36,10 @@ library(tidyr)
 library(MsExperiment)
 
 # Optional packages for enhanced functionality
-# Install if needed: BiocManager::install(c("MsFeatures", "CAMERA")),
-# remotes::install_github(c("stanstrup/IonFamilies", "stanstrup/commonMZ"))
-if (requireNamespace("MSnbase", quietly = TRUE)) library(MSnbase)
-if (requireNamespace("CAMERA", quietly = TRUE)) library(CAMERA)
+# Install if needed: BiocManager::install("MsFeatures"),
+# remotes::install_github(c("stanstrup/IonFamilies", "showteeth/ggpie"))
 if (requireNamespace("MsFeatures", quietly = TRUE)) library(MsFeatures)
 if (requireNamespace("IonFamilies", quietly = TRUE)) library(IonFamilies)
-if (requireNamespace("commonMZ", quietly = TRUE)) library(commonMZ)
-if (requireNamespace("ggalluvial", quietly = TRUE)) library(ggalluvial)
-if (requireNamespace("RColorBrewer", quietly = TRUE)) library(RColorBrewer)
 if (requireNamespace("ggpie", quietly = TRUE)) library(ggpie)
 ```
 
@@ -258,118 +253,6 @@ The `adduct` column shows the best suggestions for each feature as text.
 All suggestions, ranked, are available from
 [`IonFamilies::adductHints()`](https://stanstrup.github.io/IonFamilies/reference/adductHints.html).
 
-### Using CAMERA Annotations
-
-[`tidy_peaklist()`](https://stanstrup.github.io/tidyXCMS/reference/tidy_peaklist.md)
-also accepts annotations from the older CAMERA package, passed as an
-`xsAnnotate` object. CAMERA adds `isotopes`, `adduct` and `pcgroup`
-(pseudospectrum group) columns. If the object also has `isotopes` or
-`adduct` columns in
-[`featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html),
-CAMERA’s take precedence.
-
-CAMERA requires the legacy `xcmsSet` object, so an `XcmsExperiment` has
-to be converted to `XCMSnExp` and then to `xcmsSet`.
-
-``` r
-
-xset <- xdata %>%
-  as("XCMSnExp") %>%
-  as("xcmsSet")
-
-rules_pos <- MZ_CAMERA(mode = "pos", warn_clash = TRUE, clash_ppm = 5) %>%
-  filter(name != "[M+NH4]+") %>%
-  as.data.frame()
-#> Warning in MZ_CAMERA(mode = "pos", warn_clash = TRUE, clash_ppm = 5): The following adducts/fragments seem to collide.
-#> # A tibble: 2 × 2
-#>   first       second                             
-#>   <chr>       <chr>                              
-#> 1 [M+H-NH3]+  [M+NH4]+                           
-#> 2 [M+H-C3H4]+ [M+H+(CH3)2CO-H2O]+ (acetone cond.)
-#> 
-#> 
-#> Consider removing one of them. Example: 
-#>  rules=rules[            !grepl("[M+NH4]+",rules[,"name"],fixed=TRUE)         ,]
-
-xs <- xsAnnotate(xset, polarity = "positive")
-xs <- groupFWHM(xs, perfwhm = 0.1, intval = "into", sigma = 6)
-#> Start grouping after retention time.
-#> Created 226 pseudospectra.
-xs <- groupCorr(xs, calcIso = FALSE, calcCiS = TRUE, calcCaS = FALSE,
-                cor_eic_th = 0.7, pval = 1E-6)
-#> Start grouping after correlation.
-#> Generating EIC's .. 
-#> 
-#> Calculating peak correlations in 226 Groups... 
-#>  % finished: 10  20  30  40  50  60  70  80  90  100  
-#> 
-#> Calculating graph cross linking in 226 Groups... 
-#>  % finished: 10  20  30  40  50  60  70  80  90  100  
-#> New number of ps-groups:  271 
-#> xsAnnotate has now 271 groups, instead of 226
-xs <- findIsotopes(xs, ppm = 10, mzabs = 0.01, intval = "into", maxcharge = 2)
-#> Generating peak matrix!
-#> Run isotope peak annotation
-#>  % finished: 10  20  30  40  50  60  70  80  90  100  
-#> Found isotopes: 29
-xs <- findAdducts(xs, ppm = 500, mzabs = 0.2, multiplier = 4,
-                  polarity = "positive", rules = rules_pos)
-#> Generating peak matrix for peak annotation!
-#> Polarity is set in xsAnnotate: positive 
-#> Found and use user-defined ruleset!
-#> Calculating possible adducts in 271 Groups... 
-#>  % finished: 10  20  30  40  50  60  70  80  90  100
-
-peak_table_camera <- tidy_peaklist(xdata_grouped, xs)
-
-peak_table_camera %>%
-  filter(adduct != "") %>%
-  distinct(feature_id, feature_group, pcgroup, f_mzmed, f_rtmed, isotopes, adduct) %>%
-  head()
-#> # A tibble: 6 × 7
-#>   feature_id feature_group pcgroup f_mzmed f_rtmed isotopes  adduct             
-#>        <int> <chr>           <int>   <dbl>   <dbl> <chr>     <chr>              
-#> 1          3 FG.005.001         11    206    2789. ""        [M+2K]2+ 334.047 […
-#> 2          6 FG.073.001         87    241.   3683. ""        [M+H-S]+ 272.112 […
-#> 3         11 FG.073.002         87    255.   3682. ""        [M+H-H2O]+ 272.112 
-#> 4         13 FG.001.002         44    266.   3669. ""        [M+H-C2H4-CO2]+ 33…
-#> 5         19 FG.005.003         11    279    2788. ""        [M+H-C3H4O]+ 334.0…
-#> 6         21 FG.001.001         44    281.   3669. "[1][M]+" [M+H-NH3-C3H4]+ 33…
-```
-
-CAMERA’s `pcgroup` and MsFeatures’ `feature_group` are two different
-groupings of the same features. We can compare them:
-
-``` r
-
-group_mapping <- peak_table_camera %>%
-  filter(adduct != "") %>%
-  distinct(feature_id, feature_group, pcgroup)
-
-order_group_mapping <- group_mapping %>%
-  count(feature_group, pcgroup, sort = TRUE)
-
-group_mapping <- group_mapping %>%
-  mutate(
-    feature_group = factor(feature_group, levels = unique(order_group_mapping$feature_group)),
-    pcgroup       = factor(pcgroup,       levels = unique(order_group_mapping$pcgroup))
-  )
-
-ggplot(group_mapping, aes(axis1 = feature_group, axis2 = pcgroup, fill = feature_group)) +
-  geom_alluvium(alpha = 0.7) +
-  geom_stratum() +
-  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
-  theme_minimal() +
-  labs(x = "", y = "Count", title = "feature_group (left) vs. pcgroup (right)") +
-  guides(fill = "none") +
-  scale_fill_manual(values = rep(brewer.pal(12, "Set3"),
-                                 length.out = n_distinct(group_mapping$feature_group)))
-```
-
-![Alluvium diagram showing the mapping between MsFeatures groups (left)
-and CAMERA pseudospectrum groups (right) for features with an adduct
-annotation.](long-format-peaklist_files/figure-html/camera_vs_msfeatures-1.png)
-
 ## Understanding the Output
 
 The resulting tibble contains comprehensive information about each
@@ -400,9 +283,8 @@ understanding:
 | `f_rtmax` | The maximum retention time found for that feature across samples |
 | **Feature grouping and annotation** |  |
 | `feature_group` | The feature group ID from MsFeatures (e.g., “FG.001.001”) - features with the same ID probably come from the same compound |
-| `isotopes` | Isotope annotation (e.g., “\[1\]\[M\]+”, “\[1\]\[M+1\]+”), from [`featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html) (e.g. IonFamilies) or from CAMERA |
-| `adduct` | Adduct/fragment annotation (e.g., “\[M+H\]+ 169.037”), from [`featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html) (e.g. IonFamilies) or from CAMERA |
-| `pcgroup` | The pseudospectrum group from CAMERA - features with same ID likely come from the same compound |
+| `isotopes` | Isotope annotation (e.g., “\[1\]\[M\]+”, “\[1\]\[M+1\]+”), from [`featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html) (e.g. IonFamilies) |
+| `adduct` | Adduct/fragment annotation (e.g., “\[M+H\]+ 169.037”), from [`featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html) (e.g. IonFamilies) |
 | **Peak-level m/z measurements (in that specific sample)** |  |
 | `mz` | The median m/z found for that feature in **that sample** |
 | `mzmin` | The minimum m/z found for that feature in that sample |
@@ -444,9 +326,7 @@ understanding:
   was applied
 - `isotopes` and `adduct` are only present when they are in
   [`featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html)
-  (e.g. from IonFamilies) or when an xsAnnotate object is provided
-- `pcgroup` is only present when an xsAnnotate object (CAMERA) is
-  provided
+  (e.g. from IonFamilies)
 - All of these apply at the feature level and are the same across all
   samples for a given feature
 - The distinction between “feature-level” and “peak-level” is important:
@@ -706,80 +586,68 @@ sessionInfo()
 #> tzcode source: system (glibc)
 #> 
 #> attached base packages:
-#> [1] stats4    stats     graphics  grDevices utils     datasets  methods  
-#> [8] base     
+#> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#>  [1] ggpie_0.2.5         RColorBrewer_1.1-3  ggalluvial_0.12.6  
-#>  [4] commonMZ_1.0.0      IonFamilies_0.99.2  MsFeatures_1.20.0  
-#>  [7] CAMERA_1.68.0       MSnbase_2.38.1      S4Vectors_0.50.3   
-#> [10] mzR_2.46.0          Rcpp_1.1.2          Biobase_2.72.0     
-#> [13] BiocGenerics_0.58.1 generics_0.1.4      MsExperiment_1.14.0
-#> [16] ProtGenerics_1.44.0 tidyr_1.3.2         ggplot2_4.0.3      
-#> [19] dplyr_1.2.1         xcms_4.10.1         BiocParallel_1.46.0
-#> [22] tidyXCMS_0.99.39   
+#>  [1] ggpie_0.2.5         IonFamilies_0.99.2  MsFeatures_1.20.0  
+#>  [4] MsExperiment_1.14.0 ProtGenerics_1.44.0 tidyr_1.3.2        
+#>  [7] ggplot2_4.0.3       dplyr_1.2.1         xcms_4.10.1        
+#> [10] BiocParallel_1.46.0 tidyXCMS_0.99.40   
 #> 
 #> loaded via a namespace (and not attached):
-#>   [1] rstudioapi_0.19.0           jsonlite_2.0.0             
-#>   [3] MultiAssayExperiment_1.38.0 magrittr_2.0.5             
-#>   [5] farver_2.1.2                MALDIquant_1.22.3          
-#>   [7] rmarkdown_2.32              fs_2.1.0                   
-#>   [9] ragg_1.5.2                  vctrs_0.7.3                
-#>  [11] base64enc_0.1-6             htmltools_0.5.9            
-#>  [13] S4Arrays_1.12.1             progress_1.2.3             
-#>  [15] cellranger_1.1.0            SparseArray_1.12.3         
-#>  [17] Formula_1.2-6               mzID_1.50.0                
-#>  [19] sass_0.4.10                 bslib_0.12.0               
-#>  [21] htmlwidgets_1.6.4           desc_1.4.3                 
-#>  [23] plyr_1.8.9                  impute_1.86.0              
-#>  [25] plotly_4.12.1               cachem_1.1.0               
-#>  [27] igraph_2.3.4                lifecycle_1.0.5            
-#>  [29] iterators_1.0.14            pkgconfig_2.0.3            
-#>  [31] Matrix_1.7-6                R6_2.6.1                   
-#>  [33] fastmap_1.2.0               MatrixGenerics_1.24.0      
-#>  [35] clue_0.3-68                 digest_0.6.39              
-#>  [37] ggnewscale_0.5.2            pcaMethods_2.4.0           
-#>  [39] colorspace_2.1-4            textshaping_1.0.5          
-#>  [41] Hmisc_5.3-0                 GenomicRanges_1.64.0       
-#>  [43] labeling_0.4.3              Spectra_1.22.2             
-#>  [45] httr_1.4.9                  abind_1.4-8                
-#>  [47] compiler_4.6.2              bit64_4.8.6                
-#>  [49] withr_3.0.3                 doParallel_1.0.17          
-#>  [51] htmlTable_2.5.0             S7_0.2.2                   
-#>  [53] backports_1.5.1             PTMods_1.0.0               
-#>  [55] DBI_1.3.0                   MASS_7.3-66                
-#>  [57] DelayedArray_0.38.2         tools_4.6.2                
-#>  [59] PSMatch_1.16.0              foreign_0.8-92             
-#>  [61] otel_0.3.0                  nnet_7.3-21                
-#>  [63] glue_1.8.1                  QFeatures_1.22.0           
-#>  [65] grid_4.6.2                  checkmate_2.3.4            
-#>  [67] cluster_2.1.8.3             reshape2_1.4.5             
-#>  [69] gtable_0.3.6                tzdb_0.5.0                 
-#>  [71] preprocessCore_1.74.0       data.table_1.18.6.1        
-#>  [73] hms_1.1.4                   MetaboCoreUtils_1.20.1     
-#>  [75] utf8_1.2.6                  XVector_0.52.0             
-#>  [77] ggrepel_0.9.8               foreach_1.5.2              
-#>  [79] pillar_1.11.1               stringr_1.6.0              
-#>  [81] vroom_1.7.1                 limma_3.68.5               
-#>  [83] lattice_0.23-1              bit_4.6.0                  
-#>  [85] tidyselect_1.2.1            RBGL_1.88.0                
-#>  [87] knitr_1.52                  gridExtra_2.3.1            
-#>  [89] IRanges_2.46.0              Seqinfo_1.2.0              
-#>  [91] SummarizedExperiment_1.42.0 xfun_0.62                  
-#>  [93] statmod_1.5.2               matrixStats_1.5.0          
-#>  [95] stringi_1.8.9               lazyeval_0.2.3             
-#>  [97] yaml_2.3.12                 evaluate_1.0.5             
-#>  [99] codetools_0.2-20            MsCoreUtils_1.24.0         
-#> [101] tibble_3.3.1                BiocManager_1.30.27        
-#> [103] graph_1.90.0                cli_3.6.6                  
-#> [105] affyio_1.82.0               rpart_4.1.27               
-#> [107] systemfonts_1.3.2           jquerylib_0.1.4            
-#> [109] readxl_1.6.0                MassSpecWavelet_1.78.2     
-#> [111] XML_3.99-0.25               parallel_4.6.2             
-#> [113] readr_2.2.0                 pkgdown_2.2.1              
-#> [115] prettyunits_1.2.0           AnnotationFilter_1.36.0    
-#> [117] viridisLite_0.4.3           scales_1.4.0               
-#> [119] affy_1.90.0                 ncdf4_1.24                 
-#> [121] purrr_1.2.2                 crayon_1.5.3               
-#> [123] rlang_1.3.0                 vsn_3.80.0
+#>   [1] DBI_1.3.0                   rlang_1.3.0                
+#>   [3] magrittr_2.0.5              clue_0.3-68                
+#>   [5] MassSpecWavelet_1.78.2      otel_0.3.0                 
+#>   [7] matrixStats_1.5.0           compiler_4.6.2             
+#>   [9] PTMods_1.0.0                systemfonts_1.3.2          
+#>  [11] vctrs_0.7.3                 reshape2_1.4.5             
+#>  [13] stringr_1.6.0               crayon_1.5.3               
+#>  [15] pkgconfig_2.0.3             MetaboCoreUtils_1.20.1     
+#>  [17] fastmap_1.2.0               XVector_0.52.0             
+#>  [19] labeling_0.4.3              utf8_1.2.6                 
+#>  [21] rmarkdown_2.32              preprocessCore_1.74.0      
+#>  [23] ragg_1.5.2                  purrr_1.2.2                
+#>  [25] xfun_0.62                   MultiAssayExperiment_1.38.0
+#>  [27] cachem_1.1.0                jsonlite_2.0.0             
+#>  [29] progress_1.2.3              DelayedArray_0.38.2        
+#>  [31] prettyunits_1.2.0           parallel_4.6.2             
+#>  [33] cluster_2.1.8.3             R6_2.6.1                   
+#>  [35] bslib_0.12.0                stringi_1.8.9              
+#>  [37] RColorBrewer_1.1-3          limma_3.68.5               
+#>  [39] GenomicRanges_1.64.0        jquerylib_0.1.4            
+#>  [41] Rcpp_1.1.2                  Seqinfo_1.2.0              
+#>  [43] SummarizedExperiment_1.42.0 iterators_1.0.14           
+#>  [45] knitr_1.52                  IRanges_2.46.0             
+#>  [47] Matrix_1.7-6                igraph_2.3.4               
+#>  [49] tidyselect_1.2.1            abind_1.4-8                
+#>  [51] yaml_2.3.12                 doParallel_1.0.17          
+#>  [53] codetools_0.2-20            affy_1.90.0                
+#>  [55] lattice_0.23-1              tibble_3.3.1               
+#>  [57] plyr_1.8.9                  withr_3.0.3                
+#>  [59] Biobase_2.72.0              S7_0.2.2                   
+#>  [61] evaluate_1.0.5              desc_1.4.3                 
+#>  [63] Spectra_1.22.2              pillar_1.11.1              
+#>  [65] affyio_1.82.0               BiocManager_1.30.27        
+#>  [67] MatrixGenerics_1.24.0       foreach_1.5.2              
+#>  [69] stats4_4.6.2                MSnbase_2.38.1             
+#>  [71] MALDIquant_1.22.3           ncdf4_1.24                 
+#>  [73] generics_0.1.4              hms_1.1.4                  
+#>  [75] S4Vectors_0.50.3            scales_1.4.0               
+#>  [77] glue_1.8.1                  lazyeval_0.2.3             
+#>  [79] tools_4.6.2                 ggnewscale_0.5.2           
+#>  [81] mzID_1.50.0                 data.table_1.18.6.1        
+#>  [83] QFeatures_1.22.0            vsn_3.80.0                 
+#>  [85] mzR_2.46.0                  fs_2.1.0                   
+#>  [87] XML_3.99-0.25               grid_4.6.2                 
+#>  [89] impute_1.86.0               MsCoreUtils_1.24.0         
+#>  [91] PSMatch_1.16.0              cli_3.6.6                  
+#>  [93] textshaping_1.0.5           S4Arrays_1.12.1            
+#>  [95] AnnotationFilter_1.36.0     pcaMethods_2.4.0           
+#>  [97] gtable_0.3.6                sass_0.4.10                
+#>  [99] digest_0.6.39               BiocGenerics_0.58.1        
+#> [101] ggrepel_0.9.8               SparseArray_1.12.3         
+#> [103] htmlwidgets_1.6.4           farver_2.1.2               
+#> [105] htmltools_0.5.9             pkgdown_2.2.1              
+#> [107] lifecycle_1.0.5             statmod_1.5.2              
+#> [109] MASS_7.3-66
 ```
