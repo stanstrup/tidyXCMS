@@ -19,7 +19,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tidyXCMS</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.38</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.39</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,6 +86,8 @@ which we’ll explore later in this vignette.</p>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://stanstrup.github.io/tidyXCMS">tidyXCMS</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: replacing previous import 'S4Arrays::makeNindexFromArrayViewport' by</span></span>
+<span><span class="co">#&gt; 'DelayedArray::makeNindexFromArrayViewport' when loading 'SummarizedExperiment'</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sneumann/xcms" class="external-link">xcms</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Bioconductor/BiocParallel" class="external-link">BiocParallel</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
@@ -94,10 +96,12 @@ which we’ll explore later in this vignette.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/MsExperiment" class="external-link">MsExperiment</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Optional packages for enhanced functionality</span></span>
-<span><span class="co"># Install if needed: BiocManager::install("CAMERA") or install.packages("commonMZ")</span></span>
+<span><span class="co"># Install if needed: BiocManager::install(c("MsFeatures", "CAMERA")),</span></span>
+<span><span class="co"># remotes::install_github(c("stanstrup/IonFamilies", "stanstrup/commonMZ"))</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"MSnbase"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lgatto.github.io/MSnbase" class="external-link">MSnbase</a></span><span class="op">)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"CAMERA"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://msbi.ipb-halle.de/msbi/CAMERA/" class="external-link">CAMERA</a></span><span class="op">)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"MsFeatures"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/MsFeatures" class="external-link">MsFeatures</a></span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"IonFamilies"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://stanstrup.github.io/IonFamilies" class="external-link">IonFamilies</a></span><span class="op">)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"commonMZ"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://stanstrup.github.io/commonMZ/" class="external-link">commonMZ</a></span><span class="op">)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggalluvial"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://corybrunson.github.io/ggalluvial/" class="external-link">ggalluvial</a></span><span class="op">)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"RColorBrewer"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">RColorBrewer</span><span class="op">)</span></span>
@@ -209,88 +213,105 @@ format.</p>
 XCMS, organized with one row per feature per sample.</p>
 </div>
 <div class="section level3">
-<h3 id="enhancing-peak-tables-with-camera-annotations">Enhancing Peak Tables with CAMERA Annotations<a class="anchor" aria-label="anchor" href="#enhancing-peak-tables-with-camera-annotations"></a>
+<h3 id="grouping-features-with-msfeatures">Grouping Features with MsFeatures<a class="anchor" aria-label="anchor" href="#grouping-features-with-msfeatures"></a>
 </h3>
-<p>CAMERA can annotate isotopes, adducts, and group features into
-pseudospectra, providing valuable chemical context to your peak
-table.</p>
-<p><strong>Note:</strong> CAMERA requires an <code>xcmsSet</code>
-object. Since our data is an <code>XcmsExperiment</code>, we first
-convert it to <code>XCMSnExp</code> and then to
-<code>xcmsSet</code>.</p>
-<div class="section level4">
-<h4 id="creating-a-camera-object">Creating a CAMERA object<a class="anchor" aria-label="anchor" href="#creating-a-camera-object"></a>
-</h4>
-<p>In this first step we create a CAMERA object from the XCMS object. We
-specify the polarity to help CAMERA determine appropriate adducts and
-fragments.</p>
+<p>One compound usually gives several features: its main ion, adducts,
+in-source fragments and isotopes. The <code><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">groupFeatures()</a></code>
+function from the <code>MsFeatures</code> package groups features that
+probably come from the same compound and stores the result in a
+<code>feature_group</code> column of <code><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">featureDefinitions()</a></code>.
+Each call can only split the groups from the previous call. Here we
+first group features that elute together, and then split those groups by
+the correlation of their abundances across samples:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Convert XcmsExperiment to xcmsSet for CAMERA (required for compatibility)</span></span>
-<span><span class="co"># Two-step conversion: XcmsExperiment -&gt; XCMSnExp -&gt; xcmsSet</span></span>
-<span><span class="va">xset</span> <span class="op">&lt;-</span> <span class="va">xdata</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<code class="sourceCode R"><span><span class="va">xdata_grouped</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">groupFeatures</a></span><span class="op">(</span><span class="va">xdata</span>, param <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures-similar-rtime.html" class="external-link">SimilarRtimeParam</a></span><span class="op">(</span>diffRt <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">xdata_grouped</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">groupFeatures</a></span><span class="op">(</span><span class="va">xdata_grouped</span>,</span>
+<span>                               param <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures-similar-abundance.html" class="external-link">AbundanceSimilarityParam</a></span><span class="op">(</span>threshold <span class="op">=</span> <span class="fl">0.7</span>,</span>
+<span>                                                                transform <span class="op">=</span> <span class="va">log2</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">featureDefinitions</a></span><span class="op">(</span><span class="va">xdata_grouped</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">feature_group</span>, name <span class="op">=</span> <span class="st">"n_features"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">n_features</span>, name <span class="op">=</span> <span class="st">"n_groups"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   n_features n_groups</span></span>
+<span><span class="co">#&gt; 1          1      184</span></span>
+<span><span class="co">#&gt; 2          2       55</span></span>
+<span><span class="co">#&gt; 3          3       13</span></span>
+<span><span class="co">#&gt; 4          4        3</span></span>
+<span><span class="co">#&gt; 5          6        1</span></span></code></pre></div>
+<p>When the object has feature groups, <code><a href="../reference/tidy_peaklist.html">tidy_peaklist()</a></code>
+includes the <code>feature_group</code> column automatically:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">peak_table_grouped</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_peaklist.html">tidy_peaklist</a></span><span class="op">(</span><span class="va">xdata_grouped</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">peak_table_grouped</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">feature_group</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">feature_group</span>, <span class="va">f_mzmed</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 4</span></span></span>
+<span><span class="co">#&gt;    feature_id feature_group f_mzmed f_rtmed</span></span>
+<span><span class="co">#&gt;         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>         21 FG.001.001       281.   <span style="text-decoration: underline;">3</span>669.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>         46 FG.001.001       309.   <span style="text-decoration: underline;">3</span>669.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>         76 FG.001.001       338.   <span style="text-decoration: underline;">3</span>669.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>         13 FG.001.002       266.   <span style="text-decoration: underline;">3</span>669.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>         33 FG.002.001       300.   <span style="text-decoration: underline;">3</span>405.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>         35 FG.002.001       301.   <span style="text-decoration: underline;">3</span>405.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        247 FG.002.002       506.   <span style="text-decoration: underline;">3</span>405.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>        248 FG.002.002       507.   <span style="text-decoration: underline;">3</span>402.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>        198 FG.002.003       449.   <span style="text-decoration: underline;">3</span>405.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>        261 FG.002.004       523.   <span style="text-decoration: underline;">3</span>405.</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="annotating-isotopes-and-adducts-with-ionfamilies">Annotating Isotopes and Adducts with IonFamilies<a class="anchor" aria-label="anchor" href="#annotating-isotopes-and-adducts-with-ionfamilies"></a>
+</h3>
+<p>The <a href="https://stanstrup.github.io/IonFamilies" class="external-link">IonFamilies</a>
+package annotates isotopes and adducts/fragments within the feature
+groups. It writes the annotation to the <code>isotopes</code> and
+<code>adduct</code> columns of <code><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">featureDefinitions()</a></code>, and
+<code><a href="../reference/tidy_peaklist.html">tidy_peaklist()</a></code> picks up any such columns
+automatically.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">xdata_annotated</span> <span class="op">&lt;-</span> <span class="va">xdata_grouped</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://stanstrup.github.io/IonFamilies/reference/annotateIsotopes.html" class="external-link">annotateIsotopes</a></span><span class="op">(</span><span class="fu"><a href="https://stanstrup.github.io/IonFamilies/reference/IsotopologueParam.html" class="external-link">IsotopologueParam</a></span><span class="op">(</span>ppm <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://stanstrup.github.io/IonFamilies/reference/annotateAdducts.html" class="external-link">annotateAdducts</a></span><span class="op">(</span><span class="fu"><a href="https://stanstrup.github.io/IonFamilies/reference/AdductVoteParam.html" class="external-link">AdductVoteParam</a></span><span class="op">(</span>polarity <span class="op">=</span> <span class="st">"positive"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">peak_table_annotated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_peaklist.html">tidy_peaklist</a></span><span class="op">(</span><span class="va">xdata_annotated</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">peak_table_annotated</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">adduct</span> <span class="op">!=</span> <span class="st">""</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">feature_group</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span>, <span class="va">isotopes</span>, <span class="va">adduct</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">feature_group</span>, <span class="va">f_mzmed</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
+<span><span class="co">#&gt;   feature_id feature_group f_mzmed f_rtmed isotopes adduct                      </span></span>
+<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>         21 FG.001.001       281.   <span style="text-decoration: underline;">3</span>669. <span style="color: #949494;">""</span>       [M+H-HCOOH]+ 326.203 [M+H-C…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>         46 FG.001.001       309.   <span style="text-decoration: underline;">3</span>669. <span style="color: #949494;">""</span>       [M+H-H2O]+ 326.203 [M+H]+ 3…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>         76 FG.001.001       338.   <span style="text-decoration: underline;">3</span>669. <span style="color: #949494;">""</span>       [2M+H+Na]2+ 326.203         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          3 FG.005.001       206    <span style="text-decoration: underline;">2</span>789. <span style="color: #949494;">""</span>       [M+H-C4H6O]+ 275.037        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>         54 FG.005.001       314    <span style="text-decoration: underline;">2</span>789. <span style="color: #949494;">""</span>       [M+K]+ 275.037              </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          2 FG.005.002       205    <span style="text-decoration: underline;">2</span>790. <span style="color: #949494;">""</span>       [M+H-C3H9N]+ 263.066</span></span></code></pre></div>
+<p>The <code>adduct</code> column shows the best suggestions for each
+feature as text. All suggestions, ranked, are available from
+<code><a href="https://stanstrup.github.io/IonFamilies/reference/adductHints.html" class="external-link">IonFamilies::adductHints()</a></code>.</p>
+</div>
+<div class="section level3">
+<h3 id="using-camera-annotations">Using CAMERA Annotations<a class="anchor" aria-label="anchor" href="#using-camera-annotations"></a>
+</h3>
+<p><code><a href="../reference/tidy_peaklist.html">tidy_peaklist()</a></code> also accepts annotations from the older
+CAMERA package, passed as an <code>xsAnnotate</code> object. CAMERA adds
+<code>isotopes</code>, <code>adduct</code> and <code>pcgroup</code>
+(pseudospectrum group) columns. If the object also has
+<code>isotopes</code> or <code>adduct</code> columns in
+<code><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">featureDefinitions()</a></code>, CAMERA’s take precedence.</p>
+<p>CAMERA requires the legacy <code>xcmsSet</code> object, so an
+<code>XcmsExperiment</code> has to be converted to <code>XCMSnExp</code>
+and then to <code>xcmsSet</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">xset</span> <span class="op">&lt;-</span> <span class="va">xdata</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/methods/as.html" class="external-link">as</a></span><span class="op">(</span><span class="st">"XCMSnExp"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/methods/as.html" class="external-link">as</a></span><span class="op">(</span><span class="st">"xcmsSet"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Create xsAnnotate object with polarity</span></span>
-<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/xsAnnotate.html" class="external-link">xsAnnotate</a></span><span class="op">(</span><span class="va">xset</span>, polarity <span class="op">=</span> <span class="st">"positive"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="grouping-coeluting-peaks">Grouping coeluting peaks<a class="anchor" aria-label="anchor" href="#grouping-coeluting-peaks"></a>
-</h4>
-<p>The first step to grouping features is to group co-eluting peaks.
-This is a naïve approach that we will refine later.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Group peaks by retention time</span></span>
-<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/groupFWHM-methods.html" class="external-link">groupFWHM</a></span><span class="op">(</span><span class="va">xs</span>, perfwhm <span class="op">=</span> <span class="fl">0.1</span>, intval <span class="op">=</span> <span class="st">"into"</span>, sigma <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Start grouping after retention time.</span></span>
-<span><span class="co">#&gt; Created 226 pseudospectra.</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="grouping-based-on-correlation">Grouping based on correlation<a class="anchor" aria-label="anchor" href="#grouping-based-on-correlation"></a>
-</h4>
-<p>Now we group the features based on correlations. This looks at each
-group from the previous step and splits them into separate groups for
-peaks that correlate with each other.</p>
-<p><strong>Note:</strong> For this small example dataset, don’t use
-correlation across samples as it is unreliable with this few
-samples.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Group by correlation</span></span>
-<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/groupCorr-methods.html" class="external-link">groupCorr</a></span><span class="op">(</span><span class="va">xs</span>, calcIso <span class="op">=</span> <span class="cn">FALSE</span>, calcCiS <span class="op">=</span> <span class="cn">TRUE</span>, calcCaS <span class="op">=</span> <span class="cn">FALSE</span>, cor_eic_th <span class="op">=</span> <span class="fl">0.7</span>, pval <span class="op">=</span> <span class="fl">1E-6</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Start grouping after correlation.</span></span>
-<span><span class="co">#&gt; Generating EIC's .. </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Calculating peak correlations in 226 Groups... </span></span>
-<span><span class="co">#&gt;  % finished: 10  20  30  40  50  60  70  80  90  100  </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Calculating graph cross linking in 226 Groups... </span></span>
-<span><span class="co">#&gt;  % finished: 10  20  30  40  50  60  70  80  90  100  </span></span>
-<span><span class="co">#&gt; New number of ps-groups:  271 </span></span>
-<span><span class="co">#&gt; xsAnnotate has now 271 groups, instead of 226</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="isotope-annotation">Isotope annotation<a class="anchor" aria-label="anchor" href="#isotope-annotation"></a>
-</h4>
-<p>This annotates peaks that are possible isotopes based on m/z
-difference and intensity patterns.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Find isotopes</span></span>
-<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/findIsotopes-methods.html" class="external-link">findIsotopes</a></span><span class="op">(</span><span class="va">xs</span>, ppm <span class="op">=</span> <span class="fl">10</span>, mzabs <span class="op">=</span> <span class="fl">0.01</span>, intval <span class="op">=</span> <span class="st">"into"</span>, maxcharge <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Generating peak matrix!</span></span>
-<span><span class="co">#&gt; Run isotope peak annotation</span></span>
-<span><span class="co">#&gt;  % finished: 10  20  30  40  50  60  70  80  90  100  </span></span>
-<span><span class="co">#&gt; Found isotopes: 29</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="annotation-of-adducts-and-fragments">Annotation of adducts and fragments<a class="anchor" aria-label="anchor" href="#annotation-of-adducts-and-fragments"></a>
-</h4>
-<p>Now we try to annotate adducts and fragments based on expected mass
-differences. We’ll use the <code>commonMZ</code> package to generate a
-comprehensive list of adduct and fragment rules for CAMERA.</p>
-<p>First, we get the adduct/fragment rules for positive mode:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># warn_clash=TRUE will warn about indistinguishable annotations (e.g., [M+NH4]+ vs -NH3)</span></span>
-<span><span class="co"># Remove [M+NH4]+ if it's less common in your data</span></span>
 <span></span>
 <span><span class="va">rules_pos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://stanstrup.github.io/commonMZ/reference/MZ_CAMERA.html" class="external-link">MZ_CAMERA</a></span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"pos"</span>, warn_clash <span class="op">=</span> <span class="cn">TRUE</span>, clash_ppm <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name</span> <span class="op">!=</span> <span class="st">"[M+NH4]+"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -304,209 +325,67 @@ comprehensive list of adduct and fragment rules for CAMERA.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Consider removing one of them. Example: </span></span>
-<span><span class="co">#&gt;  rules=rules[            !grepl("[M+NH4]+",rules[,"name"],fixed=TRUE)         ,]</span></span></code></pre></div>
-<p>Now we can annotate adducts using these rules:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Find adducts using the rules from commonMZ</span></span>
-<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/findAdducts-methods.html" class="external-link">findAdducts</a></span><span class="op">(</span><span class="va">xs</span>, ppm <span class="op">=</span> <span class="fl">500</span>, mzabs <span class="op">=</span> <span class="fl">0.2</span>, multiplier <span class="op">=</span> <span class="fl">4</span>, polarity <span class="op">=</span> <span class="st">"positive"</span>, rules <span class="op">=</span> <span class="va">rules_pos</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  rules=rules[            !grepl("[M+NH4]+",rules[,"name"],fixed=TRUE)         ,]</span></span>
+<span></span>
+<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/xsAnnotate.html" class="external-link">xsAnnotate</a></span><span class="op">(</span><span class="va">xset</span>, polarity <span class="op">=</span> <span class="st">"positive"</span><span class="op">)</span></span>
+<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/groupFWHM-methods.html" class="external-link">groupFWHM</a></span><span class="op">(</span><span class="va">xs</span>, perfwhm <span class="op">=</span> <span class="fl">0.1</span>, intval <span class="op">=</span> <span class="st">"into"</span>, sigma <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Start grouping after retention time.</span></span>
+<span><span class="co">#&gt; Created 226 pseudospectra.</span></span>
+<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/groupCorr-methods.html" class="external-link">groupCorr</a></span><span class="op">(</span><span class="va">xs</span>, calcIso <span class="op">=</span> <span class="cn">FALSE</span>, calcCiS <span class="op">=</span> <span class="cn">TRUE</span>, calcCaS <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                cor_eic_th <span class="op">=</span> <span class="fl">0.7</span>, pval <span class="op">=</span> <span class="fl">1E-6</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Start grouping after correlation.</span></span>
+<span><span class="co">#&gt; Generating EIC's .. </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Calculating peak correlations in 226 Groups... </span></span>
+<span><span class="co">#&gt;  % finished: 10  20  30  40  50  60  70  80  90  100  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Calculating graph cross linking in 226 Groups... </span></span>
+<span><span class="co">#&gt;  % finished: 10  20  30  40  50  60  70  80  90  100  </span></span>
+<span><span class="co">#&gt; New number of ps-groups:  271 </span></span>
+<span><span class="co">#&gt; xsAnnotate has now 271 groups, instead of 226</span></span>
+<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/findIsotopes-methods.html" class="external-link">findIsotopes</a></span><span class="op">(</span><span class="va">xs</span>, ppm <span class="op">=</span> <span class="fl">10</span>, mzabs <span class="op">=</span> <span class="fl">0.01</span>, intval <span class="op">=</span> <span class="st">"into"</span>, maxcharge <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Generating peak matrix!</span></span>
+<span><span class="co">#&gt; Run isotope peak annotation</span></span>
+<span><span class="co">#&gt;  % finished: 10  20  30  40  50  60  70  80  90  100  </span></span>
+<span><span class="co">#&gt; Found isotopes: 29</span></span>
+<span><span class="va">xs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CAMERA/man/findAdducts-methods.html" class="external-link">findAdducts</a></span><span class="op">(</span><span class="va">xs</span>, ppm <span class="op">=</span> <span class="fl">500</span>, mzabs <span class="op">=</span> <span class="fl">0.2</span>, multiplier <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>                  polarity <span class="op">=</span> <span class="st">"positive"</span>, rules <span class="op">=</span> <span class="va">rules_pos</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Generating peak matrix for peak annotation!</span></span>
 <span><span class="co">#&gt; Polarity is set in xsAnnotate: positive </span></span>
 <span><span class="co">#&gt; Found and use user-defined ruleset!</span></span>
 <span><span class="co">#&gt; Calculating possible adducts in 271 Groups... </span></span>
-<span><span class="co">#&gt;  % finished: 10  20  30  40  50  60  70  80  90  100</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="creating-the-peak-table-with-camera-annotations">Creating the Peak Table with CAMERA Annotations<a class="anchor" aria-label="anchor" href="#creating-the-peak-table-with-camera-annotations"></a>
-</h4>
-<p>Now we can create a peak table that includes all the CAMERA
-annotations. We pass both the original <code>xdata</code> object and the
-CAMERA annotations from <code>xs</code>:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">peak_table_camera</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_peaklist.html">tidy_peaklist</a></span><span class="op">(</span><span class="va">xdata</span>, <span class="va">xs</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  % finished: 10  20  30  40  50  60  70  80  90  100</span></span>
 <span></span>
-<span><span class="co"># Check the structure</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">peak_table_camera</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 2808   31</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">peak_table_camera</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "sample_name"   "sample_group"  "spectraOrigin" "sample_type"  </span></span>
-<span><span class="co">#&gt;  [5] "fromFile"      "feature_id"    "f_mzmed"       "f_mzmin"      </span></span>
-<span><span class="co">#&gt;  [9] "f_mzmax"       "f_rtmed"       "f_rtmin"       "f_rtmax"      </span></span>
-<span><span class="co">#&gt; [13] "ms_level"      "isotopes"      "adduct"        "pcgroup"      </span></span>
-<span><span class="co">#&gt; [17] "filepath"      "filename"      "peakidx"       "mz"           </span></span>
-<span><span class="co">#&gt; [21] "mzmin"         "mzmax"         "rt"            "rtmin"        </span></span>
-<span><span class="co">#&gt; [25] "rtmax"         "into"          "intb"          "maxo"         </span></span>
-<span><span class="co">#&gt; [29] "sn"            "is_filled"     "merged"</span></span></code></pre></div>
-<p>The table now includes additional columns for CAMERA annotations:
-<code>isotopes</code>, <code>adduct</code>, and <code>pcgroup</code>
-(pseudospectrum correlation group).</p>
-</div>
-</div>
-<div class="section level3">
-<h3 id="enhancing-peak-tables-with-msfeatures-grouping">Enhancing Peak Tables with MsFeatures Grouping<a class="anchor" aria-label="anchor" href="#enhancing-peak-tables-with-msfeatures-grouping"></a>
-</h3>
-<p>The <code>MsFeatures</code> package offers another way to enhance
-peak tables by grouping features based on retention time similarity,
-abundance correlation, or EIC similarity.</p>
-<div class="section level4">
-<h4 id="why-use-msfeatures">Why Use MsFeatures?<a class="anchor" aria-label="anchor" href="#why-use-msfeatures"></a>
-</h4>
-<ul>
-<li>
-<strong>Retention Time Grouping</strong>: Group co-eluting features
-that likely come from the same compound</li>
-<li>
-<strong>Abundance Correlation</strong>: Group features with
-correlated intensities across samples</li>
-<li>
-<strong>EIC Similarity</strong>: Group features based on similar
-extracted ion chromatograms</li>
-<li>
-<strong>Stepwise Refinement</strong>: Apply multiple grouping
-algorithms sequentially to refine groups</li>
-</ul>
-</div>
-<div class="section level4">
-<h4 id="applying-feature-grouping">Applying Feature Grouping<a class="anchor" aria-label="anchor" href="#applying-feature-grouping"></a>
-</h4>
-<p>The <code><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">groupFeatures()</a></code> function adds a
-<code>feature_group</code> column to the feature definitions. Let’s
-demonstrate with retention time-based grouping:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Group features with similar retention times (within 10 seconds)</span></span>
-<span><span class="va">xdata_grouped</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">groupFeatures</a></span><span class="op">(</span><span class="va">xdata</span>, param <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures-similar-rtime.html" class="external-link">SimilarRtimeParam</a></span><span class="op">(</span>diffRt <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">peak_table_camera</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_peaklist.html">tidy_peaklist</a></span><span class="op">(</span><span class="va">xdata_grouped</span>, <span class="va">xs</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Check feature groups in featureDefinitions</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">featureDefinitions</a></span><span class="op">(</span><span class="va">xdata_grouped</span><span class="op">)</span><span class="op">$</span><span class="va">feature_group</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "FG.083" "FG.005" "FG.005" "FG.078" "FG.016" "FG.073"</span></span>
-<span></span>
-<span><span class="co"># Count how many feature groups were created</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">featureDefinitions</a></span><span class="op">(</span><span class="va">xdata_grouped</span><span class="op">)</span><span class="op">$</span><span class="va">feature_group</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; FG.001 FG.002 FG.003 FG.004 FG.005 FG.006 FG.007 FG.008 FG.009 FG.010 FG.011 </span></span>
-<span><span class="co">#&gt;      4      6      2      4      6      5      2      4      3      4      3 </span></span>
-<span><span class="co">#&gt; FG.012 FG.013 FG.014 FG.015 FG.016 FG.017 FG.018 FG.019 FG.020 FG.021 FG.022 </span></span>
-<span><span class="co">#&gt;      6      4      2      3      3      3      4      3      2      5      2 </span></span>
-<span><span class="co">#&gt; FG.023 FG.024 FG.025 FG.026 FG.027 FG.028 FG.029 FG.030 FG.031 FG.032 FG.033 </span></span>
-<span><span class="co">#&gt;      2      4      5      2      5      2      3      4      2      2      4 </span></span>
-<span><span class="co">#&gt; FG.034 FG.035 FG.036 FG.037 FG.038 FG.039 FG.040 FG.041 FG.042 FG.043 FG.044 </span></span>
-<span><span class="co">#&gt;      2      2      6      3      2      2      4      2      2      4      4 </span></span>
-<span><span class="co">#&gt; FG.045 FG.046 FG.047 FG.048 FG.049 FG.050 FG.051 FG.052 FG.053 FG.054 FG.055 </span></span>
-<span><span class="co">#&gt;      2      3      2      3      3      5      2      3      4      2      6 </span></span>
-<span><span class="co">#&gt; FG.056 FG.057 FG.058 FG.059 FG.060 FG.061 FG.062 FG.063 FG.064 FG.065 FG.066 </span></span>
-<span><span class="co">#&gt;      2      6      4      2      4      3      3      2      2      2      2 </span></span>
-<span><span class="co">#&gt; FG.067 FG.068 FG.069 FG.070 FG.071 FG.072 FG.073 FG.074 FG.075 FG.076 FG.077 </span></span>
-<span><span class="co">#&gt;      3      2      2      3      2      3      2      3      3      3      3 </span></span>
-<span><span class="co">#&gt; FG.078 FG.079 FG.080 FG.081 FG.082 FG.083 FG.084 FG.085 FG.086 FG.087 FG.088 </span></span>
-<span><span class="co">#&gt;      2      3      3      3      2      3      3      3      3      3      2 </span></span>
-<span><span class="co">#&gt; FG.089 FG.090 FG.091 FG.092 FG.093 FG.094 FG.095 FG.096 FG.097 FG.098 FG.099 </span></span>
-<span><span class="co">#&gt;      3      2      2      2      2      3      2      4      2      3      3 </span></span>
-<span><span class="co">#&gt; FG.100 FG.101 FG.102 FG.103 FG.104 FG.105 FG.106 FG.107 FG.108 FG.109 FG.110 </span></span>
-<span><span class="co">#&gt;      3      3      2      2      2      2      2      2      2      2      2 </span></span>
-<span><span class="co">#&gt; FG.111 FG.112 FG.113 FG.114 FG.115 FG.116 FG.117 FG.118 FG.119 FG.120 FG.121 </span></span>
-<span><span class="co">#&gt;      2      2      1      1      1      1      1      1      1      1      1 </span></span>
-<span><span class="co">#&gt; FG.122 FG.123 FG.124 FG.125 FG.126 FG.127 FG.128 FG.129 FG.130 FG.131 FG.132 </span></span>
-<span><span class="co">#&gt;      1      1      1      1      1      1      1      1      1      1      1 </span></span>
-<span><span class="co">#&gt; FG.133 </span></span>
-<span><span class="co">#&gt;      1</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="creating-peak-table-with-msfeatures-grouping">Creating Peak Table with MsFeatures Grouping<a class="anchor" aria-label="anchor" href="#creating-peak-table-with-msfeatures-grouping"></a>
-</h4>
-<p>When you create a long-format peak table from an object with feature
-groups, the <code>feature_group</code> column is automatically
-included:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Create peak table with feature grouping</span></span>
-<span><span class="va">peak_table_grouped</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_peaklist.html">tidy_peaklist</a></span><span class="op">(</span><span class="va">xdata_grouped</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Check that feature_group column is present</span></span>
-<span><span class="st">"feature_group"</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">peak_table_grouped</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] TRUE</span></span>
-<span></span>
-<span><span class="co"># View some feature groups</span></span>
-<span><span class="va">peak_table_grouped</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">feature_group</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 4</span></span></span>
-<span><span class="co">#&gt;    feature_id feature_group f_mzmed f_rtmed</span></span>
-<span><span class="co">#&gt;         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>          1 FG.083           200.   <span style="text-decoration: underline;">2</span>903.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>          2 FG.005           205    <span style="text-decoration: underline;">2</span>790.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>          3 FG.005           206    <span style="text-decoration: underline;">2</span>789.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>          4 FG.078           207.   <span style="text-decoration: underline;">2</span>719.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>          5 FG.016           233    <span style="text-decoration: underline;">3</span>024.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>          6 FG.073           241.   <span style="text-decoration: underline;">3</span>683.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>          7 FG.024           242.   <span style="text-decoration: underline;">3</span>664.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>          8 FG.113           244.   <span style="text-decoration: underline;">2</span>833.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>          9 FG.071           249.   <span style="text-decoration: underline;">3</span>676.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>         10 FG.072           250.   <span style="text-decoration: underline;">3</span>675.</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level3">
-<h3 id="combining-camera-and-msfeatures-annotations">Combining CAMERA and MsFeatures Annotations<a class="anchor" aria-label="anchor" href="#combining-camera-and-msfeatures-annotations"></a>
-</h3>
-<p>You can also combine both approaches. Apply
-<code><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">groupFeatures()</a></code> first, then proceed with CAMERA
-annotation:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Apply feature grouping</span></span>
-<span><span class="va">xdata_grouped</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">groupFeatures</a></span><span class="op">(</span><span class="va">xdata</span>, param <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures-similar-rtime.html" class="external-link">SimilarRtimeParam</a></span><span class="op">(</span>diffRt <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Create peak table with both CAMERA and MsFeatures annotations</span></span>
-<span><span class="co"># Reuse the xs object created earlier (CAMERA annotations are the same)</span></span>
-<span><span class="va">peak_table_combined</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_peaklist.html">tidy_peaklist</a></span><span class="op">(</span><span class="va">xdata_grouped</span>, <span class="va">xs</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># View combined annotations</span></span>
-<span><span class="va">peak_table_combined</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">peak_table_camera</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">adduct</span> <span class="op">!=</span> <span class="st">""</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">feature_group</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span>, <span class="va">isotopes</span>, <span class="va">adduct</span>, <span class="va">pcgroup</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">feature_id</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">feature_group</span>, <span class="va">pcgroup</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span>, <span class="va">isotopes</span>, <span class="va">adduct</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
-<span><span class="co">#&gt;   feature_id feature_group f_mzmed f_rtmed isotopes  adduct              pcgroup</span></span>
-<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          3 FG.005           206    <span style="text-decoration: underline;">2</span>789. <span style="color: #949494;">""</span>        [M+2K]2+ 334.047 […      11</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          6 FG.073           241.   <span style="text-decoration: underline;">3</span>683. <span style="color: #949494;">""</span>        [M+H-S]+ 272.112 […      87</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>         11 FG.073           255.   <span style="text-decoration: underline;">3</span>682. <span style="color: #949494;">""</span>        [M+H-H2O]+ 272.112       87</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>         13 FG.001           266.   <span style="text-decoration: underline;">3</span>669. <span style="color: #949494;">""</span>        [M+H-C2H4-CO2]+ 33…      44</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>         19 FG.005           279    <span style="text-decoration: underline;">2</span>788. <span style="color: #949494;">""</span>        [M+H-C3H4O]+ 334.0…      11</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>         21 FG.001           281.   <span style="text-decoration: underline;">3</span>669. <span style="color: #949494;">"</span>[1][M]+<span style="color: #949494;">"</span> [M+H-NH3-C3H4]+ 33…      44</span></span></code></pre></div>
-<p>Now you have both:</p>
-<ul>
-<li>
-<strong><code>feature_group</code></strong>: Groups features based
-on retention time and correlation across samples (from MsFeatures)</li>
-<li>
-<strong><code>pcgroup</code></strong>: Groups features into
-pseudospectra based on EIC similarity (from CAMERA)</li>
-<li>
-<strong><code>isotopes</code></strong> and
-<strong><code>adduct</code></strong>: Isotope and adduct annotations
-(from CAMERA)</li>
-</ul>
-<p>This combined approach gives you multiple perspectives on which
-features might originate from the same compound.</p>
-<p><br></p>
-<p>We can also visually compare the mapping.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">group_mapping</span> <span class="op">&lt;-</span> <span class="va">peak_table_combined</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="co">#&gt;   feature_id feature_group pcgroup f_mzmed f_rtmed isotopes  adduct             </span></span>
+<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          3 FG.005.001         11    206    <span style="text-decoration: underline;">2</span>789. <span style="color: #949494;">""</span>        [M+2K]2+ 334.047 […</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          6 FG.073.001         87    241.   <span style="text-decoration: underline;">3</span>683. <span style="color: #949494;">""</span>        [M+H-S]+ 272.112 […</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>         11 FG.073.002         87    255.   <span style="text-decoration: underline;">3</span>682. <span style="color: #949494;">""</span>        [M+H-H2O]+ 272.112 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>         13 FG.001.002         44    266.   <span style="text-decoration: underline;">3</span>669. <span style="color: #949494;">""</span>        [M+H-C2H4-CO2]+ 33…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>         19 FG.005.003         11    279    <span style="text-decoration: underline;">2</span>788. <span style="color: #949494;">""</span>        [M+H-C3H4O]+ 334.0…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>         21 FG.001.001         44    281.   <span style="text-decoration: underline;">3</span>669. <span style="color: #949494;">"</span>[1][M]+<span style="color: #949494;">"</span> [M+H-NH3-C3H4]+ 33…</span></span></code></pre></div>
+<p>CAMERA’s <code>pcgroup</code> and MsFeatures’
+<code>feature_group</code> are two different groupings of the same
+features. We can compare them:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">group_mapping</span> <span class="op">&lt;-</span> <span class="va">peak_table_camera</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">adduct</span> <span class="op">!=</span> <span class="st">""</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">feature_group</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span>, <span class="va">isotopes</span>, <span class="va">adduct</span>, <span class="va">pcgroup</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">feature_id</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">feature_group</span>, <span class="va">pcgroup</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Determine ordering by the most common pairs</span></span>
 <span><span class="va">order_group_mapping</span> <span class="op">&lt;-</span> <span class="va">group_mapping</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">feature_group</span>, <span class="va">pcgroup</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Choose ordering to align best-matching pairs</span></span>
-<span><span class="va">left_order</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">order_group_mapping</span><span class="op">$</span><span class="va">feature_group</span><span class="op">)</span></span>
-<span><span class="va">right_order</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">order_group_mapping</span><span class="op">$</span><span class="va">pcgroup</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">group_mapping</span> <span class="op">&lt;-</span> <span class="va">group_mapping</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    feature_group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">feature_group</span>, levels <span class="op">=</span> <span class="va">left_order</span><span class="op">)</span>,</span>
-<span>    pcgroup       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">pcgroup</span>,       levels <span class="op">=</span> <span class="va">right_order</span><span class="op">)</span></span>
+<span>    feature_group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">feature_group</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">order_group_mapping</span><span class="op">$</span><span class="va">feature_group</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    pcgroup       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">pcgroup</span>,       levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">order_group_mapping</span><span class="op">$</span><span class="va">pcgroup</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">group_mapping</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>axis1 <span class="op">=</span> <span class="va">feature_group</span>, axis2 <span class="op">=</span> <span class="va">pcgroup</span>, fill <span class="op">=</span> <span class="va">feature_group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -514,31 +393,11 @@ features might originate from the same compound.</p>
 <span>  <span class="fu"><a href="http://corybrunson.github.io/ggalluvial/reference/geom_stratum.html" class="external-link">geom_stratum</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_text</a></span><span class="op">(</span>stat <span class="op">=</span> <span class="st">"stratum"</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes_eval.html" class="external-link">after_stat</a></span><span class="op">(</span><span class="va">stratum</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">""</span>, y <span class="op">=</span> <span class="st">"Count"</span>, title <span class="op">=</span> <span class="st">"Flow between groupings A and B"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill<span class="op">=</span><span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">brewer.pal</a></span><span class="op">(</span><span class="fl">12</span>, <span class="st">"Set3"</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">group_mapping</span><span class="op">$</span><span class="va">feature_group</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="long-format-peaklist_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="Alluvium diagram showing the flow and mapping between MsFeatures groupings (left) and CAMERA pseudospectrum groups (right). Each colored flow represents features that belong to specific groups in both systems." width="672"></p>
-<p>Or just look at those that are not mapped the same by CAMERA and
-groupFeatures.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">group_mapping_different</span> <span class="op">&lt;-</span> <span class="va">group_mapping</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">feature_group</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>n_pc <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/n_distinct.html" class="external-link">n_distinct</a></span><span class="op">(</span><span class="va">pcgroup</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">pcgroup</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>n_fg <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/n_distinct.html" class="external-link">n_distinct</a></span><span class="op">(</span><span class="va">feature_group</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">n_pc</span> <span class="op">&gt;</span> <span class="fl">1</span> <span class="op">|</span> <span class="va">n_fg</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">)</span></span>
-<span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">group_mapping_different</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>axis1 <span class="op">=</span> <span class="va">feature_group</span>, axis2 <span class="op">=</span> <span class="va">pcgroup</span>, fill <span class="op">=</span> <span class="va">feature_group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="http://corybrunson.github.io/ggalluvial/reference/geom_alluvium.html" class="external-link">geom_alluvium</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="http://corybrunson.github.io/ggalluvial/reference/geom_stratum.html" class="external-link">geom_stratum</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_text</a></span><span class="op">(</span>stat <span class="op">=</span> <span class="st">"stratum"</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes_eval.html" class="external-link">after_stat</a></span><span class="op">(</span><span class="va">stratum</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">""</span>, y <span class="op">=</span> <span class="st">"Count"</span>, title <span class="op">=</span> <span class="st">"Flow between groupings A and B"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill<span class="op">=</span><span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">brewer.pal</a></span><span class="op">(</span><span class="fl">12</span>, <span class="st">"Set3"</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">group_mapping_different</span><span class="op">$</span><span class="va">feature_group</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="long-format-peaklist_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="Alluvium diagram filtered to show only cases where MsFeatures groups map to multiple CAMERA pseudospectrum groups or vice versa, highlighting discrepancies between the two grouping methods." width="672"></p>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">""</span>, y <span class="op">=</span> <span class="st">"Count"</span>, title <span class="op">=</span> <span class="st">"feature_group (left) vs. pcgroup (right)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">brewer.pal</a></span><span class="op">(</span><span class="fl">12</span>, <span class="st">"Set3"</span><span class="op">)</span>,</span>
+<span>                                 length.out <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/n_distinct.html" class="external-link">n_distinct</a></span><span class="op">(</span><span class="va">group_mapping</span><span class="op">$</span><span class="va">feature_group</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="long-format-peaklist_files/figure-html/camera_vs_msfeatures-1.png" class="r-plt" alt="Alluvium diagram showing the mapping between MsFeatures groups (left) and CAMERA pseudospectrum groups (right) for features with an adduct annotation." width="672"></p>
 </div>
 </div>
 <div class="section level2">
@@ -634,150 +493,145 @@ samples</td>
 samples</td>
 </tr>
 <tr class="odd">
-<td><strong>CAMERA annotations</strong></td>
-<td></td>
-</tr>
-<tr class="even">
-<td><code>isotopes</code></td>
-<td>The isotope annotation from CAMERA (e.g., “[M]+”, “[M+1]+”,
-“[M+2]+”)</td>
-</tr>
-<tr class="odd">
-<td><code>adduct</code></td>
-<td>The adduct annotation from CAMERA (e.g., “[M+H]+”, “[M+Na]+”,
-“[M+NH4]+”)</td>
-</tr>
-<tr class="even">
-<td><code>pcgroup</code></td>
-<td>The feature grouping index from CAMERA - features with same ID
-likely come from the same compound</td>
-</tr>
-<tr class="odd">
-<td><strong>MsFeatures annotations</strong></td>
+<td><strong>Feature grouping and annotation</strong></td>
 <td></td>
 </tr>
 <tr class="even">
 <td><code>feature_group</code></td>
-<td>The feature group ID from MsFeatures (e.g., “FG.001”, “FG.002”) -
-features with same ID are grouped by retention time, abundance
-correlation, or EIC similarity</td>
+<td>The feature group ID from MsFeatures (e.g., “FG.001.001”) - features
+with the same ID probably come from the same compound</td>
 </tr>
 <tr class="odd">
+<td><code>isotopes</code></td>
+<td>Isotope annotation (e.g., “[1][M]+”, “[1][M+1]+”), from
+<code><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">featureDefinitions()</a></code> (e.g. IonFamilies) or from CAMERA</td>
+</tr>
+<tr class="even">
+<td><code>adduct</code></td>
+<td>Adduct/fragment annotation (e.g., “[M+H]+ 169.037”), from
+<code><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">featureDefinitions()</a></code> (e.g. IonFamilies) or from CAMERA</td>
+</tr>
+<tr class="odd">
+<td><code>pcgroup</code></td>
+<td>The pseudospectrum group from CAMERA - features with same ID likely
+come from the same compound</td>
+</tr>
+<tr class="even">
 <td><strong>Peak-level m/z measurements (in that specific
 sample)</strong></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>mz</code></td>
 <td>The median m/z found for that feature in <strong>that
 sample</strong>
 </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>mzmin</code></td>
 <td>The minimum m/z found for that feature in that sample</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>mzmax</code></td>
 <td>The maximum m/z found for that feature in that sample</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>Peak-level retention time measurements (in that specific
 sample)</strong></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>rt</code></td>
 <td>The retention time found for that feature in that sample</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>rtmin</code></td>
 <td>The minimum retention time found for that feature in that
 sample</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>rtmax</code></td>
 <td>The maximum retention time found for that feature in that
 sample</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>Peak intensity measurements</strong></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>into</code></td>
 <td>The area under the peak</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>intb</code></td>
 <td>The area under the peak after baseline removal</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>maxo</code></td>
 <td>The maximum intensity (i.e., height) of the peak</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>sn</code></td>
 <td>The signal to noise ratio of that peak</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong>Gaussian peak fitting parameters</strong></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>egauss</code></td>
 <td>RMSE of Gaussian fit</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>mu</code></td>
 <td>Gaussian parameter mu (center of the Gaussian; unit is scan
 number)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>sigma</code></td>
 <td>Gaussian parameter sigma</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>h</code></td>
 <td>Gaussian parameter h (height of the Gaussian peak)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>CentWave algorithm parameters</strong></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>f</code></td>
 <td>Region number of m/z ROI where the peak was localized</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>dppm</code></td>
 <td>m/z deviation of mass trace across scans in ppm</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>scale</code></td>
 <td>Scale on which the peak was localized</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>scpos</code></td>
 <td>Center of peak position found by wavelet analysis</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>scmin</code></td>
 <td>Left peak limit found by wavelet analysis (scan number)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>scmax</code></td>
 <td>Right peak limit found by wavelet analysis (scan number)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong>Additional columns</strong></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>ms_level</code></td>
 <td>MS level (e.g., MS1, MS2)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>is_filled</code></td>
 <td>Was the intensity found by gap filling (TRUE) or peak picking
 (FALSE)</td>
@@ -792,12 +646,18 @@ rt, into, etc.) will be <code>NA</code>
 </li>
 <li>Feature-level statistics (f_mzmed, f_rtmed, etc.) are always present
 and represent values across all samples</li>
-<li>CAMERA annotations (isotopes, adduct, pcgroup) are optional and only
-present when xsAnnotate is provided</li>
-<li>MsFeatures annotations (feature_group) are optional and only present
-when groupFeatures() was applied</li>
-<li>Both CAMERA and MsFeatures annotations apply at the feature level
-and are the same across all samples for a given feature</li>
+<li>
+<code>feature_group</code> is only present when
+<code><a href="https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html" class="external-link">groupFeatures()</a></code> was applied</li>
+<li>
+<code>isotopes</code> and <code>adduct</code> are only present when
+they are in <code><a href="https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html" class="external-link">featureDefinitions()</a></code> (e.g. from IonFamilies) or
+when an xsAnnotate object is provided</li>
+<li>
+<code>pcgroup</code> is only present when an xsAnnotate object
+(CAMERA) is provided</li>
+<li>All of these apply at the feature level and are the same across all
+samples for a given feature</li>
 <li>The distinction between “feature-level” and “peak-level” is
 important:
 <ul>
@@ -815,7 +675,7 @@ peak in that specific sample</li>
 <h3 id="feature-level-information">Feature-Level Information<a class="anchor" aria-label="anchor" href="#feature-level-information"></a>
 </h3>
 <p>These columns describe each feature (grouped peak):</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -831,36 +691,34 @@ peak in that specific sample</li>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          6    241.   <span style="text-decoration: underline;">3</span>683.</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="camera-annotations">CAMERA Annotations<a class="anchor" aria-label="anchor" href="#camera-annotations"></a>
+<h3 id="annotations">Annotations<a class="anchor" aria-label="anchor" href="#annotations"></a>
 </h3>
-<p>When CAMERA annotations are included, these additional columns are
+<p>When the object has feature groups and annotations, these columns are
 available:</p>
 <ul>
 <li>
-<code>isotopes</code>: Isotope annotation (e.g., “[M]+”,
-“[M+1]+”)</li>
+<code>feature_group</code>: Feature group ID</li>
 <li>
-<code>adduct</code>: Adduct annotation (e.g., “[M+H]+”,
-“[M+Na]+”)</li>
+<code>isotopes</code>: Isotope annotation (e.g., “[1][M]+”,
+“[1][M+1]+”)</li>
 <li>
-<code>pcgroup</code>: Pseudospectrum correlation group ID</li>
+<code>adduct</code>: Adduct/fragment annotation (e.g., “[M+H]+
+169.037”)</li>
 </ul>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># View features with adduct annotations (using the CAMERA-annotated table)</span></span>
-<span><span class="va">peak_table_camera</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">adduct</span><span class="op">!=</span><span class="st">""</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span>, <span class="va">isotopes</span>, <span class="va">adduct</span>, <span class="va">pcgroup</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">feature_id</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">peak_table_annotated</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">adduct</span> <span class="op">!=</span> <span class="st">""</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span>, <span class="va">feature_group</span>, <span class="va">isotopes</span>, <span class="va">adduct</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
-<span><span class="co">#&gt;   feature_id f_mzmed f_rtmed isotopes  adduct                            pcgroup</span></span>
-<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          3    206    <span style="text-decoration: underline;">2</span>789. <span style="color: #949494;">""</span>        [M+2K]2+ 334.047 [M+H-NH3-CO2-C5…      11</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          6    241.   <span style="text-decoration: underline;">3</span>683. <span style="color: #949494;">""</span>        [M+H-S]+ 272.112 [M+H-CH3OH]+ 27…      87</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>         11    255.   <span style="text-decoration: underline;">3</span>682. <span style="color: #949494;">""</span>        [M+H-H2O]+ 272.112                     87</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>         13    266.   <span style="text-decoration: underline;">3</span>669. <span style="color: #949494;">""</span>        [M+H-C2H4-CO2]+ 337.215 [M+H-C4H…      44</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>         19    279    <span style="text-decoration: underline;">2</span>788. <span style="color: #949494;">""</span>        [M+H-C3H4O]+ 334.047 [M+H-C4H8]+…      11</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>         21    281.   <span style="text-decoration: underline;">3</span>669. <span style="color: #949494;">"</span>[1][M]+<span style="color: #949494;">"</span> [M+H-NH3-C3H4]+ 337.215 [M+H - O…      44</span></span></code></pre></div>
+<span><span class="co">#&gt;   feature_id f_mzmed f_rtmed feature_group isotopes adduct                      </span></span>
+<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          2    205    <span style="text-decoration: underline;">2</span>790. FG.005.002    <span style="color: #949494;">""</span>       [M+H-C3H9N]+ 263.066        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          3    206    <span style="text-decoration: underline;">2</span>789. FG.005.001    <span style="color: #949494;">""</span>       [M+H-C4H6O]+ 275.037        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          4    207.   <span style="text-decoration: underline;">2</span>719. FG.078.001    <span style="color: #949494;">""</span>       [M+H-S-NH3-HCOOH]+ 301.103  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>         21    281.   <span style="text-decoration: underline;">3</span>669. FG.001.001    <span style="color: #949494;">""</span>       [M+H-HCOOH]+ 326.203 [M+H-C…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>         22    281.   <span style="text-decoration: underline;">2</span>787. FG.005.002    <span style="color: #949494;">""</span>       [M+NH4]+ 263.066            </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>         27    284.   <span style="text-decoration: underline;">2</span>720. FG.078.001    <span style="color: #949494;">""</span>       [M+H-H2O]+ 301.103</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="peak-level-information">Peak-Level Information<a class="anchor" aria-label="anchor" href="#peak-level-information"></a>
@@ -878,7 +736,7 @@ available:</p>
 <li>
 <code>sn</code>: Signal-to-noise ratio</li>
 </ul>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View detected peaks (non-NA intensities)</span></span>
 <span><span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">into</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -906,7 +764,7 @@ information</li>
 <li>Plus any columns from <code><a href="https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html" class="external-link">sampleData()</a></code> (sample
 metadata)</li>
 </ul>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">filename</span>, <span class="va">sample_name</span>, <span class="va">sample_group</span>, <span class="va">sample_type</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -925,7 +783,7 @@ metadata)</li>
 </h3>
 <p>Features not detected in a sample have <code>NA</code> for peak-level
 columns:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Count for each feature how many samples the peak was found in</span></span>
 <span><span class="va">detection_rate</span> <span class="op">&lt;-</span> <span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">f_mzmed</span>, <span class="va">f_rtmed</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -947,7 +805,7 @@ columns:</p>
 <div class="section level3">
 <h3 id="visualize-feature-intensities">Visualize Feature Intensities<a class="anchor" aria-label="anchor" href="#visualize-feature-intensities"></a>
 </h3>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot intensity distribution by sample group</span></span>
 <span><span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">feature_id</span> <span class="op">==</span> <span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -964,57 +822,59 @@ columns:</p>
 <div class="section level3">
 <h3 id="identify-features-with-adduct-annotations">Identify Features with Adduct Annotations<a class="anchor" aria-label="anchor" href="#identify-features-with-adduct-annotations"></a>
 </h3>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Count features by adduct type (using the CAMERA-annotated table)</span></span>
-<span><span class="va">adduct_counts</span> <span class="op">&lt;-</span> <span class="va">peak_table_camera</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">adduct</span><span class="op">!=</span><span class="st">""</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/separate_rows.html" class="external-link">separate_rows</a></span><span class="op">(</span><span class="va">adduct</span>, sep <span class="op">=</span> <span class="st">"\\s(?=\\[M)"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">feature_id</span>, <span class="va">adduct</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>adduct <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"^(\\[.*\\].*\\+).*"</span>,<span class="st">"\\1"</span>,<span class="va">adduct</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span></span>
+<p><code><a href="https://stanstrup.github.io/IonFamilies/reference/adductHints.html" class="external-link">IonFamilies::adductHints()</a></code> returns all adduct and
+fragment suggestions as one table. <code>rank == 1</code> is the best
+suggestion for each feature:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">adduct_counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://stanstrup.github.io/IonFamilies/reference/adductHints.html" class="external-link">adductHints</a></span><span class="op">(</span><span class="va">xdata_annotated</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">rank</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">adduct</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">adduct_counts</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 34 × 2</span></span></span>
-<span><span class="co">#&gt;    adduct                  n</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> [M+H]+                 12</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> [M+Na]+                12</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> [M+H-H2O]+             10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> [M+K]+                  6</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> [M+H-C3H9N-C2H4O2]+     5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> [M+H-CH4]+              5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> [M+H-O]+                5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> [M+H-NH3]+              4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> [M+H-CH3OH]+            3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> [M+H-S]+                3</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 24 more rows</span></span></span></code></pre></div>
+<span><span class="co">#&gt;                adduct n</span></span>
+<span><span class="co">#&gt; 1          [M+H-H2O]+ 4</span></span>
+<span><span class="co">#&gt; 2              [M+H]+ 4</span></span>
+<span><span class="co">#&gt; 3              [M+K]+ 3</span></span>
+<span><span class="co">#&gt; 4            [M+NH4]+ 3</span></span>
+<span><span class="co">#&gt; 5        [M+H-C5H10]+ 2</span></span>
+<span><span class="co">#&gt; 6        [M+H-HCOOH]+ 2</span></span>
+<span><span class="co">#&gt; 7         [2M+H+Na]2+ 1</span></span>
+<span><span class="co">#&gt; 8         [M+H+NaCl]+ 1</span></span>
+<span><span class="co">#&gt; 9        [M+H-C3H9N]+ 1</span></span>
+<span><span class="co">#&gt; 10       [M+H-C4H6O]+ 1</span></span>
+<span><span class="co">#&gt; 11         [M+H-CO2]+ 1</span></span>
+<span><span class="co">#&gt; 12       [M+H-COCH2]+ 1</span></span>
+<span><span class="co">#&gt; 13         [M+H-Leu]+ 1</span></span>
+<span><span class="co">#&gt; 14    [M+H-NH3-C2H6]+ 1</span></span>
+<span><span class="co">#&gt; 15           [M+H-O]+ 1</span></span>
+<span><span class="co">#&gt; 16 [M+H-S-NH3-HCOOH]+ 1</span></span>
+<span><span class="co">#&gt; 17 [M+H-gluc-(H2O)2]+ 1</span></span>
+<span><span class="co">#&gt; 18            [M+Na]+ 1</span></span></code></pre></div>
 <div class="section level4">
 <h4 id="visualize-adduct-distribution">Visualize Adduct Distribution<a class="anchor" aria-label="anchor" href="#visualize-adduct-distribution"></a>
 </h4>
-<p>We can create a pie chart showing the frequency of different adducts
-and fragments found by CAMERA:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Create pie chart of adduct frequencies</span></span>
-<span><span class="va">adduct_counts</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>count <span class="op">=</span> <span class="va">n</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
-<span>    <span class="fu"><a href="https://rdrr.io/pkg/ggpie/man/ggpie.html" class="external-link">ggpie</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">.</span>, </span>
-<span>          group_key <span class="op">=</span> <span class="st">"adduct"</span>, </span>
+<p>We can create a pie chart showing how often each adduct or fragment
+is the best suggestion:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">adduct_counts</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>count <span class="op">=</span> <span class="va">n</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/ggpie/man/ggpie.html" class="external-link">ggpie</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">.</span>,</span>
+<span>          group_key <span class="op">=</span> <span class="st">"adduct"</span>,</span>
 <span>          count_type <span class="op">=</span> <span class="st">"count"</span>,</span>
-<span>          label_info <span class="op">=</span> <span class="st">"group"</span>, </span>
+<span>          label_info <span class="op">=</span> <span class="st">"group"</span>,</span>
 <span>          label_type <span class="op">=</span> <span class="st">"circle"</span>,</span>
-<span>          label_size <span class="op">=</span> <span class="fl">4</span>, </span>
+<span>          label_size <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>          label_pos <span class="op">=</span> <span class="st">"out"</span></span>
 <span>          <span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill<span class="op">=</span><span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Distribution of Adduct Annotations"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="long-format-peaklist_files/figure-html/adduct_pie-1.png" class="r-plt" alt="Pie chart showing the distribution of adduct and fragment annotations found by CAMERA across all features." width="672"></p>
+<p><img src="long-format-peaklist_files/figure-html/adduct_pie-1.png" class="r-plt" alt="Pie chart showing the distribution of the best adduct and fragment suggestions across all annotated features." width="672"></p>
 </div>
 </div>
 <div class="section level3">
 <h3 id="extract-specific-features-for-further-analysis">Extract Specific Features for Further Analysis<a class="anchor" aria-label="anchor" href="#extract-specific-features-for-further-analysis"></a>
 </h3>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get a specific feature across all samples</span></span>
 <span><span class="va">feature_123</span> <span class="op">&lt;-</span> <span class="va">peak_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">feature_id</span> <span class="op">==</span> <span class="fl">123</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -1035,7 +895,7 @@ and fragments found by CAMERA:</p>
 <div class="section level2">
 <h2 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.6.2 (2026-10-29)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -1060,12 +920,13 @@ and fragments found by CAMERA:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
 <span><span class="co">#&gt;  [1] ggpie_0.2.5         RColorBrewer_1.1-3  ggalluvial_0.12.6  </span></span>
-<span><span class="co">#&gt;  [4] commonMZ_1.0.0      MsFeatures_1.20.0   CAMERA_1.68.0      </span></span>
-<span><span class="co">#&gt;  [7] MSnbase_2.38.1      S4Vectors_0.50.3    mzR_2.46.0         </span></span>
-<span><span class="co">#&gt; [10] Rcpp_1.1.2          Biobase_2.72.0      BiocGenerics_0.58.1</span></span>
-<span><span class="co">#&gt; [13] generics_0.1.4      MsExperiment_1.14.0 ProtGenerics_1.44.0</span></span>
-<span><span class="co">#&gt; [16] tidyr_1.3.2         ggplot2_4.0.3       dplyr_1.2.1        </span></span>
-<span><span class="co">#&gt; [19] xcms_4.10.1         BiocParallel_1.46.0 tidyXCMS_0.99.38   </span></span>
+<span><span class="co">#&gt;  [4] commonMZ_1.0.0      IonFamilies_0.99.2  MsFeatures_1.20.0  </span></span>
+<span><span class="co">#&gt;  [7] CAMERA_1.68.0       MSnbase_2.38.1      S4Vectors_0.50.3   </span></span>
+<span><span class="co">#&gt; [10] mzR_2.46.0          Rcpp_1.1.2          Biobase_2.72.0     </span></span>
+<span><span class="co">#&gt; [13] BiocGenerics_0.58.1 generics_0.1.4      MsExperiment_1.14.0</span></span>
+<span><span class="co">#&gt; [16] ProtGenerics_1.44.0 tidyr_1.3.2         ggplot2_4.0.3      </span></span>
+<span><span class="co">#&gt; [19] dplyr_1.2.1         xcms_4.10.1         BiocParallel_1.46.0</span></span>
+<span><span class="co">#&gt; [22] tidyXCMS_0.99.39   </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;   [1] rstudioapi_0.19.0           jsonlite_2.0.0             </span></span>

@@ -3,7 +3,7 @@ pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   long-format-peaklist: long-format-peaklist.html
-last_built: 2026-11-11T08:39Z
+last_built: 2026-11-11T10:11Z
 urls:
   reference: https://stanstrup.github.io/tidyXCMS/reference
   article: https://stanstrup.github.io/tidyXCMS/articles

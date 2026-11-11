@@ -70,14 +70,15 @@ following columns with their data types:
   "`"[1][M+1]+"`"). Present when xsAnnotate is provided or
   [`xcms::featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html)
   has an `isotopes` column (e.g. from
-  `IonFamilies::annotateIsotopes()`).
+  [`IonFamilies::annotateIsotopes()`](https://stanstrup.github.io/IonFamilies/reference/annotateIsotopes.html)).
 
 - adduct:
 
   character: Adduct annotations in CAMERA syntax (e.g.,
   "`"[M+H]+ 169.037"`"). Present when xsAnnotate is provided or
   [`xcms::featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html)
-  has an `adduct` column (e.g. from `IonFamilies::annotateAdducts()`).
+  has an `adduct` column (e.g. from
+  [`IonFamilies::annotateAdducts()`](https://stanstrup.github.io/IonFamilies/reference/annotateAdducts.html)).
 
 - pcgroup:
 

@@ -26,6 +26,8 @@ which we’ll explore later in this vignette.
 ``` r
 
 library(tidyXCMS)
+#> Warning: replacing previous import 'S4Arrays::makeNindexFromArrayViewport' by
+#> 'DelayedArray::makeNindexFromArrayViewport' when loading 'SummarizedExperiment'
 library(xcms)
 library(BiocParallel)
 library(dplyr)
@@ -34,10 +36,12 @@ library(tidyr)
 library(MsExperiment)
 
 # Optional packages for enhanced functionality
-# Install if needed: BiocManager::install("CAMERA") or install.packages("commonMZ")
+# Install if needed: BiocManager::install(c("MsFeatures", "CAMERA")),
+# remotes::install_github(c("stanstrup/IonFamilies", "stanstrup/commonMZ"))
 if (requireNamespace("MSnbase", quietly = TRUE)) library(MSnbase)
 if (requireNamespace("CAMERA", quietly = TRUE)) library(CAMERA)
 if (requireNamespace("MsFeatures", quietly = TRUE)) library(MsFeatures)
+if (requireNamespace("IonFamilies", quietly = TRUE)) library(IonFamilies)
 if (requireNamespace("commonMZ", quietly = TRUE)) library(commonMZ)
 if (requireNamespace("ggalluvial", quietly = TRUE)) library(ggalluvial)
 if (requireNamespace("RColorBrewer", quietly = TRUE)) library(RColorBrewer)
@@ -157,98 +161,121 @@ colnames(peak_table)
 The resulting table contains all feature and peak information from XCMS,
 organized with one row per feature per sample.
 
-### Enhancing Peak Tables with CAMERA Annotations
+### Grouping Features with MsFeatures
 
-CAMERA can annotate isotopes, adducts, and group features into
-pseudospectra, providing valuable chemical context to your peak table.
-
-**Note:** CAMERA requires an `xcmsSet` object. Since our data is an
-`XcmsExperiment`, we first convert it to `XCMSnExp` and then to
-`xcmsSet`.
-
-#### Creating a CAMERA object
-
-In this first step we create a CAMERA object from the XCMS object. We
-specify the polarity to help CAMERA determine appropriate adducts and
-fragments.
+One compound usually gives several features: its main ion, adducts,
+in-source fragments and isotopes. The
+[`groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html)
+function from the `MsFeatures` package groups features that probably
+come from the same compound and stores the result in a `feature_group`
+column of
+[`featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html).
+Each call can only split the groups from the previous call. Here we
+first group features that elute together, and then split those groups by
+the correlation of their abundances across samples:
 
 ``` r
 
-# Convert XcmsExperiment to xcmsSet for CAMERA (required for compatibility)
-# Two-step conversion: XcmsExperiment -> XCMSnExp -> xcmsSet
+xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
+xdata_grouped <- groupFeatures(xdata_grouped,
+                               param = AbundanceSimilarityParam(threshold = 0.7,
+                                                                transform = log2))
+
+featureDefinitions(xdata_grouped) %>%
+  as.data.frame() %>%
+  count(feature_group, name = "n_features") %>%
+  count(n_features, name = "n_groups")
+#>   n_features n_groups
+#> 1          1      184
+#> 2          2       55
+#> 3          3       13
+#> 4          4        3
+#> 5          6        1
+```
+
+When the object has feature groups,
+[`tidy_peaklist()`](https://stanstrup.github.io/tidyXCMS/reference/tidy_peaklist.md)
+includes the `feature_group` column automatically:
+
+``` r
+
+peak_table_grouped <- tidy_peaklist(xdata_grouped)
+
+peak_table_grouped %>%
+  distinct(feature_id, feature_group, f_mzmed, f_rtmed) %>%
+  arrange(feature_group, f_mzmed) %>%
+  head(10)
+#> # A tibble: 10 × 4
+#>    feature_id feature_group f_mzmed f_rtmed
+#>         <int> <chr>           <dbl>   <dbl>
+#>  1         21 FG.001.001       281.   3669.
+#>  2         46 FG.001.001       309.   3669.
+#>  3         76 FG.001.001       338.   3669.
+#>  4         13 FG.001.002       266.   3669.
+#>  5         33 FG.002.001       300.   3405.
+#>  6         35 FG.002.001       301.   3405.
+#>  7        247 FG.002.002       506.   3405.
+#>  8        248 FG.002.002       507.   3402.
+#>  9        198 FG.002.003       449.   3405.
+#> 10        261 FG.002.004       523.   3405.
+```
+
+### Annotating Isotopes and Adducts with IonFamilies
+
+The [IonFamilies](https://stanstrup.github.io/IonFamilies) package
+annotates isotopes and adducts/fragments within the feature groups. It
+writes the annotation to the `isotopes` and `adduct` columns of
+[`featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html),
+and
+[`tidy_peaklist()`](https://stanstrup.github.io/tidyXCMS/reference/tidy_peaklist.md)
+picks up any such columns automatically.
+
+``` r
+
+xdata_annotated <- xdata_grouped %>%
+  annotateIsotopes(IsotopologueParam(ppm = 10)) %>%
+  annotateAdducts(AdductVoteParam(polarity = "positive"))
+
+peak_table_annotated <- tidy_peaklist(xdata_annotated)
+
+peak_table_annotated %>%
+  filter(adduct != "") %>%
+  distinct(feature_id, feature_group, f_mzmed, f_rtmed, isotopes, adduct) %>%
+  arrange(feature_group, f_mzmed) %>%
+  head()
+#> # A tibble: 6 × 6
+#>   feature_id feature_group f_mzmed f_rtmed isotopes adduct                      
+#>        <int> <chr>           <dbl>   <dbl> <chr>    <chr>                       
+#> 1         21 FG.001.001       281.   3669. ""       [M+H-HCOOH]+ 326.203 [M+H-C…
+#> 2         46 FG.001.001       309.   3669. ""       [M+H-H2O]+ 326.203 [M+H]+ 3…
+#> 3         76 FG.001.001       338.   3669. ""       [2M+H+Na]2+ 326.203         
+#> 4          3 FG.005.001       206    2789. ""       [M+H-C4H6O]+ 275.037        
+#> 5         54 FG.005.001       314    2789. ""       [M+K]+ 275.037              
+#> 6          2 FG.005.002       205    2790. ""       [M+H-C3H9N]+ 263.066
+```
+
+The `adduct` column shows the best suggestions for each feature as text.
+All suggestions, ranked, are available from
+[`IonFamilies::adductHints()`](https://stanstrup.github.io/IonFamilies/reference/adductHints.html).
+
+### Using CAMERA Annotations
+
+[`tidy_peaklist()`](https://stanstrup.github.io/tidyXCMS/reference/tidy_peaklist.md)
+also accepts annotations from the older CAMERA package, passed as an
+`xsAnnotate` object. CAMERA adds `isotopes`, `adduct` and `pcgroup`
+(pseudospectrum group) columns. If the object also has `isotopes` or
+`adduct` columns in
+[`featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html),
+CAMERA’s take precedence.
+
+CAMERA requires the legacy `xcmsSet` object, so an `XcmsExperiment` has
+to be converted to `XCMSnExp` and then to `xcmsSet`.
+
+``` r
+
 xset <- xdata %>%
   as("XCMSnExp") %>%
   as("xcmsSet")
-
-# Create xsAnnotate object with polarity
-xs <- xsAnnotate(xset, polarity = "positive")
-```
-
-#### Grouping coeluting peaks
-
-The first step to grouping features is to group co-eluting peaks. This
-is a naïve approach that we will refine later.
-
-``` r
-
-# Group peaks by retention time
-xs <- groupFWHM(xs, perfwhm = 0.1, intval = "into", sigma = 6)
-#> Start grouping after retention time.
-#> Created 226 pseudospectra.
-```
-
-#### Grouping based on correlation
-
-Now we group the features based on correlations. This looks at each
-group from the previous step and splits them into separate groups for
-peaks that correlate with each other.
-
-**Note:** For this small example dataset, don’t use correlation across
-samples as it is unreliable with this few samples.
-
-``` r
-
-# Group by correlation
-xs <- groupCorr(xs, calcIso = FALSE, calcCiS = TRUE, calcCaS = FALSE, cor_eic_th = 0.7, pval = 1E-6)
-#> Start grouping after correlation.
-#> Generating EIC's .. 
-#> 
-#> Calculating peak correlations in 226 Groups... 
-#>  % finished: 10  20  30  40  50  60  70  80  90  100  
-#> 
-#> Calculating graph cross linking in 226 Groups... 
-#>  % finished: 10  20  30  40  50  60  70  80  90  100  
-#> New number of ps-groups:  271 
-#> xsAnnotate has now 271 groups, instead of 226
-```
-
-#### Isotope annotation
-
-This annotates peaks that are possible isotopes based on m/z difference
-and intensity patterns.
-
-``` r
-
-# Find isotopes
-xs <- findIsotopes(xs, ppm = 10, mzabs = 0.01, intval = "into", maxcharge = 2)
-#> Generating peak matrix!
-#> Run isotope peak annotation
-#>  % finished: 10  20  30  40  50  60  70  80  90  100  
-#> Found isotopes: 29
-```
-
-#### Annotation of adducts and fragments
-
-Now we try to annotate adducts and fragments based on expected mass
-differences. We’ll use the `commonMZ` package to generate a
-comprehensive list of adduct and fragment rules for CAMERA.
-
-First, we get the adduct/fragment rules for positive mode:
-
-``` r
-
-# warn_clash=TRUE will warn about indistinguishable annotations (e.g., [M+NH4]+ vs -NH3)
-# Remove [M+NH4]+ if it's less common in your data
 
 rules_pos <- MZ_CAMERA(mode = "pos", warn_clash = TRUE, clash_ppm = 5) %>%
   filter(name != "[M+NH4]+") %>%
@@ -263,213 +290,69 @@ rules_pos <- MZ_CAMERA(mode = "pos", warn_clash = TRUE, clash_ppm = 5) %>%
 #> 
 #> Consider removing one of them. Example: 
 #>  rules=rules[            !grepl("[M+NH4]+",rules[,"name"],fixed=TRUE)         ,]
-```
 
-Now we can annotate adducts using these rules:
-
-``` r
-
-# Find adducts using the rules from commonMZ
-xs <- findAdducts(xs, ppm = 500, mzabs = 0.2, multiplier = 4, polarity = "positive", rules = rules_pos)
+xs <- xsAnnotate(xset, polarity = "positive")
+xs <- groupFWHM(xs, perfwhm = 0.1, intval = "into", sigma = 6)
+#> Start grouping after retention time.
+#> Created 226 pseudospectra.
+xs <- groupCorr(xs, calcIso = FALSE, calcCiS = TRUE, calcCaS = FALSE,
+                cor_eic_th = 0.7, pval = 1E-6)
+#> Start grouping after correlation.
+#> Generating EIC's .. 
+#> 
+#> Calculating peak correlations in 226 Groups... 
+#>  % finished: 10  20  30  40  50  60  70  80  90  100  
+#> 
+#> Calculating graph cross linking in 226 Groups... 
+#>  % finished: 10  20  30  40  50  60  70  80  90  100  
+#> New number of ps-groups:  271 
+#> xsAnnotate has now 271 groups, instead of 226
+xs <- findIsotopes(xs, ppm = 10, mzabs = 0.01, intval = "into", maxcharge = 2)
+#> Generating peak matrix!
+#> Run isotope peak annotation
+#>  % finished: 10  20  30  40  50  60  70  80  90  100  
+#> Found isotopes: 29
+xs <- findAdducts(xs, ppm = 500, mzabs = 0.2, multiplier = 4,
+                  polarity = "positive", rules = rules_pos)
 #> Generating peak matrix for peak annotation!
 #> Polarity is set in xsAnnotate: positive 
 #> Found and use user-defined ruleset!
 #> Calculating possible adducts in 271 Groups... 
 #>  % finished: 10  20  30  40  50  60  70  80  90  100
-```
 
-#### Creating the Peak Table with CAMERA Annotations
+peak_table_camera <- tidy_peaklist(xdata_grouped, xs)
 
-Now we can create a peak table that includes all the CAMERA annotations.
-We pass both the original `xdata` object and the CAMERA annotations from
-`xs`:
-
-``` r
-
-peak_table_camera <- tidy_peaklist(xdata, xs)
-
-# Check the structure
-dim(peak_table_camera)
-#> [1] 2808   31
-colnames(peak_table_camera)
-#>  [1] "sample_name"   "sample_group"  "spectraOrigin" "sample_type"  
-#>  [5] "fromFile"      "feature_id"    "f_mzmed"       "f_mzmin"      
-#>  [9] "f_mzmax"       "f_rtmed"       "f_rtmin"       "f_rtmax"      
-#> [13] "ms_level"      "isotopes"      "adduct"        "pcgroup"      
-#> [17] "filepath"      "filename"      "peakidx"       "mz"           
-#> [21] "mzmin"         "mzmax"         "rt"            "rtmin"        
-#> [25] "rtmax"         "into"          "intb"          "maxo"         
-#> [29] "sn"            "is_filled"     "merged"
-```
-
-The table now includes additional columns for CAMERA annotations:
-`isotopes`, `adduct`, and `pcgroup` (pseudospectrum correlation group).
-
-### Enhancing Peak Tables with MsFeatures Grouping
-
-The `MsFeatures` package offers another way to enhance peak tables by
-grouping features based on retention time similarity, abundance
-correlation, or EIC similarity.
-
-#### Why Use MsFeatures?
-
-- **Retention Time Grouping**: Group co-eluting features that likely
-  come from the same compound
-- **Abundance Correlation**: Group features with correlated intensities
-  across samples
-- **EIC Similarity**: Group features based on similar extracted ion
-  chromatograms
-- **Stepwise Refinement**: Apply multiple grouping algorithms
-  sequentially to refine groups
-
-#### Applying Feature Grouping
-
-The
-[`groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html)
-function adds a `feature_group` column to the feature definitions. Let’s
-demonstrate with retention time-based grouping:
-
-``` r
-
-# Group features with similar retention times (within 10 seconds)
-xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
-
-# Check feature groups in featureDefinitions
-head(featureDefinitions(xdata_grouped)$feature_group)
-#> [1] "FG.083" "FG.005" "FG.005" "FG.078" "FG.016" "FG.073"
-
-# Count how many feature groups were created
-table(featureDefinitions(xdata_grouped)$feature_group)
-#> 
-#> FG.001 FG.002 FG.003 FG.004 FG.005 FG.006 FG.007 FG.008 FG.009 FG.010 FG.011 
-#>      4      6      2      4      6      5      2      4      3      4      3 
-#> FG.012 FG.013 FG.014 FG.015 FG.016 FG.017 FG.018 FG.019 FG.020 FG.021 FG.022 
-#>      6      4      2      3      3      3      4      3      2      5      2 
-#> FG.023 FG.024 FG.025 FG.026 FG.027 FG.028 FG.029 FG.030 FG.031 FG.032 FG.033 
-#>      2      4      5      2      5      2      3      4      2      2      4 
-#> FG.034 FG.035 FG.036 FG.037 FG.038 FG.039 FG.040 FG.041 FG.042 FG.043 FG.044 
-#>      2      2      6      3      2      2      4      2      2      4      4 
-#> FG.045 FG.046 FG.047 FG.048 FG.049 FG.050 FG.051 FG.052 FG.053 FG.054 FG.055 
-#>      2      3      2      3      3      5      2      3      4      2      6 
-#> FG.056 FG.057 FG.058 FG.059 FG.060 FG.061 FG.062 FG.063 FG.064 FG.065 FG.066 
-#>      2      6      4      2      4      3      3      2      2      2      2 
-#> FG.067 FG.068 FG.069 FG.070 FG.071 FG.072 FG.073 FG.074 FG.075 FG.076 FG.077 
-#>      3      2      2      3      2      3      2      3      3      3      3 
-#> FG.078 FG.079 FG.080 FG.081 FG.082 FG.083 FG.084 FG.085 FG.086 FG.087 FG.088 
-#>      2      3      3      3      2      3      3      3      3      3      2 
-#> FG.089 FG.090 FG.091 FG.092 FG.093 FG.094 FG.095 FG.096 FG.097 FG.098 FG.099 
-#>      3      2      2      2      2      3      2      4      2      3      3 
-#> FG.100 FG.101 FG.102 FG.103 FG.104 FG.105 FG.106 FG.107 FG.108 FG.109 FG.110 
-#>      3      3      2      2      2      2      2      2      2      2      2 
-#> FG.111 FG.112 FG.113 FG.114 FG.115 FG.116 FG.117 FG.118 FG.119 FG.120 FG.121 
-#>      2      2      1      1      1      1      1      1      1      1      1 
-#> FG.122 FG.123 FG.124 FG.125 FG.126 FG.127 FG.128 FG.129 FG.130 FG.131 FG.132 
-#>      1      1      1      1      1      1      1      1      1      1      1 
-#> FG.133 
-#>      1
-```
-
-#### Creating Peak Table with MsFeatures Grouping
-
-When you create a long-format peak table from an object with feature
-groups, the `feature_group` column is automatically included:
-
-``` r
-
-# Create peak table with feature grouping
-peak_table_grouped <- tidy_peaklist(xdata_grouped)
-
-# Check that feature_group column is present
-"feature_group" %in% colnames(peak_table_grouped)
-#> [1] TRUE
-
-# View some feature groups
-peak_table_grouped %>%
-  select(feature_id, feature_group, f_mzmed, f_rtmed) %>%
-  distinct() %>%
-  head(10)
-#> # A tibble: 10 × 4
-#>    feature_id feature_group f_mzmed f_rtmed
-#>         <int> <chr>           <dbl>   <dbl>
-#>  1          1 FG.083           200.   2903.
-#>  2          2 FG.005           205    2790.
-#>  3          3 FG.005           206    2789.
-#>  4          4 FG.078           207.   2719.
-#>  5          5 FG.016           233    3024.
-#>  6          6 FG.073           241.   3683.
-#>  7          7 FG.024           242.   3664.
-#>  8          8 FG.113           244.   2833.
-#>  9          9 FG.071           249.   3676.
-#> 10         10 FG.072           250.   3675.
-```
-
-### Combining CAMERA and MsFeatures Annotations
-
-You can also combine both approaches. Apply
-[`groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html)
-first, then proceed with CAMERA annotation:
-
-``` r
-
-# Apply feature grouping
-xdata_grouped <- groupFeatures(xdata, param = SimilarRtimeParam(diffRt = 10))
-
-# Create peak table with both CAMERA and MsFeatures annotations
-# Reuse the xs object created earlier (CAMERA annotations are the same)
-peak_table_combined <- tidy_peaklist(xdata_grouped, xs)
-
-# View combined annotations
-peak_table_combined %>%
+peak_table_camera %>%
   filter(adduct != "") %>%
-  select(feature_id, feature_group, f_mzmed, f_rtmed, isotopes, adduct, pcgroup) %>%
-  distinct(feature_id, .keep_all = TRUE) %>%
+  distinct(feature_id, feature_group, pcgroup, f_mzmed, f_rtmed, isotopes, adduct) %>%
   head()
 #> # A tibble: 6 × 7
-#>   feature_id feature_group f_mzmed f_rtmed isotopes  adduct              pcgroup
-#>        <int> <chr>           <dbl>   <dbl> <chr>     <chr>                 <int>
-#> 1          3 FG.005           206    2789. ""        [M+2K]2+ 334.047 […      11
-#> 2          6 FG.073           241.   3683. ""        [M+H-S]+ 272.112 […      87
-#> 3         11 FG.073           255.   3682. ""        [M+H-H2O]+ 272.112       87
-#> 4         13 FG.001           266.   3669. ""        [M+H-C2H4-CO2]+ 33…      44
-#> 5         19 FG.005           279    2788. ""        [M+H-C3H4O]+ 334.0…      11
-#> 6         21 FG.001           281.   3669. "[1][M]+" [M+H-NH3-C3H4]+ 33…      44
+#>   feature_id feature_group pcgroup f_mzmed f_rtmed isotopes  adduct             
+#>        <int> <chr>           <int>   <dbl>   <dbl> <chr>     <chr>              
+#> 1          3 FG.005.001         11    206    2789. ""        [M+2K]2+ 334.047 […
+#> 2          6 FG.073.001         87    241.   3683. ""        [M+H-S]+ 272.112 […
+#> 3         11 FG.073.002         87    255.   3682. ""        [M+H-H2O]+ 272.112 
+#> 4         13 FG.001.002         44    266.   3669. ""        [M+H-C2H4-CO2]+ 33…
+#> 5         19 FG.005.003         11    279    2788. ""        [M+H-C3H4O]+ 334.0…
+#> 6         21 FG.001.001         44    281.   3669. "[1][M]+" [M+H-NH3-C3H4]+ 33…
 ```
 
-Now you have both:
-
-- **`feature_group`**: Groups features based on retention time and
-  correlation across samples (from MsFeatures)
-- **`pcgroup`**: Groups features into pseudospectra based on EIC
-  similarity (from CAMERA)
-- **`isotopes`** and **`adduct`**: Isotope and adduct annotations (from
-  CAMERA)
-
-This combined approach gives you multiple perspectives on which features
-might originate from the same compound.
-
-  
-
-We can also visually compare the mapping.
+CAMERA’s `pcgroup` and MsFeatures’ `feature_group` are two different
+groupings of the same features. We can compare them:
 
 ``` r
 
-group_mapping <- peak_table_combined %>%
+group_mapping <- peak_table_camera %>%
   filter(adduct != "") %>%
-  select(feature_id, feature_group, f_mzmed, f_rtmed, isotopes, adduct, pcgroup) %>%
-  distinct(feature_id, .keep_all = TRUE)
+  distinct(feature_id, feature_group, pcgroup)
 
-# Determine ordering by the most common pairs
 order_group_mapping <- group_mapping %>%
   count(feature_group, pcgroup, sort = TRUE)
 
-# Choose ordering to align best-matching pairs
-left_order  <- unique(order_group_mapping$feature_group)
-right_order <- unique(order_group_mapping$pcgroup)
-
 group_mapping <- group_mapping %>%
   mutate(
-    feature_group = factor(feature_group, levels = left_order),
-    pcgroup       = factor(pcgroup,       levels = right_order)
+    feature_group = factor(feature_group, levels = unique(order_group_mapping$feature_group)),
+    pcgroup       = factor(pcgroup,       levels = unique(order_group_mapping$pcgroup))
   )
 
 ggplot(group_mapping, aes(axis1 = feature_group, axis2 = pcgroup, fill = feature_group)) +
@@ -477,44 +360,15 @@ ggplot(group_mapping, aes(axis1 = feature_group, axis2 = pcgroup, fill = feature
   geom_stratum() +
   geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
   theme_minimal() +
-  labs(x = "", y = "Count", title = "Flow between groupings A and B") +
-  guides(fill="none") +
-  scale_fill_manual(values = rep(brewer.pal(12, "Set3"), length.out = length(unique(group_mapping$feature_group))))
+  labs(x = "", y = "Count", title = "feature_group (left) vs. pcgroup (right)") +
+  guides(fill = "none") +
+  scale_fill_manual(values = rep(brewer.pal(12, "Set3"),
+                                 length.out = n_distinct(group_mapping$feature_group)))
 ```
 
-![Alluvium diagram showing the flow and mapping between MsFeatures
-groupings (left) and CAMERA pseudospectrum groups (right). Each colored
-flow represents features that belong to specific groups in both
-systems.](long-format-peaklist_files/figure-html/unnamed-chunk-2-1.png)
-
-Or just look at those that are not mapped the same by CAMERA and
-groupFeatures.
-
-``` r
-
-group_mapping_different <- group_mapping %>%
-  group_by(feature_group) %>%
-  mutate(n_pc = n_distinct(pcgroup)) %>%
-  group_by(pcgroup) %>%
-  mutate(n_fg = n_distinct(feature_group)) %>%
-  ungroup() %>%
-  filter(n_pc > 1 | n_fg > 1)
-
-
-ggplot(group_mapping_different, aes(axis1 = feature_group, axis2 = pcgroup, fill = feature_group)) +
-  geom_alluvium(alpha = 0.7) +
-  geom_stratum() +
-  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
-  theme_minimal() +
-  labs(x = "", y = "Count", title = "Flow between groupings A and B") +
-  guides(fill="none") +
-  scale_fill_manual(values = rep(brewer.pal(12, "Set3"), length.out = length(unique(group_mapping_different$feature_group))))
-```
-
-![Alluvium diagram filtered to show only cases where MsFeatures groups
-map to multiple CAMERA pseudospectrum groups or vice versa, highlighting
-discrepancies between the two grouping
-methods.](long-format-peaklist_files/figure-html/unnamed-chunk-3-1.png)
+![Alluvium diagram showing the mapping between MsFeatures groups (left)
+and CAMERA pseudospectrum groups (right) for features with an adduct
+annotation.](long-format-peaklist_files/figure-html/camera_vs_msfeatures-1.png)
 
 ## Understanding the Output
 
@@ -544,12 +398,11 @@ understanding:
 | `f_rtmed` | The median retention time found for that feature across samples |
 | `f_rtmin` | The minimum retention time found for that feature across samples |
 | `f_rtmax` | The maximum retention time found for that feature across samples |
-| **CAMERA annotations** |  |
-| `isotopes` | The isotope annotation from CAMERA (e.g., “\[M\]+”, “\[M+1\]+”, “\[M+2\]+”) |
-| `adduct` | The adduct annotation from CAMERA (e.g., “\[M+H\]+”, “\[M+Na\]+”, “\[M+NH4\]+”) |
-| `pcgroup` | The feature grouping index from CAMERA - features with same ID likely come from the same compound |
-| **MsFeatures annotations** |  |
-| `feature_group` | The feature group ID from MsFeatures (e.g., “FG.001”, “FG.002”) - features with same ID are grouped by retention time, abundance correlation, or EIC similarity |
+| **Feature grouping and annotation** |  |
+| `feature_group` | The feature group ID from MsFeatures (e.g., “FG.001.001”) - features with the same ID probably come from the same compound |
+| `isotopes` | Isotope annotation (e.g., “\[1\]\[M\]+”, “\[1\]\[M+1\]+”), from [`featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html) (e.g. IonFamilies) or from CAMERA |
+| `adduct` | Adduct/fragment annotation (e.g., “\[M+H\]+ 169.037”), from [`featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html) (e.g. IonFamilies) or from CAMERA |
+| `pcgroup` | The pseudospectrum group from CAMERA - features with same ID likely come from the same compound |
 | **Peak-level m/z measurements (in that specific sample)** |  |
 | `mz` | The median m/z found for that feature in **that sample** |
 | `mzmin` | The minimum m/z found for that feature in that sample |
@@ -586,12 +439,16 @@ understanding:
   into, etc.) will be `NA`
 - Feature-level statistics (f_mzmed, f_rtmed, etc.) are always present
   and represent values across all samples
-- CAMERA annotations (isotopes, adduct, pcgroup) are optional and only
-  present when xsAnnotate is provided
-- MsFeatures annotations (feature_group) are optional and only present
-  when groupFeatures() was applied
-- Both CAMERA and MsFeatures annotations apply at the feature level and
-  are the same across all samples for a given feature
+- `feature_group` is only present when
+  [`groupFeatures()`](https://rdrr.io/pkg/MsFeatures/man/groupFeatures.html)
+  was applied
+- `isotopes` and `adduct` are only present when they are in
+  [`featureDefinitions()`](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html)
+  (e.g. from IonFamilies) or when an xsAnnotate object is provided
+- `pcgroup` is only present when an xsAnnotate object (CAMERA) is
+  provided
+- All of these apply at the feature level and are the same across all
+  samples for a given feature
 - The distinction between “feature-level” and “peak-level” is important:
   - **Feature-level** (prefix `f_`): Statistics aggregated across all
     samples
@@ -619,32 +476,30 @@ peak_table %>%
 #> 6          6    241.   3683.
 ```
 
-### CAMERA Annotations
+### Annotations
 
-When CAMERA annotations are included, these additional columns are
+When the object has feature groups and annotations, these columns are
 available:
 
-- `isotopes`: Isotope annotation (e.g., “\[M\]+”, “\[M+1\]+”)
-- `adduct`: Adduct annotation (e.g., “\[M+H\]+”, “\[M+Na\]+”)
-- `pcgroup`: Pseudospectrum correlation group ID
+- `feature_group`: Feature group ID
+- `isotopes`: Isotope annotation (e.g., “\[1\]\[M\]+”, “\[1\]\[M+1\]+”)
+- `adduct`: Adduct/fragment annotation (e.g., “\[M+H\]+ 169.037”)
 
 ``` r
 
-# View features with adduct annotations (using the CAMERA-annotated table)
-peak_table_camera %>%
-  filter(adduct!="") %>%
-  select(feature_id, f_mzmed, f_rtmed, isotopes, adduct, pcgroup) %>%
-  distinct(feature_id, .keep_all = TRUE) %>%
+peak_table_annotated %>%
+  filter(adduct != "") %>%
+  distinct(feature_id, f_mzmed, f_rtmed, feature_group, isotopes, adduct) %>%
   head()
 #> # A tibble: 6 × 6
-#>   feature_id f_mzmed f_rtmed isotopes  adduct                            pcgroup
-#>        <int>   <dbl>   <dbl> <chr>     <chr>                               <int>
-#> 1          3    206    2789. ""        [M+2K]2+ 334.047 [M+H-NH3-CO2-C5…      11
-#> 2          6    241.   3683. ""        [M+H-S]+ 272.112 [M+H-CH3OH]+ 27…      87
-#> 3         11    255.   3682. ""        [M+H-H2O]+ 272.112                     87
-#> 4         13    266.   3669. ""        [M+H-C2H4-CO2]+ 337.215 [M+H-C4H…      44
-#> 5         19    279    2788. ""        [M+H-C3H4O]+ 334.047 [M+H-C4H8]+…      11
-#> 6         21    281.   3669. "[1][M]+" [M+H-NH3-C3H4]+ 337.215 [M+H - O…      44
+#>   feature_id f_mzmed f_rtmed feature_group isotopes adduct                      
+#>        <int>   <dbl>   <dbl> <chr>         <chr>    <chr>                       
+#> 1          2    205    2790. FG.005.002    ""       [M+H-C3H9N]+ 263.066        
+#> 2          3    206    2789. FG.005.001    ""       [M+H-C4H6O]+ 275.037        
+#> 3          4    207.   2719. FG.078.001    ""       [M+H-S-NH3-HCOOH]+ 301.103  
+#> 4         21    281.   3669. FG.001.001    ""       [M+H-HCOOH]+ 326.203 [M+H-C…
+#> 5         22    281.   2787. FG.005.002    ""       [M+NH4]+ 263.066            
+#> 6         27    284.   2720. FG.078.001    ""       [M+H-H2O]+ 301.103
 ```
 
 ### Peak-Level Information
@@ -750,58 +605,61 @@ group.](long-format-peaklist_files/figure-html/plot_intensities-1.png)
 
 ### Identify Features with Adduct Annotations
 
+[`IonFamilies::adductHints()`](https://stanstrup.github.io/IonFamilies/reference/adductHints.html)
+returns all adduct and fragment suggestions as one table. `rank == 1` is
+the best suggestion for each feature:
+
 ``` r
 
-# Count features by adduct type (using the CAMERA-annotated table)
-adduct_counts <- peak_table_camera %>%
-  filter(adduct!="") %>%
-  separate_rows(adduct, sep = "\\s(?=\\[M)") %>%
-  distinct(feature_id, adduct) %>%
-  mutate(adduct = gsub("^(\\[.*\\].*\\+).*","\\1",adduct)) %>%
-
+adduct_counts <- adductHints(xdata_annotated) %>%
+  filter(rank == 1) %>%
   count(adduct, sort = TRUE)
 
 adduct_counts
-#> # A tibble: 34 × 2
-#>    adduct                  n
-#>    <chr>               <int>
-#>  1 [M+H]+                 12
-#>  2 [M+Na]+                12
-#>  3 [M+H-H2O]+             10
-#>  4 [M+K]+                  6
-#>  5 [M+H-C3H9N-C2H4O2]+     5
-#>  6 [M+H-CH4]+              5
-#>  7 [M+H-O]+                5
-#>  8 [M+H-NH3]+              4
-#>  9 [M+H-CH3OH]+            3
-#> 10 [M+H-S]+                3
-#> # ℹ 24 more rows
+#>                adduct n
+#> 1          [M+H-H2O]+ 4
+#> 2              [M+H]+ 4
+#> 3              [M+K]+ 3
+#> 4            [M+NH4]+ 3
+#> 5        [M+H-C5H10]+ 2
+#> 6        [M+H-HCOOH]+ 2
+#> 7         [2M+H+Na]2+ 1
+#> 8         [M+H+NaCl]+ 1
+#> 9        [M+H-C3H9N]+ 1
+#> 10       [M+H-C4H6O]+ 1
+#> 11         [M+H-CO2]+ 1
+#> 12       [M+H-COCH2]+ 1
+#> 13         [M+H-Leu]+ 1
+#> 14    [M+H-NH3-C2H6]+ 1
+#> 15           [M+H-O]+ 1
+#> 16 [M+H-S-NH3-HCOOH]+ 1
+#> 17 [M+H-gluc-(H2O)2]+ 1
+#> 18            [M+Na]+ 1
 ```
 
 #### Visualize Adduct Distribution
 
-We can create a pie chart showing the frequency of different adducts and
-fragments found by CAMERA:
+We can create a pie chart showing how often each adduct or fragment is
+the best suggestion:
 
 ``` r
 
-# Create pie chart of adduct frequencies
-adduct_counts %>% 
-  mutate(count = n) %>% 
-    ggpie(data = ., 
-          group_key = "adduct", 
+adduct_counts %>%
+  mutate(count = n) %>%
+    ggpie(data = .,
+          group_key = "adduct",
           count_type = "count",
-          label_info = "group", 
+          label_info = "group",
           label_type = "circle",
-          label_size = 4, 
+          label_size = 4,
           label_pos = "out"
           ) +
     guides(fill="none") +
     ggtitle("Distribution of Adduct Annotations")
 ```
 
-![Pie chart showing the distribution of adduct and fragment annotations
-found by CAMERA across all
+![Pie chart showing the distribution of the best adduct and fragment
+suggestions across all annotated
 features.](long-format-peaklist_files/figure-html/adduct_pie-1.png)
 
 ### Extract Specific Features for Further Analysis
@@ -853,12 +711,13 @@ sessionInfo()
 #> 
 #> other attached packages:
 #>  [1] ggpie_0.2.5         RColorBrewer_1.1-3  ggalluvial_0.12.6  
-#>  [4] commonMZ_1.0.0      MsFeatures_1.20.0   CAMERA_1.68.0      
-#>  [7] MSnbase_2.38.1      S4Vectors_0.50.3    mzR_2.46.0         
-#> [10] Rcpp_1.1.2          Biobase_2.72.0      BiocGenerics_0.58.1
-#> [13] generics_0.1.4      MsExperiment_1.14.0 ProtGenerics_1.44.0
-#> [16] tidyr_1.3.2         ggplot2_4.0.3       dplyr_1.2.1        
-#> [19] xcms_4.10.1         BiocParallel_1.46.0 tidyXCMS_0.99.38   
+#>  [4] commonMZ_1.0.0      IonFamilies_0.99.2  MsFeatures_1.20.0  
+#>  [7] CAMERA_1.68.0       MSnbase_2.38.1      S4Vectors_0.50.3   
+#> [10] mzR_2.46.0          Rcpp_1.1.2          Biobase_2.72.0     
+#> [13] BiocGenerics_0.58.1 generics_0.1.4      MsExperiment_1.14.0
+#> [16] ProtGenerics_1.44.0 tidyr_1.3.2         ggplot2_4.0.3      
+#> [19] dplyr_1.2.1         xcms_4.10.1         BiocParallel_1.46.0
+#> [22] tidyXCMS_0.99.39   
 #> 
 #> loaded via a namespace (and not attached):
 #>   [1] rstudioapi_0.19.0           jsonlite_2.0.0             
